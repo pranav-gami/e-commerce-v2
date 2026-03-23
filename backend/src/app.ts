@@ -9,7 +9,6 @@ import prisma from "./config/prisma";
 import { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
 dotenv.config();
 
 const PORT = 5000;
@@ -33,6 +32,11 @@ app.set("layout", "layouts/main");
 app.use(express.static(path.join(process.cwd(), "public")));
 app.use(morgan("dev"));
 app.use(httpLogger);
+
+app.use(
+  "/users/payment/webhook/razorpay",
+  express.raw({ type: "application/json" }),
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

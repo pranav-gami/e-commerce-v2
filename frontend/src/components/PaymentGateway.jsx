@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import api from "../utils/api";
@@ -6,8 +6,16 @@ import api from "../utils/api";
 const PaymentGateway = ({ onClose, total }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const navigate = useNavigate();
   const { cartItems } = useCart();
+  let isMounted = true;
+
+  useEffect(() => {
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const formatPrice = (price) =>
     new Intl.NumberFormat("en-IN", {
@@ -16,22 +24,58 @@ const PaymentGateway = ({ onClose, total }) => {
       maximumFractionDigits: 0,
     }).format(price);
 
+  const pollOrderStatus = async (orderId, attempt = 0) => {
+    console.log("Polling attempt", attempt, orderId); // <--- add this
+    if (!isMounted) return;
+
+    if (attempt > 10) {
+      setError("Taking too long. Check orders page.");
+      setIsProcessing(false);
+      return;
+    }
+
+    try {
+      const res = await api.get(`/payment/order-status/${orderId}`);
+      console.log("Order status response:", res.data.data); // <--- add this
+      const { orderStatus, paymentStatus } = res.data.data;
+
+      if (orderStatus === "CONFIRMED" && paymentStatus === "SUCCESS") {
+        navigate("/thank-you");
+        onClose();
+        return;
+      }
+
+      if (orderStatus === "CANCELLED") {
+        setError("Payment failed");
+        setIsProcessing(false);
+        return;
+      }
+
+      setStatusMessage(`Confirming... (${attempt + 1})`);
+      setTimeout(() => pollOrderStatus(orderId, attempt + 1), 1500);
+    } catch (err) {
+      console.error("Polling error:", err); // <--- add this
+      setError("Failed to fetch order status");
+      setIsProcessing(false);
+    }
+  };
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
     setError("");
+    setStatusMessage("");
 
     try {
       const res = await api.post("/payment/create-order");
-      const { razorpayOrderId, amount, currency, keyId, orderId } = res.data.data;
+      const { razorpayOrderId, amount, currency, keyId, orderId } =
+        res.data.data;
 
-      const options = {
+      const rzp = new window.Razorpay({
         key: keyId || import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount,
         currency,
-        name: "Shop.in",
-        description: "Order Payment",
         order_id: razorpayOrderId,
+        name: "Shop.in",
 
         handler: async (response) => {
           try {
@@ -41,45 +85,29 @@ const PaymentGateway = ({ onClose, total }) => {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
             });
-            navigate("/thank-you", {
-              state: { cartItems: [...cartItems], total, orderId },
-            });
-            onClose();
-          } catch (err) {
-            setError("Payment verification failed. Contact support.");
+            pollOrderStatus(orderId);
+          } catch {
+            setError("Verification failed");
             setIsProcessing(false);
           }
         },
 
-       modal: {
-  ondismiss: () => {
-    setError("Payment cancelled. Please try again.");
-    setIsProcessing(false);
-  },
-  escape: true,
-  backdropclose: false,
-},
+        modal: {
+          ondismiss: () => {
+            setError("Payment cancelled");
+            setIsProcessing(false);
+          },
+        },
+      });
 
-        prefill: { name: "", email: "", contact: "" },
-        theme: { color: "#ff3f6c" },
-      };
-
-      const rzp = new window.Razorpay(options);
-
-      rzp.on("payment.failed", async (response) => {
-        await api.post("/payment/failed", { orderId });
-        setError(`Payment failed: ${response.error.description}`);
+      rzp.on("payment.failed", (res) => {
+        setError(res.error?.description || "Payment failed");
         setIsProcessing(false);
       });
 
-rzp.open();
-
-// Safety fallback — reset if Razorpay closes for any reason
-rzp.on("payment.cancel", () => {
-  setError("Payment cancelled. Please try again.");
-  setIsProcessing(false);
-});    } catch (err) {
-      setError(err.response?.data?.message || "Failed to initiate payment.");
+      rzp.open();
+    } catch (err) {
+      setError("Failed to initiate payment");
       setIsProcessing(false);
     }
   };
@@ -94,22 +122,38 @@ rzp.on("payment.cancel", () => {
 
       {/* Modal */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded shadow-2xl overflow-hidden animate-fade-in">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-light">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.5"
+              >
                 <rect x="1" y="4" width="22" height="16" rx="2" />
                 <line x1="1" y1="10" x2="23" y2="10" />
               </svg>
             </div>
-            <h2 className="text-base font-extrabold text-brand-dark">Checkout</h2>
+            <h2 className="text-base font-extrabold text-brand-dark">
+              Checkout
+            </h2>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-border transition-colors text-brand-gray hover:text-brand-dark">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-border transition-colors text-brand-gray hover:text-brand-dark"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -121,6 +165,12 @@ rzp.on("payment.cancel", () => {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded mb-5 font-medium">
               {error}
+            </div>
+          )}
+
+          {statusMessage && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-600 text-sm px-4 py-3 rounded mb-5 font-medium">
+              {statusMessage}
             </div>
           )}
 
@@ -140,8 +190,12 @@ rzp.on("payment.cancel", () => {
                   <span className="font-bold text-green-600">FREE</span>
                 </div>
                 <div className="border-t border-brand-border pt-2 mt-2 flex justify-between">
-                  <span className="text-sm font-extrabold text-brand-dark">Total Amount</span>
-                  <span className="text-base font-extrabold text-primary">{formatPrice(total)}</span>
+                  <span className="text-sm font-extrabold text-brand-dark">
+                    Total Amount
+                  </span>
+                  <span className="text-base font-extrabold text-primary">
+                    {formatPrice(total)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -150,16 +204,27 @@ rzp.on("payment.cancel", () => {
             {cartItems.length > 0 && (
               <div className="mb-5 space-y-2 max-h-36 overflow-y-auto">
                 {cartItems.map((item) => {
-                  const discounted = item.price - (item.price * (item.discount || 0)) / 100;
+                  const discounted =
+                    item.price - (item.price * (item.discount || 0)) / 100;
                   return (
-                    <div key={item.cartItemId} className="flex items-center gap-3">
+                    <div
+                      key={item.cartItemId}
+                      className="flex items-center gap-3"
+                    >
                       <div className="w-10 h-10 flex-shrink-0 bg-brand-light rounded overflow-hidden border border-brand-border">
-                        <img src={item.image || "/placeholder.png"} alt={item.name}
-                          className="w-full h-full object-cover" />
+                        <img
+                          src={item.image || "/placeholder.png"}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-brand-dark truncate">{item.name}</p>
-                        <p className="text-xs text-brand-gray">Qty: {item.quantity}</p>
+                        <p className="text-xs font-semibold text-brand-dark truncate">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-brand-gray">
+                          Qty: {item.quantity}
+                        </p>
                       </div>
                       <p className="text-xs font-bold text-brand-dark flex-shrink-0">
                         {formatPrice(discounted * item.quantity)}
@@ -172,16 +237,24 @@ rzp.on("payment.cancel", () => {
 
             {/* Razorpay note */}
             <div className="flex items-center gap-2 text-xs text-brand-gray mb-5 bg-blue-50 border border-blue-100 px-3 py-2 rounded">
-              <img src="https://razorpay.com/favicon.ico" alt="Razorpay" width="14" height="14" />
-              <span>Secured by Razorpay — Cards, UPI, Net Banking supported</span>
+              <img
+                src="https://razorpay.com/favicon.ico"
+                alt="Razorpay"
+                width="14"
+                height="14"
+              />
+              <span>
+                Secured by Razorpay — Cards, UPI, Net Banking supported
+              </span>
             </div>
 
             {/* Pay button */}
-       <button
-  type="submit"
-  disabled={isProcessing}
-  onClick={() => setError("")}
-              className="w-full bg-primary text-white font-extrabold text-sm py-4 rounded hover:bg-primary-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed tracking-wider flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={isProcessing}
+              onClick={() => setError("")}
+              className="w-full bg-primary text-white font-extrabold text-sm py-4 rounded hover:bg-primary-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed tracking-wider flex items-center justify-center gap-2"
+            >
               {isProcessing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -189,7 +262,14 @@ rzp.on("payment.cancel", () => {
                 </>
               ) : (
                 <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2.5"
+                  >
                     <rect x="1" y="4" width="22" height="16" rx="2" />
                     <line x1="1" y1="10" x2="23" y2="10" />
                   </svg>
@@ -199,27 +279,29 @@ rzp.on("payment.cancel", () => {
             </button>
 
             {/* Cancel */}
-          <button
-  type="button"
-  onClick={() => {
-    setIsProcessing(false);
-    setError("");
-    onClose();
-  }}
-  className="w-full mt-3 text-sm text-brand-gray hover:text-brand-dark font-semibold py-2 transition-colors">
-  Cancel
-</button>
-{isProcessing && (
-  <button
-    type="button"
-    onClick={() => {
-      setIsProcessing(false);
-      setError("Payment window closed. Please try again.");
-    }}
-    className="w-full mt-1 text-xs text-red-400 hover:text-red-600 font-semibold py-1 transition-colors">
-    Payment window closed? Click here to reset
-  </button>
-)}
+            <button
+              type="button"
+              onClick={() => {
+                setIsProcessing(false);
+                setError("");
+                onClose();
+              }}
+              className="w-full mt-3 text-sm text-brand-gray hover:text-brand-dark font-semibold py-2 transition-colors"
+            >
+              Cancel
+            </button>
+            {isProcessing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsProcessing(false);
+                  setError("Payment window closed. Please try again.");
+                }}
+                className="w-full mt-1 text-xs text-red-400 hover:text-red-600 font-semibold py-1 transition-colors"
+              >
+                Payment window closed? Click here to reset
+              </button>
+            )}
           </form>
         </div>
       </div>

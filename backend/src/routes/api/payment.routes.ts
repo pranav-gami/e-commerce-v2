@@ -13,5 +13,6 @@ router.post(
 
 router.post("/create-order", protect, paymentController.createOrder);
 router.post("/verify", protect, paymentController.verifyPayment);
+router.get("/order-status/:orderId", protect, paymentController.getOrderStatus);
 
 export default router;

@@ -1,0 +1,204 @@
+.thank-you-page {
+    min-height: 100vh;
+    padding: var(--spacing-2xl) 0;
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.success-card {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    animation: slideUp var(--transition-slow);
+}
+
+.success-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    border-radius: 50%;
+    margin-bottom: var(--spacing-lg);
+    animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+.success-icon svg {
+    stroke: var(--white);
+    stroke-width: 3;
+}
+
+.success-title {
+    font-size: var(--font-size-3xl);
+    color: var(--amazon-dark);
+    margin-bottom: var(--spacing-sm);
+}
+
+.success-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-xl);
+}
+
+.demo-disclaimer {
+    background-color: var(--amazon-orange);
+    color: var(--amazon-dark);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-xl);
+    text-align: left;
+}
+
+.demo-disclaimer p {
+    margin: 0;
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+}
+
+.order-summary-section {
+    background-color: var(--gray-50);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-xl);
+    text-align: left;
+}
+
+.order-summary-section h2 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--amazon-dark);
+    text-align: center;
+}
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.order-item {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--white);
+    border-radius: var(--radius-sm);
+}
+
+.order-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+}
+
+.order-item-details {
+    flex: 1;
+}
+
+.order-item-details h4 {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-xs);
+    color: var(--amazon-dark);
+}
+
+.order-item-details p {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.item-price {
+    font-weight: 700;
+    color: var(--amazon-dark) !important;
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: var(--spacing-md);
+    border-top: 2px solid var(--gray-300);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+}
+
+.total-price {
+    color: var(--amazon-dark);
+    font-size: var(--font-size-2xl);
+}
+
+.thank-you-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+.thank-you-actions .btn {
+    flex: 1;
+    max-width: 250px;
+}
+
+/* Confetti Animation */
+.confetti {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    opacity: 0;
+    animation: confettiFall 3s linear infinite;
+}
+
+@keyframes confettiFall {
+    to {
+        top: 100vh;
+        opacity: 1;
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .success-card {
+        padding: var(--spacing-xl);
+    }
+
+    .thank-you-actions {
+        flex-direction: column;
+    }
+
+    .thank-you-actions .btn {
+        max-width: 100%;
+    }
+
+    .success-title {
+        font-size: var(--font-size-2xl);
+    }
+}

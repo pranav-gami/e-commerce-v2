@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background -->
+  <rect width="64" height="64" rx="12" fill="#0f172a"/>
+
+  <!-- Shopping bag handle -->
+  <path d="M20 26c0-6 4-10 12-10s12 4 12 10" 
+        fill="none" stroke="#ffffff" stroke-width="2"/>
+
+  <!-- Bag body -->
+  <rect x="18" y="26" width="28" height="22" rx="4" fill="#ffffff"/>
+
+  <!-- Brand dot -->
+  <circle cx="44" cy="20" r="4" fill="#e94560"/>
+</svg>

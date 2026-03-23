@@ -1,0 +1,15 @@
+th.sorting_disabled.sorting_asc::after, table.dataTable>thead .sorting_asc::after, table.dataTable>thead .sorting_asc::after {
+    display: none!important;
+}
+
+.categories div.dataTables_processing{
+    top: 75%;
+}
+
+div.dataTables_wrapper .table-responsive {
+    min-height: 15rem;
+}
+
+.categories div.dataTables_wrapper .table-responsive{
+    min-height: 10rem;
+}

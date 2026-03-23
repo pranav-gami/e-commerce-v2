@@ -1,0 +1,223 @@
+<div class="d-flex flex-column flex-column-fluid">
+  <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <div class="app-container container-xxl d-flex flex-stack">
+      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+          Sub Categories
+        </h1>
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin" class="text-muted text-hover-primary">Home</a>
+          </li>
+          <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
+          <li class="breadcrumb-item text-muted">Sub Categories</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-content flex-column-fluid">
+    <div class="app-container container-xxl">
+
+      <% if (categories.length === 0) { %>
+
+        <!-- Empty state card -->
+        <div class="card">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column align-items-center justify-content-center py-20">
+              <div class="mb-5">
+                <i class="ki-duotone ki-category fs-5tx text-gray-300">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                  <span class="path3"></span>
+                  <span class="path4"></span>
+                </i>
+              </div>
+              <h3 class="fw-bold text-gray-700 mb-3">No Categories Found</h3>
+              <p class="text-gray-500 fs-6 mb-6 text-center px-10">
+                You need to create at least one category before you can add sub-categories.
+              </p>
+              <a href="/admin/categories/add" class="btn btn-primary">
+                <i class="ki-duotone ki-plus fs-2 me-1"></i>
+                Create First Category
+              </a>
+            </div>
+          </div>
+        </div>
+
+      <% } else { %>
+
+        <!-- Table Card -->
+        <div class="card">
+
+          <!-- Card Header: Search + Filter + Toolbar -->
+          <div class="card-header border-0 pt-6">
+            <div class="card-title">
+              <div class="d-flex align-items-center gap-3 my-1">
+
+                <!-- Search -->
+                <div class="d-flex align-items-center position-relative">
+              <span class="svg-icon svg-icon-1 position-absolute ms-6">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    opacity="0.5"
+                    x="17.0365"
+                    y="15.1223"
+                    width="8.15546"
+                    height="2"
+                    rx="1"
+                    transform="rotate(45 17.0365 15.1223)"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+                  <input type="text" id="sub-table-search"
+                    class="form-control form-control-solid w-200px ps-13"
+                    placeholder="Search sub categories" />
+                </div>
+
+                <!-- Filter by Category -->
+                <select id="sub-filter-category" class="form-select form-select-solid w-175px">
+                  <option value="">All Categories</option>
+                  <% categories.forEach(cat => { %>
+                    <option value="<%= cat.id %>"><%= cat.name %></option>
+                  <% }) %>
+                </select>
+
+                <!-- Reset -->
+                <button id="sub-reset-filter" class="btn btn-light btn-sm">
+                  Reset
+                </button>
+
+              </div>
+            </div>
+
+            <div class="card-toolbar">
+              <!-- Base toolbar -->
+              <div class="d-flex justify-content-end" data-sub-table-toolbar="base">
+                <button class="btn btn-primary btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addSubCategoryModal">
+                  + Add Sub Category
+                </button>
+              </div>
+              <!-- Selected toolbar -->
+              <div class="d-none align-items-center gap-2" data-sub-table-toolbar="selected">
+                <span class="fw-bold text-gray-600 fs-7">
+                  <span data-sub-table-select="selected_count"></span> selected
+                </span>
+                <button type="button" class="btn btn-danger btn-sm"
+                  data-sub-table-select="deactivate_selected">
+                  Delete Selected
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="card-body py-4">
+            <table class="table align-middle table-row-dashed fs-6 gy-5" id="subcategories-table">
+              <thead>
+                <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                  <th></th>
+                  <th><input type="checkbox" class="form-check-input" id="sub-select-all"></th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-600 fw-semibold"></tbody>
+            </table>
+          </div>
+        </div>
+
+      <% } %>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add SubCategory Modal -->
+<% if (categories.length > 0) { %>
+<div class="modal fade" id="addSubCategoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Sub Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-4">
+          <label class="form-label required">Name</label>
+          <input type="text" id="add-sub-name" class="form-control" placeholder="Enter name" />
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Description</label>
+          <textarea id="add-sub-description" class="form-control" rows="3" placeholder="Enter description"></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="form-label required">Category</label>
+          <select id="add-sub-categoryId" class="form-select">
+            <option value="">Select Category</option>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.id %>"><%= cat.name %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-add-subcategory">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit SubCategory Modal -->
+<div class="modal fade" id="editSubCategoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Sub Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-sub-id" />
+        <div class="mb-4">
+          <label class="form-label required">Name</label>
+          <input type="text" id="edit-sub-name" class="form-control" placeholder="Enter name" />
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Description</label>
+          <textarea id="edit-sub-description" class="form-control" rows="3" placeholder="Enter description"></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="form-label required">Category</label>
+          <select id="edit-sub-categoryId" class="form-select">
+            <option value="">Select Category</option>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.id %>"><%= cat.name %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-edit-subcategory">Update</button>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>

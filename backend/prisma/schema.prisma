@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String    @unique
+  password    String
+  otp         String?
+  otpExpiry   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime?
+  role        Role      @default(USER)
+
+  phone       String
+  address     String?
+  postalCode  String? 
+
+  countryId   Int?
+  stateId     Int?
+  cityId      Int?
+
+  country     Country?  @relation(fields: [countryId], references: [id])
+  state       State?    @relation(fields: [stateId], references: [id])
+  city        City?     @relation(fields: [cityId], references: [id])
+
+  cart        Cart?
+  orders      Order[]
+}
+
+model Country {
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  isoCode   String  @unique
+  phoneCode String
+  flag      String?
+  currency  String?
+
+  states    State[]
+  users     User[]
+}
+
+model State {
+  id        Int    @id @default(autoincrement())
+  name      String
+  isoCode   String
+  countryId Int
+
+  country   Country @relation(fields: [countryId], references: [id])
+  cities    City[]
+  users     User[]
+
+  @@unique([isoCode, countryId])
+}
+
+model City {
+  id      Int    @id @default(autoincrement())
+  name    String
+  stateId Int
+
+  state   State @relation(fields: [stateId], references: [id])
+  users   User[]
+
+  @@unique([name, stateId])
+}
+
+model PendingVerification {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  otp       String
+  otpExpiry DateTime
+  createdAt DateTime @default(now())
+}
+
+model HeroSlide {
+  id        Int       @id @default(autoincrement())
+  image     String                    
+  eyebrow   String                    
+  title     String                    
+  titleSpan String                    
+  subtitle  String                    
+  order     Int       @default(0)     
+  isActive  Boolean   @default(true)  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  slug          String        @unique
+  description   String?
+  image         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime?
+  subCategories SubCategory[]
+}
+
+model SubCategory {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  categoryId  Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime?
+  products    Product[]
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  @@unique([name, categoryId])
+}
+
+model Product {
+  id            Int           @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  stock         Int
+  image         String
+  subCategoryId Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime?
+  discount      Float?        @default(0)
+  images        String[]
+  isFeatured    Boolean       @default(false)
+  status        ProductStatus @default(ACTIVE)
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  subCategory   SubCategory   @relation(fields: [subCategoryId], references: [id])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime?
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade) // 👈
+  items     CartItem[]
+}
+
+model CartItem {
+  id        Int       @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int       @default(1)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  cart      Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+}
+
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  total     Float
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime?
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment   Payment? 
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id                Int           @id @default(autoincrement())
+  orderId           Int           @unique
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amount            Float
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime?
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+
+}

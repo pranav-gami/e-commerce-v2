@@ -1,0 +1,25 @@
+.fv-row .image-input {
+    position: relative;
+}
+
+.parsley-errors-list {
+    color: #dc3545;
+}
+
+.fv-row .image-input .parsley-errors-list {
+    position: absolute;
+    top: 150px;
+    left: -145px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+    width: 200px; /* Increased width */
+    min-height: 20px; /* Minimum height */
+    word-wrap: break-word; /* Handle long text */
+    white-space: normal; /* Allow text wrapping */
+}
+
+.fv-row .form-text {
+    margin-top: 25px;
+}

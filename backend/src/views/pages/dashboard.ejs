@@ -1,0 +1,244 @@
+<div class="d-flex flex-column flex-column-fluid">
+  <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+          Dashboard
+        </h1>
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin" class="text-muted text-hover-primary">Home</a>
+          </li>
+          <li class="breadcrumb-item">
+            <span class="bullet bg-gray-400 w-5px h-2px"></span>
+          </li>
+          <li class="breadcrumb-item text-muted">Dashboard</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="kt_app_content" class="app-content flex-column-fluid">
+    <div id="kt_app_content_container" class="app-container container-xxl">
+
+<!-- ── Row 1: All 5 Stats in one row ──────────────────── -->
+<div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+
+  <!-- Total Users -->
+  <div class="col">
+    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
+      <div class="card-header pt-5">
+        <div class="card-title d-flex flex-column">
+          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
+            <%= stats.totalUsers %>
+          </span>
+          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Users</span>
+        </div>
+      </div>
+      <div class="card-body d-flex align-items-end pt-0">
+        <div class="d-flex align-items-center flex-column mt-3 w-100">
+          <a href="/admin/users" class="btn btn-primary btn-sm w-100">View Users</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Users This Month -->
+  <div class="col">
+    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
+      <div class="card-header pt-5">
+        <div class="card-title d-flex flex-column">
+          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
+            <%= stats.newUsersThisMonth %>
+          </span>
+          <span class="text-gray-400 pt-1 fw-semibold fs-6">New Users This Month</span>
+        </div>
+      </div>
+      <div class="card-body d-flex align-items-end pt-0">
+        <div class="d-flex align-items-center flex-column mt-3 w-100">
+          <span class="badge badge-light-success fs-6 w-100 text-center py-3">This Month</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Accounts -->
+  <div class="col">
+    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
+      <div class="card-header pt-5">
+        <div class="card-title d-flex flex-column">
+          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
+            <%= stats.totalAccounts %>
+          </span>
+          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Accounts</span>
+        </div>
+      </div>
+      <div class="card-body d-flex align-items-end pt-0">
+        <div class="d-flex align-items-center flex-column mt-3 w-100">
+          <span class="badge badge-light-info fs-6 w-100 text-center py-3">All Roles</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Categories -->
+  <div class="col">
+    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
+      <div class="card-header pt-5">
+        <div class="card-title d-flex flex-column">
+          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
+            <%= stats.totalCategories %>
+          </span>
+          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Categories</span>
+        </div>
+      </div>
+      <div class="card-body d-flex align-items-end pt-0">
+        <div class="d-flex align-items-center flex-column mt-3 w-100">
+          <a href="/admin/categories" class="btn btn-light-primary btn-sm w-100">View Categories</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total SubCategories -->
+  <div class="col">
+    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
+      <div class="card-header pt-5">
+        <div class="card-title d-flex flex-column">
+          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
+            <%= stats.totalSubCategories %>
+          </span>
+          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Sub Categories</span>
+        </div>
+      </div>
+      <div class="card-body d-flex align-items-end pt-0">
+        <div class="d-flex align-items-center flex-column mt-3 w-100">
+          <a href="/admin/subcategories" class="btn btn-light-info btn-sm w-100">View Sub Categories</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+      <!-- ── Row 3: Recent Categories Table ─────────────────── -->
+      <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+        <div class="col-xl-6">
+          <div class="card card-flush h-xl-100">
+            <div class="card-header pt-5">
+              <h3 class="card-title fw-bold text-dark">Recent Categories</h3>
+              <div class="card-toolbar">
+                <a href="/admin/categories" class="btn btn-sm btn-light">View All</a>
+              </div>
+            </div>
+            <div class="card-body py-3">
+              <div class="table-responsive">
+                <table class="table table-row-dashed align-middle gs-0 gy-4">
+                  <thead>
+                    <tr class="fw-bold text-muted fs-7 text-uppercase">
+                      <th>Image</th>
+                      <th>Name</th>
+                      <th>Sub Categories</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (stats.recentCategories && stats.recentCategories.length > 0) { %>
+                      <% stats.recentCategories.forEach(cat => { %>
+                        <tr>
+                          <td>
+                            <% if (cat.image) { %>
+                              <img src="<%= cat.image %>" alt="<%= cat.name %>"
+                                style="width:40px;height:40px;object-fit:cover;" class="rounded" />
+                            <% } else { %>
+                              <div class="symbol symbol-40px">
+                                <div class="symbol-label bg-light-primary text-primary fw-bold fs-5">
+                                  <%= cat.name.charAt(0).toUpperCase() %>
+                                </div>
+                              </div>
+                            <% } %>
+                          </td>
+                          <td class="fw-semibold text-dark"><%= cat.name %></td>
+                          <td>
+                            <span class="badge badge-light-primary">
+                              <%= cat.subCategories?.length || 0 %> subs
+                            </span>
+                          </td>
+                          <td class="text-muted fs-7">
+                            <%= new Date(cat.createdAt).toLocaleDateString() %>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr>
+                        <td colspan="4" class="text-center text-muted py-5">No categories yet</td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Recent Users Table ───────────────────────────── -->
+        <div class="col-xl-6">
+          <div class="card card-flush h-xl-100">
+            <div class="card-header pt-5">
+              <h3 class="card-title fw-bold text-dark">Recent Users</h3>
+              <div class="card-toolbar">
+                <a href="/admin/users" class="btn btn-sm btn-light">View All</a>
+              </div>
+            </div>
+            <div class="card-body py-3">
+              <div class="table-responsive">
+                <table class="table table-row-dashed align-middle gs-0 gy-4">
+                  <thead>
+                    <tr class="fw-bold text-muted fs-7 text-uppercase">
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Joined</th>
+                    </tr>
+                  </thead>
+                 <tbody>
+  <% if (stats.recentUsers && stats.recentUsers.length > 0) { %>
+    <% stats.recentUsers.filter(user => user.role !== 'ADMIN').forEach(user => { %>
+      <tr>
+        <td>
+          <div class="d-flex align-items-center">
+            <div class="symbol symbol-40px me-3">
+              <div class="symbol-label bg-light-primary text-primary fw-bold fs-5">
+                <%= user.name ? user.name.charAt(0).toUpperCase() : '?' %>
+              </div>
+            </div>
+            <span class="fw-semibold text-dark"><%= user.name || '-' %></span>
+          </div>
+        </td>
+        <td class="text-muted fs-7"><%= user.email %></td>
+        <td>
+          <span class="badge badge-light-primary">User</span>
+        </td>
+        <td class="text-muted fs-7">
+          <%= new Date(user.createdAt).toLocaleDateString() %>
+        </td>
+      </tr>
+    <% }) %>
+  <% } else { %>
+    <tr>
+      <td colspan="4" class="text-center text-muted py-5">No users yet</td>
+    </tr>
+  <% } %>
+</tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

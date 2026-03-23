@@ -1,0 +1,189 @@
+/*********************************** Start Of Common Css ***********************************/
+body{font-family:"DM Sans",sans-serif;font-size:16px;color:#4d4d4d;line-height:1.5;font-weight:400;padding:0px;margin:0px;}
+h1,h2,h3,h4,h5,h6{font-family:"DM Sans",sans-serif;color:#4a4a4a;font-weight:700;margin:0px;padding:0px;}
+h1{font-size:60px;line-height:1.1;}
+h2{font-size:50px;line-height:1.1;}
+h3{font-size:40px;line-height:1.1;}
+h4{font-size:30px;line-height:1.1;}
+h5{font-size:20px;line-height:1.1;}
+h6{font-size:18px;line-height:1.1;}
+p{font-family:"DM Sans",sans-serif;font-size:16px;color:#4d4d4d;line-height:1.5;font-weight:400;margin:0px;}
+p+p{margin:20px 0px 0px 0px;}
+ul,ol{list-style-type:none;margin:0px;padding:0px;}
+img{max-width:100%;height:auto;outline:none;}
+a{color:#4a4a4a;text-decoration:none;transition:all 0.5s ease-in-out;-webkit-transition:all 0.5s ease-in-out;-moz-transition:all 0.5s ease-in-out;-ms-transition:all 0.5s ease-in-out;-o-transition:all 0.5s ease-in-out;}
+a:active,a:hover,a:focus{outline:none;text-decoration:none;color:#fcd264;transition:all 0.5s ease-in-out;-webkit-transition:all 0.5s ease-in-out;-moz-transition:all 0.5s ease-in-out;-ms-transition:all 0.5s ease-in-out;-o-transition:all 0.5s ease-in-out;}
+:focus{outline:none;}
+input,select,textarea{font-size:16px;color:#171E31;width:100%;height:60px;background:#ffffff;padding:0px 15px;border:1px solid #e7e7e7;border-radius:10px;}
+textarea{padding:15px;height:100px;}
+input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
+::-webkit-input-placeholder{color:#171E31;}
+::-moz-placeholder{color:#171E31;}
+::-ms-input-placeholder{color:#171E31;}
+::-moz-placeholder{color:#171E31;}
+b,strong{font-weight:700;}
+
+/*********************************** End Of Common Css ***********************************/
+
+/*********************************** Start Of Common Class Css ***********************************/
+.page-content{overflow:hidden;}
+.container-sub{padding:0% 10%;}
+.container-fluid{padding:0% 20%;}
+.container-full{padding:0% 5%;}
+.container-swiper{width:100%;}
+.extra-small{font-size:14px;}
+.small-size{font-size:18px;}
+.medium-size{font-size:20px;}
+.large-size{font-size:22px;}
+.extra-large-size{font-size:25px;}
+.extra-extra-large-size{font-size:28px;}
+.sub-title{font-size:18px;}
+.title-info{font-size:18px;}
+.title-box{padding-bottom:30px;}
+.title-separator{position:relative;}
+.title-separator:before{content:"";background:url(../images/Mood-Image.png);background-position:center center;background-size:cover;width:22px;height:22px;display:inline-block;vertical-align:middle;margin-top:-3px;margin-right:10px;animation:rotateAnimation 1s linear infinite;}
+.grey-color{color:#f9f9f9;}
+.grey-bg{background:#f9f9f9;}
+.white-color{color:#ffffff;}
+.white-bg{background:#ffffff;}
+.black-color{color:#000000;}
+.black-bg{background:#000000;}
+.primary-color{color:#7030A0;}
+.primary-bg{background:#7030A0;}
+.secondary-color{color:#fcd264;}
+.secondary-bg{background:#fcd264;}
+.button{font-size:16px;color:#ffffff;text-align:center;padding:15px 40px;border:none;outline:none;background:#7030A0;display:inline-block;transition:all 0.5s ease-in-out;-webkit-transition:all 0.5s ease-in-out;-moz-transition:all 0.5s ease-in-out;-ms-transition:all 0.5s ease-in-out;-o-transition:all 0.5s ease-in-out;}
+.button-border{border:1px solid;}
+.button-radius{border-radius:60px;}
+.button:active,.button:hover,.button:focus{background:#fcd264;color:#ffffff;border-color:#fcd264;transition:all 0.5s ease-in-out;-webkit-transition:all 0.5s ease-in-out;-moz-transition:all 0.5s ease-in-out;-ms-transition:all 0.5s ease-in-out;-o-transition:all 0.5s ease-in-out;}
+.link{border-bottom:1px solid;}
+.empty-space{padding:100px 0px;}
+.empty-space-top{padding-top:100px;}
+.empty-space-bottom{padding-bottom:100px;}
+.form-field{margin-bottom:15px;}
+.list-box li{font-weight:500;margin:15px 0;position:relative;padding-left:30px;}
+.list-box li:before{content:"\F280";font-family:'bootstrap-icons';color:#7030A0;vertical-align:middle;position:absolute;left:0px;top:0px;}
+.content-box{padding:15px 0px;}
+
+/*********************************** End Of Common Class Css ***********************************/
+
+/*********************************** Start Of Preloader Loader Css ***********************************/
+#preloader{position:fixed;top:0;left:0;right:0;bottom:0;background:#ffffff;z-index:9999;display:flex;justify-content:center;align-items:center;}
+#status{background:url(../images/Preloader.png);background-repeat:no-repeat;background-position:center center;background-size:contain;width:150px;height:150px;animation:fadeIn 1s infinite alternate;}
+@keyframes fadeIn{
+    from{opacity:0;}
+}
+
+/*********************************** End Of Preloader Loader Css ***********************************/
+
+/*********************************** Start Of Back To Top Css ***********************************/
+.back-to-top a{font-size:14px;color:#ffffff;text-align:center;cursor:pointer;width:40px;height:40px;line-height:36px;background:#7030A0;border:2px solid #ffffff;position:fixed;bottom:20px;right:20px;z-index:11;display:none;}
+.back-to-top a:hover{background:#fcd264;color:#ffffff;transition:all 0.5s ease-in-out;-webkit-transition:all 0.5s ease-in-out;-moz-transition:all 0.5s ease-in-out;-ms-transition:all 0.5s ease-in-out;-o-transition:all 0.5s ease-in-out;}
+
+/*********************************** End Of Back To Top Css ***********************************/
+
+/*********************************** Start Of Bounce Top Bottom Css ***********************************/
+.bounce{-moz-animation:bounce 2s infinite;-webkit-animation:bounce 2s infinite;animation:bounce 2s infinite;}
+@keyframes bounce{
+    0%,20%,50%,80%,100%{transform:translateY(0);}
+    40%{transform:translateY(-10px);}
+    60%{transform:translateY(-10px);}
+}
+
+/*********************************** End Of Bounce Top Bottom Css ***********************************/
+
+/*********************************** Start Of Fixed Header Smooth Animation Css ***********************************/
+.fixed-header{position:fixed;left:0px;right:0px;top:0px;z-index:111;box-shadow:0px 0px 20px #00000040;background:#7030A0;animation:smoothScroll 1s forwards;}
+@keyframes smoothScroll{
+    0%{transform:translateY(-40px);}
+    100%{transform:translateY(0px);}
+}
+
+/*********************************** End Of Fixed Header Smooth Animation Css ***********************************/
+
+/*********************************** Start Of Slick Slides Css ***********************************/
+.slick-prev,.slick-next{font-size:0px;background:none;border:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-transform:translateY(-50%);-moz-transform:translateY(-50%);-o-transform:translateY(-50%);-ms-transform:translateY(-50%);z-index:1;}
+.slick-prev:before{content:"";border-top:2px solid #696969;border-right:2px solid #696969;transform:rotate(-134deg);display:block;width:15px;height:15px;}
+.slick-next:before{content:"";border-top:2px solid #696969;border-right:2px solid #696969;transform:rotate(40deg);display:block;width:15px;height:15px;}
+.slick-next{right:0px;}
+.slick-prev{left:0px;}
+.slick-dots li{display:inline-block;margin:0px 5px;}
+.slick-dots li button{width:10px;height:10px;font-size:0px;background:#CB97E7;border:none;border-radius:100%;margin:0px;padding:0px;}
+.slick-dots li.slick-active button{background:#7030A0;}
+.slick-dots{text-align:center;}
+
+/*********************************** End Of Slick Slides Css ***********************************/
+
+/*********************************** Start Of Slick Slides Css ***********************************/
+.banner-bg{background:linear-gradient(168deg,#fbfeff,#e6b8ff,#9858C6,#66318d);padding:150px 0px 100px 0px;position:relative;}
+.banner-bg:after{content:'';background:url(../images/hero-bottom-shape.svg);background-repeat:no-repeat;background-position:center center;background-size:contain;position:absolute;width:100%;height:100px;bottom:0px;left:0px;z-index:1;}
+
+/*********************************** End Of Slick Slides Css ***********************************/
+
+/********************************* Start Of Header Css***************************************/
+.header{position:fixed;left:0px;right:0px;top:0px;z-index:11;padding:15px 0px;}
+.header-menu ul li{display:inline-block;vertical-align:middle;}
+.header-menu ul li a{color:#ffffff;display:block;padding:10px 15px;}
+.header-menu ul li a:hover{color:#fcd264;}
+.header-menu{text-align:center;}
+
+/********************************* End Of Header Css***************************************/
+
+/********************************* Start Of Home Pages Css***************************************/
+.hero-bg{background:linear-gradient(154deg,#DBEBF0,#CB97E7,#9858C6,#9858C6);padding:150px 0px 150px 0px;position:relative;}
+.hero-bg:after{content:'';background:url(../images/hero-bottom-shape.svg);background-repeat:no-repeat;background-position:center center;background-size:contain;position:absolute;width:100%;height:255px;bottom:0px;left:0px;z-index:1;}
+.hero-info a{text-align:center;margin:5px;display:inline-block;background:#000000;border-radius:5px;min-width:220px;}
+.icon-box{padding:30px;border:1px solid #d5d5d5;border-radius:15px;box-shadow:0px 5px 20px 2px rgb(0 0 0 / 10%);margin:15px 0px;}
+.icon-info h5{margin:15px 0px;}
+.icon-image i{color:#7030A0;font-size:35px;}
+.how-it-work-bg{background:url(../images/How-It-Work-Bg.jpg);background-repeat:no-repeat;background-position:center center;background-size:cover;padding-top:100px;position:relative;}
+.how-it-work-box{background:#ffffff;border:1px solid #d5d5d5;border-radius:15px;box-shadow:0px 5px 20px 2px rgb(0 0 0 / 10%);margin:15px 0px;padding:30px;}
+.how-it-work-image img{width:200px;height:200px;object-fit:contain;}
+.how-it-work-info{padding-top:15px;}
+.how-it-work-info h6{position:relative;padding-left:50px;}
+.how-it-work-info h6 span{font-size:16px;color:#ffffff;text-align:center;line-height:40px;width:40px;height:40px;background:#7030A0;border-radius:100%;position:absolute;top:0px;left:0px;}
+.how-it-work-info h4 strong{display:inline-block;vertical-align:middle;}
+.screenshot-slider{margin:0px -25px;}
+.screenshot-col{padding:30px 25px;}
+.screenshot-image img{border:1px solid #cfcfcf;border-radius:28px;}
+.screenshot-slider .slick-center .screenshot-image img{border:2px solid #171E31;}
+.screenshot-slider .slick-center{transform:scale(1.1);}
+.screenshot-slider .slick-center .screenshot-image:after{content:"";background:url(../images/iphone-mask.png);background-size:cover;background-repeat:no-repeat;width:109%;height:100%;position:absolute;top:0px;bottom:0px;left:-13px;right:0px;}
+.screenshot-image{position:relative;}
+.download-bg{background:url(../images/Download-Bg.jpg) fixed;background-repeat:no-repeat;background-position:center center;background-size:cover;padding-top:100px;}
+.accordion-box{margin-bottom:15px;}
+.accordion-title a{color:#ffffff;font-weight:600;position:relative;display:block;padding:20px;background:#7030A0;border:1px solid #b8b8b8;border-radius:10px;}
+.accordion-title a:after{content:"\F282";font-family:bootstrap-icons;color:#ffffff;position:absolute;right:15px;top:20px;}
+.accordion-title .collapsed{color:#000000;background:none;}
+.accordion-title .collapsed:after{color:#7030A0;}
+.accordion-info{padding:15px 0px;}
+.accordion-info h6{margin:15px 0px;}
+
+/********************************* End Of Home Pages Css***************************************/
+
+/********************************* Start Of Footer Css***************************************/
+.footer{background:url(../images/Footer-Bg.jpg);background-repeat:no-repeat;background-position:center center;background-size:cover;}
+.footer-top{z-index:1;position:relative;}
+.footer-box{padding:70px 0px;}
+.footer-about-info{text-align:center;}
+.footer-logo{padding-bottom:15px;}
+.footer-logo img{max-width:200px;}
+.footer-title{color:#ffffff;text-transform:uppercase;margin-bottom:30px;}
+.footer-menu ul li + li{margin-top:10px;}
+.footer-menu ul li a{color:#fff;}
+.footer-menu ul li a:hover{margin-left:8px;color:#CB97E7;}
+.footer-contact ul li + li{margin-top:20px;}
+.footer-contact ul li a{display:flex;align-items:center;}
+.footer-contact ul li a i{width:35px;height:35px;line-height:35px;display:inline-block;border:1px solid #fff;border-radius:6px;color:#fff;text-align:center;}
+.footer-contact ul li a span{color:#fff;width:calc(100% - 35px);padding-left:10px;}
+.footer-contact ul li a:hover i{background:#CB97E7;border:1px solid #CB97E7;}
+.social-media li a{width:40px;height:40px;line-height:40px;display:block;border:1px solid #fff;border-radius:100px;color:#ffffff;text-align:center;}
+.social-media li a:hover{background:#CB97E7;border:1px solid #CB97E7;}
+.social-media  li{display:inline-block;margin-right:5px;}
+.footer-download ul li + li{margin-top:15px;}
+.footer-download ul li a img{min-width:220px;}
+.copyright-info{text-align:center;padding:15px 0px;border-top:1px solid #803fab;z-index:1;position:relative;}
+.copyright-info p a{color:#ffffff;}
+.copyright-info p a:hover{color:#fcd264;}
+
+/********************************* End Of Footer Css***************************************/

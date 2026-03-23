@@ -1,0 +1,6 @@
+{
+  "watch": ["src", "prisma"],
+  "ext": ".ts,.js, .prisma",
+  "ignore": [],
+  "exec": "ts-node -r tsconfig-paths/register --files ./src/app.ts"
+}

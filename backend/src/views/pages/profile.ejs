@@ -1,0 +1,127 @@
+<div class="d-flex flex-column flex-column-fluid">
+  <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <div
+      id="kt_app_toolbar_container"
+      class="app-container container-xxl d-flex flex-stack"
+    >
+      <div
+        class="page-title d-flex flex-column justify-content-center flex-wrap me-3"
+      >
+        <h1
+          class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
+        >
+          Profile
+        </h1>
+        <ul
+          class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1"
+        >
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin" class="text-muted text-hover-primary">Home</a>
+          </li>
+          <li class="breadcrumb-item">
+            <span class="bullet bg-gray-400 w-5px h-2px"></span>
+          </li>
+          <li class="breadcrumb-item text-muted">Profile</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="kt_app_content" class="app-content flex-column-fluid">
+    <div id="kt_app_content_container" class="app-container container-xxl">
+      <!-- Profile Card -->
+      <div class="card mb-5 mb-xl-10">
+        <div class="card-body pt-9 pb-0">
+          <div class="d-flex flex-wrap flex-sm-nowrap mb-3">
+            <div class="me-7 mb-4">
+              <div
+                class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative"
+              >
+                <div
+                  class="symbol-label fs-1 bg-light-primary text-primary fw-bold"
+                >
+                  <%= admin?.name ? admin.name.charAt(0).toUpperCase() : '?' %>
+                </div>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <div
+                class="d-flex justify-content-between align-items-start flex-wrap mb-2"
+              >
+                <div class="d-flex flex-column">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="text-gray-900 fs-2 fw-bold me-1">
+                      <%= admin?.name || 'N/A' %>
+                    </span>
+                  </div>
+                  <div class="d-flex flex-wrap fw-semibold fs-6 mb-4 pe-2">
+                    <span
+                      class="d-flex align-items-center text-gray-400 me-5 mb-2"
+                    >
+                      <%= admin?.role || 'N/A' %>
+                    </span>
+                    <span class="d-flex align-items-center text-gray-400 mb-2">
+                      <%= admin?.email || 'N/A' %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Details -->
+      <div class="card mb-5 mb-xl-10">
+        <div class="card-header cursor-pointer">
+          <div class="card-title m-0">
+            <h3 class="fw-bold m-0">Profile Details</h3>
+          </div>
+          <a
+            href="/admin/profile/edit"
+            class="btn btn-primary align-self-center"
+          >
+            Edit Profile
+          </a>
+        </div>
+        <div class="card-body p-9">
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Name</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">
+                <%= admin?.name || 'N/A' %>
+              </span>
+            </div>
+          </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Email</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">
+                <%= admin?.email || 'N/A' %>
+              </span>
+            </div>
+          </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Role</label>
+            <div class="col-lg-8">
+              <span class="badge badge-light-danger">
+                <%= admin?.role || 'N/A' %>
+              </span>
+            </div>
+          </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Password</label>
+            <div class="col-lg-8">
+              <a
+                href="/admin/profile/change-password"
+                class="btn btn-sm btn-light-primary"
+              >
+                Change Password
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

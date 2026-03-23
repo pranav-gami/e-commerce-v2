@@ -1,0 +1,222 @@
+<div class="d-flex flex-column flex-column-fluid">
+  <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+          Order Details
+        </h1>
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin" class="text-muted text-hover-primary">Home</a>
+          </li>
+          <li class="breadcrumb-item">
+            <span class="bullet bg-gray-400 w-5px h-2px"></span>
+          </li>
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin/orders" class="text-muted text-hover-primary">Orders</a>
+          </li>
+          <li class="breadcrumb-item">
+            <span class="bullet bg-gray-400 w-5px h-2px"></span>
+          </li>
+          <li class="breadcrumb-item text-muted">Order #<%= orderDetails?.id || '' %>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="kt_app_content" class="app-content flex-column-fluid">
+    <div id="kt_app_content_container" class="app-container container-xxl">
+
+      <!-- Order Summary Card -->
+      <div class="card mb-5 mb-xl-10">
+        <div class="card-header cursor-pointer">
+          <div class="card-title m-0 d-flex align-items-center gap-4">
+            <h3 class="fw-bold m-0">Order #<%= orderDetails?.id %>
+            </h3>
+            <% const statusMap={ PENDING: { cls: 'badge-light-warning' , label: 'Pending' }, CONFIRMED: {
+              cls: 'badge-light-info' , label: 'Confirmed' }, SHIPPED: { cls: 'badge-light-primary' , label: 'Shipped'
+              }, DELIVERED: { cls: 'badge-light-success' , label: 'Delivered' }, CANCELLED: { cls: 'badge-light-danger'
+              , label: 'Cancelled' }, }; const s=statusMap[orderDetails?.status] || { cls: 'badge-light-secondary' ,
+              label: orderDetails?.status }; %>
+              <span class="badge <%= s.cls %> fs-7">
+                <%= s.label %>
+              </span>
+          </div>
+          <div class="card-toolbar">
+            <% if (!['DELIVERED', 'CANCELLED' ].includes(orderDetails?.status)) { %>
+              <button class="btn btn-sm btn-primary" id="open-update-status-btn" data-id="<%= orderDetails?.id %>"
+                data-status="<%= orderDetails?.status %>">
+                Update Status
+              </button>
+              <% } %>
+          </div>
+        </div>
+
+        <div class="card-body p-9">
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Order ID</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">#<%= orderDetails?.id %></span>
+            </div>
+          </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Status</label>
+            <div class="col-lg-8">
+              <span class="badge <%= s.cls %>">
+                <%= s.label %>
+              </span>
+            </div>
+          </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Order Total</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">₹<%= orderDetails?.total?.toFixed(2) %></span>
+            </div>
+          </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Placed On</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">
+                <%= orderDetails?.createdAt ? new Date(orderDetails.createdAt).toLocaleString() : 'N/A' %>
+              </span>
+            </div>
+          </div>
+          <% if (orderDetails?.updatedAt) { %>
+            <div class="row mb-7">
+              <label class="col-lg-4 fw-semibold text-muted">Last Updated</label>
+              <div class="col-lg-8">
+                <span class="fw-bold fs-6 text-gray-800">
+                  <%= new Date(orderDetails.updatedAt).toLocaleString() %>
+                </span>
+              </div>
+            </div>
+            <% } %>
+        </div>
+      </div>
+
+      <!-- Customer Info Card -->
+      <div class="card mb-5 mb-xl-10">
+        <div class="card-header cursor-pointer">
+          <div class="card-title m-0">
+            <h3 class="fw-bold m-0">Customer Info</h3>
+          </div>
+        </div>
+        <div class="card-body p-9">
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Name</label>
+            <div class="col-lg-8">
+              <a href="/admin/users/<%= orderDetails?.user?.id %>" class="fw-bold fs-6 text-primary">
+                <%= orderDetails?.user?.name || 'N/A' %>
+              </a>
+            </div>
+          </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Email</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">
+                <%= orderDetails?.user?.email || 'N/A' %>
+              </span>
+            </div>
+          </div>
+
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Phone</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">
+                <%= orderDetails?.user?.phone || 'N/A' %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      <!-- Order Items Card -->
+      <div class="card mb-5 mb-xl-10">
+        <div class="card-header cursor-pointer">
+          <div class="card-title m-0">
+            <h3 class="fw-bold m-0">Order Items</h3>
+          </div>
+        </div>
+        <div class="card-body p-9">
+          <div class="table-responsive">
+            <table class="table align-middle table-row-dashed fs-6 gy-4">
+              <thead>
+                <tr class="text-start text-muted fw-bold fs-7 text-uppercase">
+                  <th>Product</th>
+                  <th>Unit Price</th>
+                  <th>Quantity</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody class="fw-semibold text-gray-600">
+                <% if (orderDetails?.items && orderDetails.items.length> 0) { %>
+                  <% orderDetails.items.forEach(function(item) { %>
+                    <tr>
+                      <td>
+                        <span class="text-gray-800 fw-bold">
+                          <%= item?.product?.name || 'N/A' %>
+                        </span>
+                      </td>
+                      <td>₹<%= item?.price?.toFixed(2) %>
+                      </td>
+                      <td><span class="badge badge-light-primary">
+                          <%= item?.quantity %>
+                        </span></td>
+                      <td class="text-end fw-bold">₹<%= (item?.price * item?.quantity).toFixed(2) %>
+                      </td>
+                    </tr>
+                    <% }) %>
+                      <tr class="border-top border-top-dashed">
+                        <td colspan="3" class="text-end fw-bold text-gray-800 fs-5">Grand Total</td>
+                        <td class="text-end fw-bolder text-gray-900 fs-5">₹<%= orderDetails?.total?.toFixed(2) %>
+                        </td>
+                      </tr>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="4" class="text-center text-muted">No items found</td>
+                        </tr>
+                        <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Order Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="update-order-id" value="<%= orderDetails?.id %>" />
+        <div class="mb-4">
+          <label class="form-label">Current Status</label>
+          <input type="text" class="form-control" value="<%= orderDetails?.status %>" disabled />
+        </div>
+        <div class="mb-4">
+          <label class="form-label required">New Status</label>
+          <select id="new-order-status" class="form-select">
+            <option value="">Select new status</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-order-status">Update Status</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const currentOrderStatus = "<%= orderDetails?.status %>";
+</script>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./OrdersPage.css";
 import { BACKEND_URL } from "../utils/api";
 
 const OrdersPage = () => {
@@ -11,26 +10,18 @@ const OrdersPage = () => {
   const [cancellingId, setCancellingId] = useState(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchOrders(); }, []);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const data = await getOrders();
-      console.log("Orders data:", data);
-
-      if (Array.isArray(data)) {
-        setOrders(data);
-      } else if (Array.isArray(data?.orders)) {
-        setOrders(data.orders);
-      } else if (Array.isArray(data?.data)) {
-        setOrders(data.data);
-      } else {
-        setOrders([]);
-      }
+      if (Array.isArray(data)) setOrders(data);
+      else if (Array.isArray(data?.orders)) setOrders(data.orders);
+      else if (Array.isArray(data?.data)) setOrders(data.data);
+      else setOrders([]);
     } catch (err) {
       setError("Failed to load orders.");
       setOrders([]);
@@ -40,22 +31,16 @@ const OrdersPage = () => {
   };
 
   const handleCancelOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to cancel this order?")) return;
     try {
       setCancellingId(orderId);
+      setConfirmCancelId(null);
       setError("");
-
       const response = await cancelOrder(orderId);
-
-      // ✅ Show different message based on refund or not
       if (response?.refunded) {
-        setSuccessMessage(
-          "Order cancelled! Refund of will be credited in 5-7 business days.",
-        );
+        setSuccessMessage("Order cancelled! Refund will be credited in 5-7 business days.");
       } else {
         setSuccessMessage("Order cancelled successfully!");
       }
-
       setTimeout(() => setSuccessMessage(""), 5000);
       await fetchOrders();
     } catch (err) {
@@ -65,200 +50,269 @@ const OrdersPage = () => {
     }
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price);
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(price);
+
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+
+  const STATUS_CONFIG = {
+    PENDING:   { label: "Pending",      classes: "bg-amber-100 text-amber-700 border border-amber-200" },
+    CONFIRMED: { label: "Confirmed",    classes: "bg-blue-100 text-blue-700 border border-blue-200" },
+    SHIPPED:   { label: "Shipped",      classes: "bg-purple-100 text-purple-700 border border-purple-200" },
+    DELIVERED: { label: "Delivered",    classes: "bg-green-100 text-green-700 border border-green-200" },
+    CANCELLED: { label: "Cancelled",    classes: "bg-red-100 text-red-600 border border-red-200" },
+    REFUNDED:  { label: "💸 Refunded",  classes: "bg-teal-100 text-teal-700 border border-teal-200" },
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  // ✅ Fix 1: Add REFUNDED status color
-  const getStatusColor = (status) => {
-    const map = {
-      PENDING: "status-pending",
-      CONFIRMED: "status-confirmed",
-      SHIPPED: "status-shipped",
-      DELIVERED: "status-delivered",
-      CANCELLED: "status-cancelled",
-      REFUNDED: "status-refunded", // ← add this
-    };
-    return map[status] || "";
-  };
-
-  // ✅ Fix 2: Add REFUNDED status label with emoji
-  const getStatusLabel = (status) => {
-    const map = {
-      PENDING: "Pending",
-      CONFIRMED: "Confirmed",
-      SHIPPED: "Shipped",
-      DELIVERED: "Delivered",
-      CANCELLED: "Cancelled",
-      REFUNDED: " Refunded", // ← add this
-    };
-    return map[status] || status;
-  };
-
-  // ✅ Fix 3: REFUNDED orders cannot be cancelled again
   const canCancel = (status) => status === "PENDING" || status === "CONFIRMED";
+
+  const STEPS = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED"];
+  const getStepIndex = (status) => STEPS.indexOf(status);
 
   if (loading) {
     return (
-      <div className="orders-page">
-        <div className="orders-container">
-          <div className="orders-loading">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="order-skeleton" />
-            ))}
-          </div>
+      <div className="min-h-screen bg-brand-light py-10 px-4">
+        <div className="max-w-3xl mx-auto space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white rounded border border-brand-border h-48 animate-pulse" />
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="orders-page">
-      <div className="orders-container">
-        <div className="orders-header">
-          <h1>My Orders</h1>
-          <p>
-            {orders.length} order{orders.length !== 1 ? "s" : ""} found
-          </p>
+    <div className="min-h-screen bg-brand-light py-10 px-4">
+      <div className="max-w-3xl mx-auto">
+
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-extrabold text-brand-dark">My Orders</h1>
+            <p className="text-sm text-brand-gray mt-0.5">
+              {orders.length} order{orders.length !== 1 ? "s" : ""} found
+            </p>
+          </div>
+          <Link to="/products"
+            className="text-sm font-bold text-primary border border-primary px-4 py-2 rounded hover:bg-primary-light transition-colors">
+            + Shop More
+          </Link>
         </div>
 
-        {error && <div className="auth-error">{error}</div>}
-        {successMessage && <div className="auth-success">{successMessage}</div>}
-
-        {orders.length === 0 ? (
-          <div className="orders-empty">
-            <svg
-              width="80"
-              height="80"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-            >
-              <path d="M9 2L7.17 4H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-4.17L15 2H9z" />
-              <circle cx="12" cy="13" r="3" />
+        {/* Alerts */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded mb-5 font-medium">
+            {error}
+          </div>
+        )}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded mb-5 font-medium flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="20 6 9 17 4 12" />
             </svg>
-            <h3>No orders yet</h3>
-            <p>Looks like you haven't placed any orders.</p>
-            <Link to="/products" className="btn btn-primary">
-              Start Shopping
+            {successMessage}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {orders.length === 0 ? (
+          <div className="bg-white rounded border border-brand-border shadow-sm flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 bg-brand-light rounded-full flex items-center justify-center mb-5">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="1.2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-extrabold text-brand-dark">No orders yet</h3>
+            <p className="text-brand-gray text-sm mt-1">Looks like you haven't placed any orders.</p>
+            <Link to="/products"
+              className="mt-6 bg-primary text-white px-8 py-3 text-sm font-bold hover:bg-primary-hover transition-colors rounded-sm tracking-wider">
+              START SHOPPING
             </Link>
           </div>
         ) : (
-          <div className="orders-list">
-            {orders.map((order) => (
-              <div key={order.id} className="order-card">
-                {/* Order Header */}
-                <div className="order-card-header">
-                  <div className="order-meta">
-                    <span className="order-id">Order #{order.id}</span>
-                    <span className="order-date">
-                      {formatDate(order.createdAt)}
-                    </span>
-                  </div>
-                  <div className="order-header-right">
-                    {/* ✅ Fix 4: Use getStatusLabel for emoji + text */}
-                    <span
-                      className={`order-status ${getStatusColor(order.status)}`}
-                    >
-                      {getStatusLabel(order.status)}
-                    </span>
+          <div className="space-y-5">
+            {orders.map((order) => {
+              const statusCfg = STATUS_CONFIG[order.status] || { label: order.status, classes: "bg-brand-light text-brand-gray" };
+              const stepIdx = getStepIndex(order.status);
 
-                    {/* ✅ Fix 5: Show cancel button only for PENDING/CONFIRMED */}
-                    {canCancel(order.status) && (
-                      <button
-                        className="btn-cancel-order"
-                        onClick={() => handleCancelOrder(order.id)}
-                        disabled={cancellingId === order.id}
-                      >
-                        {cancellingId === order.id
-                          ? "Cancelling..."
-                          : "Cancel Order"}
-                      </button>
-                    )}
-                  </div>
-                </div>
+              return (
+                <div key={order.id} className="bg-white border border-brand-border rounded shadow-sm overflow-hidden">
 
-                {/* Order Items */}
-                <div className="order-items">
-                  {order.items.map((item) => (
-                    <div key={item.id} className="order-item">
-                      <img
-                        src={
-                          item.product.image
-                            ? `${BACKEND_URL}${item.product.image}`
-                            : "/placeholder.png"
-                        }
-                        alt={item.product.name}
-                        className="order-item-image"
-                      />
-                      <div className="order-item-info">
-                        <h4>{item.product.name}</h4>
-                        <p>Qty: {item.quantity}</p>
-                        <p className="order-item-price">
-                          {formatPrice(item.price)}
-                        </p>
+                  {/* Order header */}
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-brand-border bg-brand-light flex-wrap gap-3">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div>
+                        <p className="text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">Order ID</p>
+                        <p className="text-sm font-bold text-brand-dark">#{order.id}</p>
                       </div>
-                      <div className="order-item-subtotal">
-                        {formatPrice(item.price * item.quantity)}
+                      <div className="w-px h-8 bg-brand-border hidden sm:block" />
+                      <div>
+                        <p className="text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">Placed On</p>
+                        <p className="text-sm font-bold text-brand-dark">{formatDate(order.createdAt)}</p>
+                      </div>
+                      <div className="w-px h-8 bg-brand-border hidden sm:block" />
+                      <div>
+                        <p className="text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">Total</p>
+                        <p className="text-sm font-bold text-brand-dark">{formatPrice(order.total)}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
 
-                {/* ✅ Fix 7: Show refund info inside card for REFUNDED orders */}
-                {order.status === "REFUNDED" && (
-                  <div className="refund-info-bar">
-                    <span>💸</span>
-                    <span>
-                      Refund of <strong>{formatPrice(order.total)}</strong> has
-                      been initiated. Expected in 5-7 business days.
-                    </span>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className={`text-xs font-extrabold px-3 py-1 rounded-full tracking-wide ${statusCfg.classes}`}>
+                        {statusCfg.label}
+                      </span>
+                      {canCancel(order.status) && (
+                        <button
+                          onClick={() => setConfirmCancelId(order.id)}
+                          disabled={cancellingId === order.id}
+                          className="text-xs font-bold text-red-500 border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50">
+                          {cancellingId === order.id ? "Cancelling..." : "Cancel"}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                )}
 
-                {/* Order Footer */}
-                <div className="order-card-footer">
-                  <div className="order-delivery">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <rect x="1" y="3" width="15" height="13" />
-                      <path d="M16 8h4l3 3v5h-7V8z" />
-                      <circle cx="5.5" cy="18.5" r="2.5" />
-                      <circle cx="18.5" cy="18.5" r="2.5" />
-                    </svg>
-                    <span>Free Delivery</span>
+                  {/* Progress tracker */}
+                  {!["CANCELLED", "REFUNDED"].includes(order.status) && (
+                    <div className="px-5 py-4 border-b border-brand-border">
+                      <div className="flex items-center">
+                        {STEPS.map((step, i) => (
+                          <div key={step} className="flex items-center flex-1 last:flex-none">
+                            <div className="flex flex-col items-center">
+                              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold transition-all ${
+                                i <= stepIdx ? "bg-primary text-white" : "bg-brand-border text-brand-gray"
+                              }`}>
+                                {i < stepIdx ? (
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                ) : (i + 1)}
+                              </div>
+                              <p className={`text-[10px] font-bold mt-1 whitespace-nowrap ${i <= stepIdx ? "text-primary" : "text-brand-gray"}`}>
+                                {step.charAt(0) + step.slice(1).toLowerCase()}
+                              </p>
+                            </div>
+                            {i < STEPS.length - 1 && (
+                              <div className={`flex-1 h-0.5 mx-1 mb-4 ${i < stepIdx ? "bg-primary" : "bg-brand-border"}`} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Order items */}
+                  <div className="divide-y divide-brand-border">
+                    {order.items.map((item) => (
+                      <div key={item.id} className="flex items-center gap-4 px-5 py-4">
+                        <div className="w-16 h-16 flex-shrink-0 bg-brand-light rounded overflow-hidden">
+                          <img
+                            src={item.product.image ? `${BACKEND_URL}${item.product.image}` : "/placeholder.png"}
+                            alt={item.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-brand-dark truncate">{item.product.name}</h4>
+                          <p className="text-xs text-brand-gray mt-0.5">Qty: {item.quantity}</p>
+                          <p className="text-xs font-semibold text-brand-muted mt-0.5">{formatPrice(item.price)} each</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-extrabold text-brand-dark">{formatPrice(item.price * item.quantity)}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="order-total">
-                    <span>Total:</span>
-                    <span className="order-total-amount">
-                      {formatPrice(order.total)}
-                    </span>
+
+                  {/* Refund bar */}
+                  {order.status === "REFUNDED" && (
+                    <div className="flex items-center gap-2 px-5 py-3 bg-teal-50 border-t border-teal-100 text-sm text-teal-700 font-medium">
+                      <span>💸</span>
+                      <span>
+                        Refund of <strong>{formatPrice(order.total)}</strong> has been initiated. Expected in 5–7 business days.
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Order footer */}
+                  <div className="flex items-center justify-between px-5 py-3 bg-brand-light border-t border-brand-border">
+                    <div className="flex items-center gap-2 text-xs text-brand-gray">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="1" y="3" width="15" height="13" />
+                        <path d="M16 8h4l3 3v5h-7V8z" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                      </svg>
+                      <span className="font-semibold">Free Delivery</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-brand-gray font-medium">Order Total:</span>
+                      <span className="font-extrabold text-brand-dark">{formatPrice(order.total)}</span>
+                    </div>
                   </div>
+
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* ── Cancel Confirm Popup ── */}
+      {confirmCancelId && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm"
+            onClick={() => setConfirmCancelId(null)}
+          />
+
+          {/* Modal */}
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-sm bg-white rounded shadow-2xl overflow-hidden animate-fade-in">
+            <div className="h-1 bg-red-500" />
+
+            <div className="p-6 text-center">
+              {/* Icon */}
+              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+              </div>
+
+              <h3 className="text-lg font-extrabold text-brand-dark">Cancel Order?</h3>
+              <p className="text-sm text-brand-gray mt-2 leading-relaxed">
+                Are you sure you want to cancel this order?
+                If paid, refund will be credited in 5–7 business days.
+              </p>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setConfirmCancelId(null)}
+                  className="flex-1 border border-brand-border text-brand-dark font-bold text-sm py-2.5 rounded hover:bg-brand-light transition-colors">
+                  Keep Order
+                </button>
+                <button
+                  onClick={() => handleCancelOrder(confirmCancelId)}
+                  disabled={cancellingId === confirmCancelId}
+                  className="flex-1 bg-red-500 text-white font-bold text-sm py-2.5 rounded hover:bg-red-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+                  {cancellingId === confirmCancelId ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Cancelling...
+                    </>
+                  ) : "Yes, Cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
     </div>
   );
 };

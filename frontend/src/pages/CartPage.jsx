@@ -1,22 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 import PaymentGateway from "../components/PaymentGateway";
+import MoveToWishlistToast from "../components/MoveToWishlistToast";
 import api, { BACKEND_URL } from "../utils/api";
-import "./CartPage.css";
 
 const CartPage = () => {
-  const {
-    cartItems,
-    removeFromCart,
-    updateQuantity,
-    getCartTotal,
-    addToCart,
-    clearCart,
-  } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, getCartTotal, addToCart, clearCart } = useCart();
+  const { addToWishlist, isInWishlist } = useWishlist();
+  const { user } = useAuth();
   const [showPayment, setShowPayment] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [addingId, setAddingId] = useState(null);
+  const [wishlistToast, setWishlistToast] = useState(null); // item to show in toast
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,463 +24,332 @@ const CartPage = () => {
         const res = await api.get("/products");
         const allProducts = res.data.data || [];
         const cartProductIds = new Set(cartItems.map((item) => item.id));
-        const cartCategoryIds = new Set(
-          cartItems.map((item) => item.subCategoryId).filter(Boolean),
+        const cartCategoryIds = new Set(cartItems.map((item) => item.subCategoryId).filter(Boolean));
+        let related = allProducts.filter((p) =>
+          !cartProductIds.has(p.id) && (cartCategoryIds.has(p.subCategoryId) || cartCategoryIds.size === 0)
         );
-
-        let related = allProducts.filter(
-          (p) =>
-            !cartProductIds.has(p.id) &&
-            (cartCategoryIds.has(p.subCategoryId) ||
-              cartCategoryIds.size === 0),
-        );
-
-        if (related.length < 4) {
-          related = allProducts.filter((p) => !cartProductIds.has(p.id));
-        }
-
+        if (related.length < 4) related = allProducts.filter((p) => !cartProductIds.has(p.id));
         setRelatedProducts(related.slice(0, 4));
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) { console.error(err); }
     };
     loadRelated();
   }, [cartItems]);
 
   const handleAddRelated = async (e, product) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     try {
       setAddingId(product.id);
       await addToCart(product);
     } catch (err) {
       if (!localStorage.getItem("token")) navigate("/login");
-    } finally {
-      setAddingId(null);
+    } finally { setAddingId(null); }
+  };
+
+  // Called when user decreases quantity to 0 — show toast instead of silently removing
+  const handleQuantityDecrease = async (item) => {
+    if (item.quantity <= 1) {
+      // Show "Move to Wishlist" toast
+      setWishlistToast(item);
+      // Actually remove from cart
+      await removeFromCart(item.cartItemId);
+    } else {
+      await updateQuantity(item.cartItemId, item.quantity - 1);
     }
   };
 
+  const handleMoveToWishlist = () => {
+    if (wishlistToast) {
+      addToWishlist(wishlistToast);
+      setWishlistToast(null);
+    }
+  };
+
+  const handleDirectMoveToWishlist = async (item) => {
+    addToWishlist(item);
+    await removeFromCart(item.cartItemId);
+  };
+
   const formatPrice = (price) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price);
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(price);
 
   const subtotal = getCartTotal();
-  const savings = cartItems.reduce((acc, item) => {
-    return acc + ((item.price * (item.discount || 0)) / 100) * item.quantity;
-  }, 0);
+  const savings = cartItems.reduce((acc, item) => acc + ((item.price * (item.discount || 0)) / 100) * item.quantity, 0);
 
   return (
-    <div className="cart-page">
+    <div className="bg-brand-light min-h-screen">
       {/* Banner */}
-      <div className="cart-banner">
-        <div className="container">
-          <div className="cart-banner-inner">
-            <div>
-              <h1>Shopping Cart</h1>
-              <p className="cart-banner-sub">
-                {cartItems.length} item{cartItems.length !== 1 ? "s" : ""} in
-                your cart
-              </p>
-            </div>
-            <Link
-              to="/products"
-              className="cart-continue-link"
-              style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                style={{ flexShrink: 0 }}
-              >
-                <line x1="19" y1="12" x2="5" y2="12" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
-              Continue Shopping
-            </Link>
+      <div className="bg-white border-b border-brand-border">
+        <div className="max-w-screen-xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-extrabold text-brand-dark">Shopping Bag</h1>
+            <p className="text-sm text-brand-gray mt-0.5">
+              {cartItems.length} {cartItems.length === 1 ? "item" : "items"} in your bag
+            </p>
           </div>
+          <Link to="/products" className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            </svg>
+            Continue Shopping
+          </Link>
         </div>
       </div>
 
-      <div className="container">
+      <div className="max-w-screen-xl mx-auto px-4 py-6">
         {cartItems.length === 0 ? (
-          <div className="cart-empty">
-            <div className="cart-empty-icon">
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.2"
-              >
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
+          <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded shadow-sm">
+            <div className="w-20 h-20 bg-brand-light rounded-full flex items-center justify-center mb-5">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="1.2">
+                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
               </svg>
             </div>
-            <h2>Your cart is empty</h2>
-            <p>Looks like you haven't added anything yet.</p>
-            <Link to="/products" className="btn btn-primary">
-              Start Shopping
+            <h2 className="text-xl font-extrabold text-brand-dark">Hey, it feels so light!</h2>
+            <p className="text-brand-gray mt-1 text-sm">There is nothing in your bag. Let's add some items.</p>
+            <Link to="/products"
+              className="mt-6 bg-primary text-white px-8 py-3 text-sm font-bold hover:bg-primary-hover transition-colors rounded-sm tracking-wider">
+              START SHOPPING
             </Link>
           </div>
         ) : (
-          <>
-            <div className="cart-layout">
-              {/* Cart Items */}
-              <div className="cart-items-section">
-                <div className="cart-items-header">
-                  <span>Product</span>
-                  <span>Price</span>
-                  <span>Quantity</span>
-                  <span>Subtotal</span>
-                  <span>
-                    <button className="remove-all-btn" onClick={clearCart}>
-                      Remove All
-                    </button>
-                  </span>
-                </div>
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Cart Items */}
+            <div className="flex-1">
+              <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-white rounded-t border border-brand-border text-xs font-extrabold text-brand-gray uppercase tracking-wider">
+                <span>Product</span>
+                <span className="text-center">Price</span>
+                <span className="text-center">Quantity</span>
+                <span className="text-center">Subtotal</span>
+                <span>
+                  <button onClick={clearCart} className="text-red-400 hover:text-red-600 font-bold text-xs">Remove All</button>
+                </span>
+              </div>
 
-                <div className="cart-items-list">
-                  {cartItems.map((item) => {
-                    const discountedPrice =
-                      item.price - (item.price * (item.discount || 0)) / 100;
-                    return (
-                      <div key={item.cartItemId} className="cart-item-row">
+              <div className="border border-t-0 border-brand-border rounded-b bg-white divide-y divide-brand-border">
+                {cartItems.map((item) => {
+                  const discountedPrice = item.price - (item.price * (item.discount || 0)) / 100;
+                  const alreadyWishlisted = isInWishlist(item.id);
+
+                  return (
+                    <div key={item.cartItemId} className="p-4">
+                      <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
                         {/* Product */}
-                        <div className="cart-item-product">
-                          {/* ── Clickable image → product detail ── */}
-                          <div
-                            className="cart-item-img-wrap"
-                            onClick={() =>
-                              navigate(`/products/${item.id || item.productId}`)
-                            }
-                            style={{ cursor: "pointer" }}
-                            title="View product"
-                          >
-                            <img
-                              src={item.image || "/placeholder.png"}
-                              alt={item.name}
-                            />
+                        <div className="flex items-start gap-3">
+                          <div className="w-20 h-24 flex-shrink-0 bg-brand-light rounded overflow-hidden cursor-pointer"
+                            onClick={() => navigate(`/products/${item.id || item.productId}`)}>
+                            <img src={item.image || "/placeholder.png"} alt={item.name}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform" />
                           </div>
-                          <div className="cart-item-details">
-                            {/* ── Clickable name → product detail ── */}
-                            <h4
-                              onClick={() =>
-                                navigate(
-                                  `/products/${item.id || item.productId}`,
-                                )
-                              }
-                              style={{ cursor: "pointer" }}
-                              className="cart-item-name-link"
-                            >
+                          <div className="flex-1 min-w-0">
+                            <h4 onClick={() => navigate(`/products/${item.id || item.productId}`)}
+                              className="text-sm font-bold text-brand-dark cursor-pointer hover:text-primary transition-colors line-clamp-2">
                               {item.name}
                             </h4>
                             {item.discount > 0 && (
-                              <span className="cart-item-discount-tag">
-                                {item.discount}% off
+                              <span className="inline-block mt-1 bg-primary-light text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
+                                {item.discount}% OFF
                               </span>
                             )}
                           </div>
                         </div>
 
                         {/* Price */}
-                        <div className="cart-item-price-col">
-                          <span className="cart-item-current-price">
-                            {formatPrice(discountedPrice)}
-                          </span>
+                        <div className="text-center">
+                          <p className="text-sm font-bold text-brand-dark">{formatPrice(discountedPrice)}</p>
                           {item.discount > 0 && (
-                            <span className="cart-item-original-price">
-                              {formatPrice(item.price)}
-                            </span>
+                            <p className="text-xs text-brand-gray line-through">{formatPrice(item.price)}</p>
                           )}
                         </div>
 
                         {/* Quantity */}
-                        <div className="cart-item-qty-col">
-                          <div className="qty-control">
+                        <div className="flex justify-center">
+                          <div className="flex items-center border border-brand-border rounded overflow-hidden">
                             <button
-                              className="qty-btn"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.cartItemId,
-                                  item.quantity - 1,
-                                )
-                              }
-                            >
+                              onClick={() => handleQuantityDecrease(item)}
+                              className="w-8 h-8 flex items-center justify-center text-brand-gray hover:bg-brand-light hover:text-primary transition-colors text-lg font-bold">
                               −
                             </button>
-                            <span className="qty-value">{item.quantity}</span>
+                            <span className="w-8 h-8 flex items-center justify-center text-sm font-bold text-brand-dark border-x border-brand-border">
+                              {item.quantity}
+                            </span>
                             <button
-                              className="qty-btn"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.cartItemId,
-                                  item.quantity + 1,
-                                )
-                              }
+                              onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
                               disabled={item.quantity >= item.stock}
-                            >
+                              className="w-8 h-8 flex items-center justify-center text-brand-gray hover:bg-brand-light hover:text-primary transition-colors disabled:opacity-40 text-lg font-bold">
                               +
                             </button>
                           </div>
                         </div>
 
                         {/* Subtotal */}
-                        <div className="cart-item-subtotal">
-                          {formatPrice(discountedPrice * item.quantity)}
+                        <div className="text-center">
+                          <p className="text-sm font-bold text-brand-dark">{formatPrice(discountedPrice * item.quantity)}</p>
                         </div>
 
                         {/* Remove */}
-                        <button
-                          className="cart-item-remove"
-                          onClick={() => removeFromCart(item.cartItemId)}
-                        >
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
+                        <button onClick={() => removeFromCart(item.cartItemId)}
+                          className="flex items-center gap-1 text-xs text-brand-gray hover:text-red-500 transition-colors font-semibold">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polyline points="3 6 5 6 21 6" />
                             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                            <path d="M10 11v6M14 11v6" />
-                            <path d="M9 6V4h6v2" />
+                            <path d="M10 11v6M14 11v6M9 6V4h6v2" />
                           </svg>
                           Remove
                         </button>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
 
-              {/* Order Summary */}
-              <div className="cart-summary">
-                <div className="cart-summary-card">
-                  <h3>Order Summary</h3>
-
-                  <div className="summary-lines">
-                    <div className="summary-line">
-                      <span>Subtotal ({cartItems.length} items)</span>
-                      <span>{formatPrice(subtotal + savings)}</span>
-                    </div>
-                    {savings > 0 && (
-                      <div className="summary-line savings">
-                        <span>Discount Savings</span>
-                        <span>− {formatPrice(savings)}</span>
+                      {/* Move to Wishlist button (below each item) */}
+                      <div className="mt-2 ml-[92px]">
+                        <button
+                          onClick={() => handleDirectMoveToWishlist(item)}
+                          className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${
+                            alreadyWishlisted
+                              ? "text-primary cursor-default"
+                              : "text-brand-gray hover:text-primary"
+                          }`}
+                          disabled={alreadyWishlisted}>
+                          <svg width="12" height="12" viewBox="0 0 24 24"
+                            fill={alreadyWishlisted ? "#ff3f6c" : "none"}
+                            stroke={alreadyWishlisted ? "#ff3f6c" : "currentColor"}
+                            strokeWidth="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          </svg>
+                          {alreadyWishlisted ? "Already in Wishlist" : "Move to Wishlist"}
+                        </button>
                       </div>
-                    )}
-                    <div className="summary-line">
-                      <span>Delivery</span>
-                      <span className="free-text">FREE</span>
                     </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="lg:w-80 flex-shrink-0">
+              <div className="bg-white border border-brand-border rounded shadow-sm sticky top-20">
+                <div className="p-4 border-b border-brand-border">
+                  <h3 className="text-sm font-extrabold text-brand-gray uppercase tracking-wider">Price Details</h3>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between text-sm text-brand-dark">
+                    <span>Price ({cartItems.length} items)</span>
+                    <span>{formatPrice(subtotal + savings)}</span>
                   </div>
-
-                  <div className="summary-divider" />
-
-                  <div className="summary-total">
-                    <span>Total</span>
-                    <span>{formatPrice(subtotal)}</span>
-                  </div>
-
                   {savings > 0 && (
-                    <div className="summary-savings-note">
-                      You're saving {formatPrice(savings)} on this order!
+                    <div className="flex justify-between text-sm text-green-600 font-semibold">
+                      <span>Discount</span>
+                      <span>− {formatPrice(savings)}</span>
                     </div>
                   )}
-
-                  <button
-                    className="btn btn-primary btn-lg checkout-btn"
-                    onClick={() => setShowPayment(true)}
-                  >
-                    Proceed to Checkout
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
+                  <div className="flex justify-between text-sm text-brand-dark">
+                    <span>Delivery Charges</span>
+                    <span className="text-green-600 font-semibold">FREE</span>
+                  </div>
+                  <div className="border-t border-brand-border pt-3">
+                    <div className="flex justify-between font-extrabold text-brand-dark text-base">
+                      <span>Total Amount</span>
+                      <span>{formatPrice(subtotal)}</span>
+                    </div>
+                  </div>
+                  {savings > 0 && (
+                    <p className="text-green-600 text-xs font-semibold bg-green-50 px-3 py-2 rounded-sm">
+                      You will save {formatPrice(savings)} on this order 🎉
+                    </p>
+                  )}
+                </div>
+                <div className="p-4 pt-0">
+                  <button onClick={() => setShowPayment(true)}
+                    className="w-full bg-primary text-white py-3.5 text-sm font-extrabold tracking-wider hover:bg-primary-hover transition-colors rounded-sm flex items-center justify-center gap-2">
+                    PLACE ORDER
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                     </svg>
                   </button>
-
-                  <Link to="/products" className="cart-keep-shopping">
+                  <Link to="/products" className="block text-center text-xs text-primary font-semibold mt-3 hover:underline">
                     Continue Shopping
                   </Link>
                 </div>
-
-                {/* Trust badges */}
-                <div className="cart-trust">
+                <div className="border-t border-brand-border p-4 flex flex-col gap-2">
                   {[
-                    {
-                      icon: (
-                        <>
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        </>
-                      ),
-                      text: "Secure Checkout",
-                    },
-                    {
-                      icon: (
-                        <>
-                          <rect x="1" y="3" width="15" height="13" />
-                          <path d="M16 8h4l3 3v5h-7V8z" />
-                          <circle cx="5.5" cy="18.5" r="2.5" />
-                          <circle cx="18.5" cy="18.5" r="2.5" />
-                        </>
-                      ),
-                      text: "Free Delivery",
-                    },
-                    {
-                      icon: (
-                        <>
-                          <polyline points="23 4 23 10 17 10" />
-                          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                        </>
-                      ),
-                      text: "Easy Returns",
-                    },
+                    { icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></>, text: "Safe & Secure Payments" },
+                    { icon: <><rect x="1" y="3" width="15" height="13" /><path d="M16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></>, text: "Free Delivery on this order" },
+                    { icon: <><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></>, text: "Easy 7-day Returns" },
                   ].map((t, i) => (
-                    <div className="cart-trust-item" key={i}>
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        {t.icon}
-                      </svg>
+                    <div key={i} className="flex items-center gap-2 text-xs text-brand-gray">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="2">{t.icon}</svg>
                       {t.text}
                     </div>
                   ))}
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Related Products */}
-            {relatedProducts.length > 0 && (
-              <section className="cart-related">
-                <div className="cart-related-header">
-                  <div>
-                    <span className="cart-related-eyebrow">
-                      You Might Also Like
-                    </span>
-                    <h2 className="cart-related-title">Recommended for You</h2>
-                  </div>
-                  <Link to="/products" className="cart-continue-link">
-                    View All →
-                  </Link>
-                </div>
-
-                <div className="cart-related-grid">
-                  {relatedProducts.map((product) => {
-                    const discounted = product.discount
-                      ? product.price - (product.price * product.discount) / 100
-                      : product.price;
-                    return (
-                      /* ── Entire recommended card is clickable ── */
-                      <div
-                        className="cart-related-card"
-                        key={product.id}
-                        onClick={() => navigate(`/products/${product.id}`)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <div className="cart-related-img-wrap">
-                          <img
-                            src={
-                              product.image
-                                ? `${BACKEND_URL}${product.image}`
-                                : "/placeholder.png"
-                            }
-                            alt={product.name}
-                          />
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <section className="mt-10">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <p className="text-xs font-bold text-primary uppercase tracking-widest">You Might Also Like</p>
+                <h2 className="text-xl font-extrabold text-brand-dark mt-0.5">Recommended for You</h2>
+              </div>
+              <Link to="/products" className="text-primary text-sm font-bold hover:underline">View All →</Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {relatedProducts.map((product) => {
+                const discounted = product.discount ? product.price - (product.price * product.discount) / 100 : product.price;
+                return (
+                  <div key={product.id} onClick={() => navigate(`/products/${product.id}`)}
+                    className="group bg-white cursor-pointer overflow-hidden border border-brand-border hover:shadow-md transition-shadow duration-300">
+                    <div className="relative overflow-hidden aspect-[3/4] bg-brand-light">
+                      <img src={product.image ? `${BACKEND_URL}${product.image}` : "/placeholder.png"}
+                        alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      {product.discount > 0 && (
+                        <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-sm">
+                          -{product.discount}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="text-xs text-brand-gray">{product.subCategory?.name || ""}</p>
+                      <h4 className="text-sm font-semibold text-brand-dark line-clamp-2 mt-0.5">{product.name}</h4>
+                      <div className="flex items-center gap-2 mt-1.5 justify-between">
+                        <div>
+                          <span className="text-sm font-bold text-brand-dark">{formatPrice(discounted)}</span>
                           {product.discount > 0 && (
-                            <span className="cart-related-discount">
-                              -{product.discount}%
-                            </span>
+                            <span className="text-xs text-brand-gray line-through ml-1">{formatPrice(product.price)}</span>
                           )}
                         </div>
-                        <div className="cart-related-info">
-                          <p className="cart-related-category">
-                            {product.subCategory?.name || ""}
-                          </p>
-                          <h4 className="cart-related-name">{product.name}</h4>
-                          <div className="cart-related-footer">
-                            <div className="cart-related-prices">
-                              <span className="cart-related-price">
-                                {formatPrice(discounted)}
-                              </span>
-                              {product.discount > 0 && (
-                                <span className="cart-related-original">
-                                  {formatPrice(product.price)}
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              className="cart-related-add-btn"
-                              onClick={(e) => handleAddRelated(e, product)}
-                              disabled={
-                                addingId === product.id || product.stock === 0
-                              }
-                              title="Add to cart"
-                            >
-                              {addingId === product.id ? (
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="white"
-                                  strokeWidth="2.5"
-                                >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                              ) : (
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="white"
-                                  strokeWidth="2.5"
-                                >
-                                  <circle cx="9" cy="21" r="1" />
-                                  <circle cx="20" cy="21" r="1" />
-                                  <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
-                                </svg>
-                              )}
-                            </button>
-                          </div>
-                        </div>
+                        <button onClick={(e) => handleAddRelated(e, product)}
+                          disabled={addingId === product.id || product.stock === 0}
+                          className="w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-hover transition-colors disabled:opacity-50">
+                          {addingId === product.id ? (
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                          ) : (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                          )}
+                        </button>
                       </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-          </>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         )}
       </div>
 
-      {showPayment && (
-        <PaymentGateway
-          onClose={() => setShowPayment(false)}
-          total={subtotal}
+      {showPayment && <PaymentGateway onClose={() => setShowPayment(false)} total={subtotal} />}
+
+      {/* Move to Wishlist Toast */}
+      {wishlistToast && (
+        <MoveToWishlistToast
+          item={wishlistToast}
+          onMoveToWishlist={handleMoveToWishlist}
+          onDiscard={() => setWishlistToast(null)}
+          onClose={() => setWishlistToast(null)}
         />
       )}
     </div>

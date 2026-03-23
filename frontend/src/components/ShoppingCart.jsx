@@ -6,7 +6,6 @@ import {
   trackRemoveFromCart,
   trackBeginCheckout,
 } from "../utils/analytics";
-import "./ShoppingCart.css";
 
 const ShoppingCart = () => {
   const {

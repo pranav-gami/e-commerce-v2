@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { trackFormSubmit } from "../utils/analytics";
-import "./ContactPage.css";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({

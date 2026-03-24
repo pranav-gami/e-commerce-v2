@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import api from "../utils/api";
@@ -8,14 +8,7 @@ const PaymentGateway = ({ onClose, total }) => {
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const navigate = useNavigate();
-  const { cartItems } = useCart();
-  let isMounted = true;
-
-  useEffect(() => {
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { cartItems, fetchCart } = useCart();
 
   const formatPrice = (price) =>
     new Intl.NumberFormat("en-IN", {
@@ -24,41 +17,6 @@ const PaymentGateway = ({ onClose, total }) => {
       maximumFractionDigits: 0,
     }).format(price);
 
-  const pollOrderStatus = async (orderId, attempt = 0) => {
-    console.log("Polling attempt", attempt, orderId); // <--- add this
-    if (!isMounted) return;
-
-    if (attempt > 10) {
-      setError("Taking too long. Check orders page.");
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      const res = await api.get(`/payment/order-status/${orderId}`);
-      console.log("Order status response:", res.data.data); // <--- add this
-      const { orderStatus, paymentStatus } = res.data.data;
-
-      if (orderStatus === "CONFIRMED" && paymentStatus === "SUCCESS") {
-        navigate("/thank-you");
-        onClose();
-        return;
-      }
-
-      if (orderStatus === "CANCELLED") {
-        setError("Payment failed");
-        setIsProcessing(false);
-        return;
-      }
-
-      setStatusMessage(`Confirming... (${attempt + 1})`);
-      setTimeout(() => pollOrderStatus(orderId, attempt + 1), 1500);
-    } catch (err) {
-      console.error("Polling error:", err); // <--- add this
-      setError("Failed to fetch order status");
-      setIsProcessing(false);
-    }
-  };
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -79,16 +37,24 @@ const PaymentGateway = ({ onClose, total }) => {
 
         handler: async (response) => {
           try {
-            await api.post("/payment/verify", {
+            setStatusMessage("Confirming payment...");
+
+            const verifyRes = await api.post("/payment/verify", {
               orderId,
               razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
             });
-            pollOrderStatus(orderId);
-          } catch {
-            setError("Verification failed");
+
+            if (verifyRes.data.data.verified) {
+              await fetchCart();
+              setIsProcessing(false);
+              setStatusMessage("");
+              onClose();
+              navigate("/thank-you");
+            }
+          } catch (err) {
+            setError(err?.response?.data?.message || "Verification failed");
             setIsProcessing(false);
+            setStatusMessage("");
           }
         },
 
@@ -96,6 +62,7 @@ const PaymentGateway = ({ onClose, total }) => {
           ondismiss: () => {
             setError("Payment cancelled");
             setIsProcessing(false);
+            setStatusMessage("");
           },
         },
       });
@@ -103,6 +70,7 @@ const PaymentGateway = ({ onClose, total }) => {
       rzp.on("payment.failed", (res) => {
         setError(res.error?.description || "Payment failed");
         setIsProcessing(false);
+        setStatusMessage("");
       });
 
       rzp.open();
@@ -258,7 +226,7 @@ const PaymentGateway = ({ onClose, total }) => {
               {isProcessing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  PROCESSING...
+                  {statusMessage || "PROCESSING..."}
                 </>
               ) : (
                 <>
@@ -290,11 +258,13 @@ const PaymentGateway = ({ onClose, total }) => {
             >
               Cancel
             </button>
+
             {isProcessing && (
               <button
                 type="button"
                 onClick={() => {
                   setIsProcessing(false);
+                  setStatusMessage("");
                   setError("Payment window closed. Please try again.");
                 }}
                 className="w-full mt-1 text-xs text-red-400 hover:text-red-600 font-semibold py-1 transition-colors"

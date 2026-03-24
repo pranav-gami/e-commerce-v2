@@ -67,22 +67,64 @@ export const createRazorpayOrder = async (userId: number) => {
   };
 };
 
-export const verifyPayment = async (userId: number, data: any) => {
-  const body = `${data.razorpayOrderId}|${data.razorpayPaymentId}`;
+export const verifyPayment = async (
+  userId: number,
+  data: {
+    orderId: number;
+    razorpayOrderId: string;
+  }
+) => {
+  // Step 1: Fetch minimal required data
+  const payment = await prisma.payment.findUnique({
+    where: { razorpayOrderId: data.razorpayOrderId },
+    select: {
+      id: true,
+      orderId: true,
+      order: {
+        select: {
+          userId: true,
+        },
+      },
+    },
+  });
 
-  const expected = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-    .update(body)
-    .digest("hex");
-
-  if (expected !== data.razorpaySignature) {
-    throw new ApiError(400, "Invalid signature");
+  if (!payment) {
+    throw new ApiError(404, "Payment record not found");
   }
 
-  return { verified: true };
+  if (payment.order.userId !== userId) {
+    throw new ApiError(403, "Forbidden");
+  }
+
+  const MAX_ATTEMPTS = 10;
+  const INTERVAL_MS = 1500;
+
+  // Step 2: Poll only status
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const fresh = await prisma.payment.findUnique({
+      where: { id: payment.id },
+      select: { status: true },
+    });
+
+    if (fresh?.status === "SUCCESS") {
+      return { verified: true, orderId: payment.orderId };
+    }
+
+    if (fresh?.status === "FAILED") {
+      throw new ApiError(400, "Payment failed");
+    }
+
+    await new Promise((res) => setTimeout(res, INTERVAL_MS));
+  }
+
+  throw new ApiError(
+    408,
+    "Payment confirmation timed out. Check your orders page."
+  );
 };
 
 const verifyWebhookSignature = (body: string, signature: string) => {
+  
   const expected = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
     .update(body)

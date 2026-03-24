@@ -23,27 +23,6 @@ export const verifyPayment = catchAsyncHandler(
   },
 );
 
-// Poll order status
-export const getOrderStatus = catchAsyncHandler(
-  async (req: AuthRequest, res: Response) => {
-    if (!req.user) throw new ApiError(401, "Not authenticated");
-
-    const orderId = parseInt(req.params.orderId);
-    const order = await prisma.order.findUnique({
-      where: { id: orderId, userId: req.user.id },
-      include: { payment: true },
-    });
-
-    if (!order) throw new ApiError(404, "Order not found");
-
-    return sendResponse(res, 200, "Order status", {
-      orderId: order.id,
-      orderStatus: order.status,
-      paymentStatus: order.payment?.status,
-    });
-  },
-);
-
 // Razorpay Webhook
 export const razorpayWebhook = catchAsyncHandler(
   async (req: Request, res: Response) => {

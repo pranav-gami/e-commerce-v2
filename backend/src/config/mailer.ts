@@ -431,7 +431,7 @@ export const sendOrderCancelledRefundEmail = async ({
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: `💸 Order Cancelled & Refund Initiated #${orderId} — Shop.in`,
+    subject: ` Order Cancelled & Refund Initiated #${orderId} — Shop.in`,
     html: `
     <!DOCTYPE html>
     <html>
@@ -447,7 +447,7 @@ export const sendOrderCancelledRefundEmail = async ({
 
           <!-- Banner -->
           <div style="background:#eff6ff;border-bottom:2px solid #3b82f6;padding:20px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:700;color:#1d4ed8;">💸 Refund Initiated</p>
+            <p style="margin:0;font-size:20px;font-weight:700;color:#1d4ed8;">Refund Initiated</p>
             <p style="margin:6px 0 0;color:#60a5fa;font-size:14px;">Your order is cancelled and money is on its way back!</p>
           </div>
 

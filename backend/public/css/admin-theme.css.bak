@@ -3,6 +3,8 @@
    Primary: #e94560 | Light Sidebar | Client-Ready Polish
    ============================================================ */
 
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
+
 :root {
   --shopin-primary: #e94560;
   --shopin-primary-hover: #c73652;
@@ -24,8 +26,8 @@
   /* Bootstrap overrides */
   --bs-primary: #e94560;
   --bs-primary-rgb: 233, 69, 96;
-  --bs-success: #1a9e6e;
-  --bs-success-rgb: 26, 158, 110;
+  --bs-success: #2ecc71;
+  --bs-success-rgb: 46, 204, 113;
   --bs-link-color: #e94560;
   --bs-link-hover-color: #c73652;
   --bs-focus-ring-color: rgba(233, 69, 96, 0.25);
@@ -52,8 +54,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: "Outfit", sans-serif !important;
 }
 
 /* ═══════════════════════════════════════
@@ -359,7 +360,7 @@ h6 {
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #1a9e6e 0%, #157a55 100%) !important;
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
   border: none !important;
   color: #ffffff !important;
   border-radius: 50px !important;
@@ -369,15 +370,15 @@ h6 {
 .btn-success:hover,
 .btn-success:focus,
 .btn-success:active {
-  background: linear-gradient(135deg, #157a55 0%, #105e41 100%) !important;
+  background: linear-gradient(135deg, #27ae60 0%, #1e9651 100%) !important;
   color: #ffffff !important;
   transform: translateY(-1px) !important;
 }
 
 .btn-outline-success:hover,
 .btn-outline-success:focus {
-  background-color: #1a9e6e !important;
-  border-color: #1a9e6e !important;
+  background-color: #2ecc71 !important;
+  border-color: #2ecc71 !important;
   color: #ffffff !important;
 }
 
@@ -652,42 +653,4 @@ a:hover {
 ═══════════════════════════════════════ */
 .separator {
   border-color: #eef0f4 !important;
-}
-
-/* Login page background */
-#kt_app_body[data-kt-app-layout="auth"] {
-  background: linear-gradient(135deg, #1a1a2e, #0f3460) !important;
-}
-
-/* Login form wrapper */
-#kt_app_root .flex-lg-row-fluid.w-lg-50.p-10 {
-  background-color: #ffffff !important;
-  border-radius: 20px !important;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Input fields */
-#kt_app_root input.form-control {
-  border-radius: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-  padding: 0.75rem 1rem !important;
-  color: #1a1a2e !important;
-}
-
-/* Submit button */
-#kt_app_root button.btn-primary {
-  background: linear-gradient(135deg, #e94560 0%, #c73652 100%) !important;
-  border-radius: 50px !important;
-  padding: 0.5rem 1.5rem !important;
-}
-
-/* Aside panel (right image + text) */
-#kt_app_root .bgi-size-cover {
-  background-image: url("/assets/media/misc/auth-image-dark.png") !important;
-}
-
-/* Override login page right-side background */
-.d-flex.flex-lg-row-fluid.w-lg-50.order-1.order-lg-2 {
-  background-color: var(--shopin-dark) !important; /* primary theme color */
-  background-image: none !important; /* remove existing image if needed */
 }

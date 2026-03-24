@@ -52,6 +52,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "razorpay": "^2.9.6",
+    "serve-favicon": "^2.5.1",
     "winston": "^3.19.0"
   },
   "devDependencies": {
@@ -72,6 +73,7 @@
     "@types/nodemailer": "^6.4.23",
     "@types/passport": "^1.0.17",
     "@types/passport-local": "^1.0.38",
+    "@types/serve-favicon": "^2.5.7",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "eslint": "^9.34.0",

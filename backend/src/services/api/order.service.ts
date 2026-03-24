@@ -65,36 +65,63 @@ export const placeOrder = async (userId: number) => {
   return order;
 };
 
+// export const getOrders = async (userId: number) => {
+//   const orders = await prisma.order.findMany({
+//     where: { userId },
+//     include: { items: { include: { product: true } } },
+//     orderBy: { createdAt: "desc" },
+//   });
+//   return orders;
+// };
+
 export const getOrders = async (userId: number) => {
   const orders = await prisma.order.findMany({
     where: { userId },
-    include: { items: { include: { product: true } } },
+    include: {
+      items: {
+        include: { product: true },
+      },
+      payment: {
+        select: {
+          status: true,
+          refundedAmount: true,
+          razorpayPaymentId: true,
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
+
   return orders;
 };
 
-export const getOrderById = async (id: number, userId: number) => {
-  const order = await prisma.order.findFirst({
-    where: { id, userId },
-    include: { items: { include: { product: true } } },
-  });
+// export const getOrderById = async (id: number, userId: number) => {
+//   const order = await prisma.order.findFirst({
+//     where: { id, userId },
+//     include: { items: { include: { product: true } } },
+//   });
 
-  if (!order) throw new ApiError(404, "Order not found");
+//   if (!order) throw new ApiError(404, "Order not found");
 
-  return order;
-};
+//   return order;
+// };
 
 // export const cancelOrder = async (id: number, userId: number) => {
-//   const order = await prisma.order.findFirst({ where: { id, userId } });
+//   const order = await prisma.order.findFirst({
+//     where: { id, userId },
+//     include: {
+//       items: true,
+//       payment: true,
+//       user: true,
+//     },
+//   });
 
 //   if (!order) throw new ApiError(404, "Order not found");
 
 //   if (order.status === OrderStatus.CANCELLED) {
-//     throw new ApiError(400, "Order is already cancelled");
+//     throw new ApiError(400, "Order is already cancelled or refunded");
 //   }
 
-//   // ✅ Fix: cast to OrderStatus[]
 //   const cancellableStatuses: OrderStatus[] = [
 //     OrderStatus.PENDING,
 //     OrderStatus.CONFIRMED,
@@ -107,151 +134,164 @@ export const getOrderById = async (id: number, userId: number) => {
 //     );
 //   }
 
-//   const cancelledOrder = await prisma.$transaction(async (tx) => {
-//     const items = await tx.orderItem.findMany({ where: { orderId: id } });
+//   const isPaid =
+//     order.payment?.status === PaymentStatus.SUCCESS &&
+//     order.payment?.razorpayPaymentId;
 
-//     for (const item of items) {
-//       await tx.product.update({
-//         where: { id: item.productId },
-//         data: { stock: { increment: item.quantity } },
+//   if (isPaid && order.payment?.razorpayPaymentId) {
+//     // ✅ Paid order → REFUNDED status (not CANCELLED)
+//     await prisma.$transaction(async (tx) => {
+//       // Restore stock
+//       const items = await tx.orderItem.findMany({ where: { orderId: id } });
+//       for (const item of items) {
+//         await tx.product.update({
+//           where: { id: item.productId },
+//           data: { stock: { increment: item.quantity } },
+//         });
+//       }
+
+//       // ✅ Set order to REFUNDED (not CANCELLED)
+//       await tx.order.update({
+//         where: { id },
+//         data: { status: OrderStatus.CANCELLED, updatedAt: new Date() },
+//       });
+
+//       // ✅ Set payment to REFUNDED
+//       await tx.payment.update({
+//         where: { id: order.payment!.id },
+//         data: { status: PaymentStatus.REFUNDED, updatedAt: new Date() },
+//       });
+//     });
+
+//     // Call Razorpay refund API
+//     try {
+//       await razorpay.payments.refund(order.payment.razorpayPaymentId, {
+//         amount: Math.round(order.payment.amount * 100),
+//         notes: {
+//           reason: "Order cancelled by customer",
+//           orderId: String(id),
+//         },
+//       });
+//     } catch (err) {
+//       console.error("Razorpay refund API error:", err);
+//       // DB already updated — refund will be handled manually
+//     }
+
+//     // Send refund email
+//     if (order.user?.email) {
+//       await sendOrderCancelledRefundEmail({
+//         to: order.user.email,
+//         customerName: order.user.name || "Customer",
+//         orderId: id,
+//         amount: order.payment.amount,
 //       });
 //     }
 
-//     return await tx.order.update({
-//       where: { id },
-//       data: { status: OrderStatus.CANCELLED, updatedAt: new Date() },
-//       include: { items: true },
-//     });
-//   });
+//     return {
+//       success: true,
+//       orderId: id,
+//       status: "CANCELLED",
+//       message: "Order cancelled and refund initiated successfully",
+//       refunded: true,
+//     };
+//   } else {
+//     // ✅ Not paid → CANCELLED status
+//     await prisma.$transaction(async (tx) => {
+//       // Restore stock
+//       const items = await tx.orderItem.findMany({ where: { orderId: id } });
+//       for (const item of items) {
+//         await tx.product.update({
+//           where: { id: item.productId },
+//           data: { stock: { increment: item.quantity } },
+//         });
+//       }
 
-//   return cancelledOrder;
+//       // ✅ Set order to CANCELLED
+//       await tx.order.update({
+//         where: { id },
+//         data: { status: OrderStatus.CANCELLED, updatedAt: new Date() },
+//       });
+//     });
+
+//     // Send cancel email
+//     if (order.user?.email) {
+//       await sendOrderCancelledEmail({
+//         to: order.user.email,
+//         customerName: order.user.name || "Customer",
+//         orderId: id,
+//       });
+//     }
+
+//     return {
+//       success: true,
+//       orderId: id,
+//       status: "CANCELLED",
+//       message: "Order cancelled successfully",
+//       refunded: false,
+//     };
+//   }
 // };
 
-export const cancelOrder = async (id: number, userId: number) => {
+export const getOrderById = async (id: number, userId: number) => {
   const order = await prisma.order.findFirst({
     where: { id, userId },
     include: {
-      items: true,
-      payment: true,
-      user: true,
+      items: { include: { product: true } },
+      payment: {
+        select: {
+          status: true,
+          refundedAmount: true,
+        },
+      },
     },
   });
 
   if (!order) throw new ApiError(404, "Order not found");
 
+  return order;
+};
+
+export const cancelOrder = async (id: number, userId: number) => {
+  const order = await prisma.order.findFirst({
+    where: { id, userId },
+    include: { payment: true, user: true, items: true },
+  });
+
+  if (!order) throw new ApiError(404, "Order not found");
+
   if (
-    order.status === OrderStatus.CANCELLED ||
-    order.status === OrderStatus.REFUNDED
+    order.status === "CANCELLED" ||
+    !["PENDING", "CONFIRMED"].includes(order.status)
   ) {
-    throw new ApiError(400, "Order is already cancelled or refunded");
+    throw new ApiError(400, "Order cannot be cancelled");
   }
 
-  const cancellableStatuses: OrderStatus[] = [
-    OrderStatus.PENDING,
-    OrderStatus.CONFIRMED,
-  ];
-
-  if (!cancellableStatuses.includes(order.status)) {
-    throw new ApiError(
-      400,
-      `Order cannot be cancelled. Current status: ${order.status}`,
-    );
-  }
-
-  const isPaid =
-    order.payment?.status === PaymentStatus.SUCCESS &&
-    order.payment?.razorpayPaymentId;
-
-  if (isPaid && order.payment?.razorpayPaymentId) {
-    // ✅ Paid order → REFUNDED status (not CANCELLED)
-    await prisma.$transaction(async (tx) => {
-      // Restore stock
-      const items = await tx.orderItem.findMany({ where: { orderId: id } });
-      for (const item of items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        });
-      }
-
-      // ✅ Set order to REFUNDED (not CANCELLED)
-      await tx.order.update({
-        where: { id },
-        data: { status: OrderStatus.REFUNDED, updatedAt: new Date() },
-      });
-
-      // ✅ Set payment to REFUNDED
-      await tx.payment.update({
-        where: { id: order.payment!.id },
-        data: { status: PaymentStatus.REFUNDED, updatedAt: new Date() },
-      });
-    });
-
-    // Call Razorpay refund API
+  if (order.payment?.status === "SUCCESS" && order.payment.razorpayPaymentId) {
+    // Request refund from Razorpay
     try {
       await razorpay.payments.refund(order.payment.razorpayPaymentId, {
         amount: Math.round(order.payment.amount * 100),
-        notes: {
-          reason: "Order cancelled by customer",
-          orderId: String(id),
-        },
+        notes: { orderId: String(id), reason: "Customer cancelled" },
       });
-    } catch (err) {
-      console.error("Razorpay refund API error:", err);
-      // DB already updated — refund will be handled manually
+      console.log(`Refund requested for order ${id}`);
+    } catch (err: any) {
+      console.error("Razorpay refund error:", err?.error?.description || err);
     }
-
-    // Send refund email
-    if (order.user?.email) {
-      await sendOrderCancelledRefundEmail({
-        to: order.user.email,
-        customerName: order.user.name || "Customer",
-        orderId: id,
-        amount: order.payment.amount,
-      });
-    }
-
-    return {
-      success: true,
-      orderId: id,
-      status: "REFUNDED",
-      message: "Order cancelled and refund initiated successfully",
-      refunded: true,
-    };
   } else {
-    // ✅ Not paid → CANCELLED status
-    await prisma.$transaction(async (tx) => {
-      // Restore stock
-      const items = await tx.orderItem.findMany({ where: { orderId: id } });
-      for (const item of items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        });
-      }
-
-      // ✅ Set order to CANCELLED
-      await tx.order.update({
-        where: { id },
-        data: { status: OrderStatus.CANCELLED, updatedAt: new Date() },
-      });
-    });
-
-    // Send cancel email
+    // For unpaid orders, optionally notify user
     if (order.user?.email) {
-      await sendOrderCancelledEmail({
+      sendOrderCancelledEmail({
         to: order.user.email,
         customerName: order.user.name || "Customer",
         orderId: id,
-      });
+      }).catch(console.error);
     }
-
-    return {
-      success: true,
-      orderId: id,
-      status: "CANCELLED",
-      message: "Order cancelled successfully",
-      refunded: false,
-    };
   }
+
+  return {
+    success: true,
+    message:
+      "Cancellation requested. Final status will be updated once refund is processed.",
+    orderId: id,
+  };
 };

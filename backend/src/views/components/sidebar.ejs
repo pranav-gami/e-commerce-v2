@@ -13,9 +13,21 @@
   <!--begin::Logo-->
   <div class="app-sidebar-logo px-6">
     <a href="/admin">
-      <div class="shopin-logo">
-        <span class="shopin-logo-shop">Shop</span>
-        <span class="shopin-logo-in">.in</span>
+      <div class="d-flex align-items-center gap-4">
+        <span>
+          <img
+            alt="Logo"
+            src="/assets/media/logos/logo.ico"
+            class="h-40px app-sidebar-logo-default" />
+          <img
+            alt="Logo"
+            src="/assets/media/logos/logo.ico"
+            class="h-35px app-sidebar-logo-minimize"
+        /></span>
+
+        <h1 class="text-[--shopin-dark] m-0 app-sidebar-logo-default">
+          Myntra
+        </h1>
       </div>
     </a>
     <!--begin::Sidebar toggle-->
@@ -298,6 +310,68 @@
           </a>
         </div>
         <!--end:Menu item Orders-->
+
+        <!--begin:Menu item Payments-->
+        <div class="menu-item">
+          <a
+            class="menu-link <%= typeof page !== 'undefined' && page === 'payments' ? 'active' : ''; %>"
+            href="/admin/payments"
+          >
+            <span class="menu-icon svg-icon svg-icon-1">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  opacity="0.3"
+                  d="M2 4H22C22.6 4 23 4.4 23 5V19C23 19.6 22.6 20 22 20H2C1.4 20 1 19.6 1 19V5C1 4.4 1.4 4 2 4Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M1 9H23M6 14H10M14 14H18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <span class="menu-title">Payments</span>
+          </a>
+        </div>
+        <!--end:Menu item Payments-->
+
+        <!--begin:Menu item Hero Slides-->
+        <div class="menu-item">
+          <a
+            class="menu-link <%= typeof page !== 'undefined' && page === 'hero' ? 'active' : ''; %>"
+            href="/admin/hero"
+          >
+            <span class="menu-icon svg-icon svg-icon-1">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  opacity="0.3"
+                  d="M2 3H22C22.6 3 23 3.4 23 4V20C23 20.6 22.6 21 22 21H2C1.4 21 1 20.6 1 20V4C1 3.4 1.4 3 2 3Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M21 12L15 7V11H3V13H15V17L21 12Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            <span class="menu-title">Hero Slides</span>
+          </a>
+        </div>
+        <!--end:Menu item Hero Slides-->
 
         <!-- End Sidebar -->
       </div>

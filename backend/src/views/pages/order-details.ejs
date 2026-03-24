@@ -18,8 +18,7 @@
           <li class="breadcrumb-item">
             <span class="bullet bg-gray-400 w-5px h-2px"></span>
           </li>
-          <li class="breadcrumb-item text-muted">Order #<%= orderDetails?.id || '' %>
-          </li>
+          <li class="breadcrumb-item text-muted">Order #<%= orderDetails?.id || '' %></li>
         </ul>
       </div>
     </div>
@@ -32,24 +31,27 @@
       <div class="card mb-5 mb-xl-10">
         <div class="card-header cursor-pointer">
           <div class="card-title m-0 d-flex align-items-center gap-4">
-            <h3 class="fw-bold m-0">Order #<%= orderDetails?.id %>
-            </h3>
-            <% const statusMap={ PENDING: { cls: 'badge-light-warning' , label: 'Pending' }, CONFIRMED: {
-              cls: 'badge-light-info' , label: 'Confirmed' }, SHIPPED: { cls: 'badge-light-primary' , label: 'Shipped'
-              }, DELIVERED: { cls: 'badge-light-success' , label: 'Delivered' }, CANCELLED: { cls: 'badge-light-danger'
-              , label: 'Cancelled' }, }; const s=statusMap[orderDetails?.status] || { cls: 'badge-light-secondary' ,
-              label: orderDetails?.status }; %>
-              <span class="badge <%= s.cls %> fs-7">
-                <%= s.label %>
-              </span>
+            <h3 class="fw-bold m-0">Order #<%= orderDetails?.id %></h3>
+            <%
+              const statusMap = {
+                PENDING:   { cls: 'badge-light-warning',  label: 'Pending'   },
+                CONFIRMED: { cls: 'badge-light-info',     label: 'Confirmed' },
+                SHIPPED:   { cls: 'badge-light-primary',  label: 'Shipped'   },
+                DELIVERED: { cls: 'badge-light-success',  label: 'Delivered' },
+                CANCELLED: { cls: 'badge-light-danger',   label: 'Cancelled' },
+              };
+              const s = statusMap[orderDetails?.status] || { cls: 'badge-light-secondary', label: orderDetails?.status };
+            %>
+            <span class="badge <%= s.cls %> fs-7"><%= s.label %></span>
           </div>
           <div class="card-toolbar">
-            <% if (!['DELIVERED', 'CANCELLED' ].includes(orderDetails?.status)) { %>
-              <button class="btn btn-sm btn-primary" id="open-update-status-btn" data-id="<%= orderDetails?.id %>"
+            <% if (!['DELIVERED', 'CANCELLED'].includes(orderDetails?.status)) { %>
+              <button class="btn btn-sm btn-primary" id="open-update-status-btn"
+                data-id="<%= orderDetails?.id %>"
                 data-status="<%= orderDetails?.status %>">
                 Update Status
               </button>
-              <% } %>
+            <% } %>
           </div>
         </div>
 
@@ -63,9 +65,7 @@
           <div class="row mb-7">
             <label class="col-lg-4 fw-semibold text-muted">Status</label>
             <div class="col-lg-8">
-              <span class="badge <%= s.cls %>">
-                <%= s.label %>
-              </span>
+              <span class="badge <%= s.cls %>"><%= s.label %></span>
             </div>
           </div>
           <div class="row mb-7">
@@ -83,15 +83,15 @@
             </div>
           </div>
           <% if (orderDetails?.updatedAt) { %>
-            <div class="row mb-7">
-              <label class="col-lg-4 fw-semibold text-muted">Last Updated</label>
-              <div class="col-lg-8">
-                <span class="fw-bold fs-6 text-gray-800">
-                  <%= new Date(orderDetails.updatedAt).toLocaleString() %>
-                </span>
-              </div>
+          <div class="row mb-7">
+            <label class="col-lg-4 fw-semibold text-muted">Last Updated</label>
+            <div class="col-lg-8">
+              <span class="fw-bold fs-6 text-gray-800">
+                <%= new Date(orderDetails.updatedAt).toLocaleString() %>
+              </span>
             </div>
-            <% } %>
+          </div>
+          <% } %>
         </div>
       </div>
 
@@ -114,23 +114,11 @@
           <div class="row mb-7">
             <label class="col-lg-4 fw-semibold text-muted">Email</label>
             <div class="col-lg-8">
-              <span class="fw-bold fs-6 text-gray-800">
-                <%= orderDetails?.user?.email || 'N/A' %>
-              </span>
-            </div>
-          </div>
-
-          <div class="row mb-7">
-            <label class="col-lg-4 fw-semibold text-muted">Phone</label>
-            <div class="col-lg-8">
-              <span class="fw-bold fs-6 text-gray-800">
-                <%= orderDetails?.user?.phone || 'N/A' %>
-              </span>
+              <span class="fw-bold fs-6 text-gray-800"><%= orderDetails?.user?.email || 'N/A' %></span>
             </div>
           </div>
         </div>
       </div>
-      
 
       <!-- Order Items Card -->
       <div class="card mb-5 mb-xl-10">
@@ -151,33 +139,26 @@
                 </tr>
               </thead>
               <tbody class="fw-semibold text-gray-600">
-                <% if (orderDetails?.items && orderDetails.items.length> 0) { %>
+                <% if (orderDetails?.items && orderDetails.items.length > 0) { %>
                   <% orderDetails.items.forEach(function(item) { %>
                     <tr>
                       <td>
-                        <span class="text-gray-800 fw-bold">
-                          <%= item?.product?.name || 'N/A' %>
-                        </span>
+                        <span class="text-gray-800 fw-bold"><%= item?.product?.name || 'N/A' %></span>
                       </td>
-                      <td>₹<%= item?.price?.toFixed(2) %>
-                      </td>
-                      <td><span class="badge badge-light-primary">
-                          <%= item?.quantity %>
-                        </span></td>
-                      <td class="text-end fw-bold">₹<%= (item?.price * item?.quantity).toFixed(2) %>
-                      </td>
+                      <td>₹<%= item?.price?.toFixed(2) %></td>
+                      <td><span class="badge badge-light-primary"><%= item?.quantity %></span></td>
+                      <td class="text-end fw-bold">₹<%= (item?.price * item?.quantity).toFixed(2) %></td>
                     </tr>
-                    <% }) %>
-                      <tr class="border-top border-top-dashed">
-                        <td colspan="3" class="text-end fw-bold text-gray-800 fs-5">Grand Total</td>
-                        <td class="text-end fw-bolder text-gray-900 fs-5">₹<%= orderDetails?.total?.toFixed(2) %>
-                        </td>
-                      </tr>
-                      <% } else { %>
-                        <tr>
-                          <td colspan="4" class="text-center text-muted">No items found</td>
-                        </tr>
-                        <% } %>
+                  <% }) %>
+                  <tr class="border-top border-top-dashed">
+                    <td colspan="3" class="text-end fw-bold text-gray-800 fs-5">Grand Total</td>
+                    <td class="text-end fw-bolder text-gray-900 fs-5">₹<%= orderDetails?.total?.toFixed(2) %></td>
+                  </tr>
+                <% } else { %>
+                  <tr>
+                    <td colspan="4" class="text-center text-muted">No items found</td>
+                  </tr>
+                <% } %>
               </tbody>
             </table>
           </div>

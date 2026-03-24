@@ -7,6 +7,8 @@ import routes from "./routes";
 import cookieParser from "cookie-parser";
 import prisma from "./config/prisma";
 import { Request, Response, NextFunction } from "express";
+import favicon from "serve-favicon";
+
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -30,6 +32,8 @@ app.use(expressLayouts);
 app.set("layout", "layouts/main");
 
 app.use(express.static(path.join(process.cwd(), "public")));
+
+app.use(favicon(path.join(process.cwd(), "public/assets/media/logos/log.svg")));
 app.use(morgan("dev"));
 app.use(httpLogger);
 

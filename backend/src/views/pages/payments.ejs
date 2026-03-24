@@ -1,0 +1,391 @@
+<div class="d-flex flex-column flex-column-fluid">
+  <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <div class="app-container container-xxl d-flex flex-stack">
+      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+          Payments
+        </h1>
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin" class="text-muted text-hover-primary">Home</a>
+          </li>
+          <li class="breadcrumb-item">
+            <span class="bullet bg-gray-400 w-5px h-2px"></span>
+          </li>
+          <li class="breadcrumb-item text-muted">Payments</li>
+        </ul>
+      </div>
+
+      <!-- Summary badges -->
+      <div class="d-flex gap-3 flex-wrap">
+        <div class="bg-white border rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
+          <span class="bullet bullet-dot bg-success h-8px w-8px"></span>
+          <span class="text-gray-700 fw-semibold fs-7">Total Collected:</span>
+          <span class="text-dark fw-bold fs-7" id="total-collected">₹0</span>
+        </div>
+        <div class="bg-white border rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
+          <span class="bullet bullet-dot bg-warning h-8px w-8px"></span>
+          <span class="text-gray-700 fw-semibold fs-7">Pending:</span>
+          <span class="text-dark fw-bold fs-7" id="total-pending-count">0</span>
+        </div>
+        <div class="bg-white border rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
+          <span class="bullet bullet-dot bg-danger h-8px w-8px"></span>
+          <span class="text-gray-700 fw-semibold fs-7">Failed:</span>
+          <span class="text-dark fw-bold fs-7" id="total-failed-count">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="kt_app_content" class="app-content flex-column-fluid">
+    <div id="kt_app_content_container" class="app-container container-xxl">
+
+      <!-- Stat Cards Row -->
+      <div class="row g-4 mb-6">
+        <div class="col-6 col-xl-3">
+          <div class="card border-0 h-100" style="background: linear-gradient(135deg, #e94560 0%, #c73652 100%);">
+            <div class="card-body p-5">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-white opacity-75 fw-semibold fs-7">Total Revenue</span>
+                <div class="w-35px h-35px bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H9l3-3 3 3h-2v4z" fill="white"/></svg>
+                </div>
+              </div>
+              <div class="text-white fw-bold fs-1" id="stat-revenue">₹0</div>
+              <div class="text-white opacity-60 fs-8 mt-1">Successful payments</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-xl-3">
+          <div class="card border-0 h-100" style="background: linear-gradient(135deg, #1a9e6e 0%, #157a55 100%);">
+            <div class="card-body p-5">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-white opacity-75 fw-semibold fs-7">Successful</span>
+                <div class="w-35px h-35px bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="white"/></svg>
+                </div>
+              </div>
+              <div class="text-white fw-bold fs-1" id="stat-success">0</div>
+              <div class="text-white opacity-60 fs-8 mt-1">Captured payments</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-xl-3">
+          <div class="card border-0 h-100" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            <div class="card-body p-5">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-white opacity-75 fw-semibold fs-7">Pending</span>
+                <div class="w-35px h-35px bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 5h-2v6l5.25 3.15.75-1.23-4.5-2.67V7z" fill="white"/></svg>
+                </div>
+              </div>
+              <div class="text-white fw-bold fs-1" id="stat-pending">0</div>
+              <div class="text-white opacity-60 fs-8 mt-1">Awaiting capture</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-xl-3">
+          <div class="card border-0 h-100" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+            <div class="card-body p-5">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-white opacity-75 fw-semibold fs-7">Failed / Refunded</span>
+                <div class="w-35px h-35px bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="white"/></svg>
+                </div>
+              </div>
+              <div class="text-white fw-bold fs-1" id="stat-failed">0</div>
+              <div class="text-white opacity-60 fs-8 mt-1">Failed or refunded</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments Table -->
+      <div class="card">
+        <div class="card-header border-0 pt-6">
+          <div class="card-title">
+            <div class="d-flex align-items-center position-relative my-1">
+              <span class="svg-icon svg-icon-1 position-absolute ms-6">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="currentColor"/>
+                  <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="currentColor"/>
+                </svg>
+              </span>
+              <input type="text" id="payment-search" class="form-control form-control-solid w-250px ps-13" placeholder="Search payments..." />
+            </div>
+          </div>
+
+          <div class="card-toolbar">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <select id="payment-status-filter" class="form-select form-select-solid w-150px">
+                <option value="">All Status</option>
+                <option value="SUCCESS">Success</option>
+                <option value="PENDING">Pending</option>
+                <option value="FAILED">Failed</option>
+                <option value="REFUNDED">Refunded</option>
+                <option value="PARTIALLY_REFUNDED">Partial Refund</option>
+              </select>
+              <button class="btn btn-light-primary btn-sm" id="export-payments-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="me-1"><path d="M12 16l4-5h-3V4h-2v7H8l4 5z" fill="currentColor"/><path d="M20 18H4v-7H2v7c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-7h-2v7z" fill="currentColor"/></svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body py-4">
+          <div class="table-responsive">
+            <table class="table align-middle table-row-dashed fs-6 gy-5" id="payments-table">
+              <thead>
+                <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                  <th class="min-w-100px">Payment ID</th>
+                  <th class="min-w-100px">Order ID</th>
+                  <th class="min-w-150px">Customer</th>
+                  <th class="min-w-100px">Amount</th>
+                  <th class="min-w-100px">Status</th>
+                  <th class="min-w-120px">Razorpay ID</th>
+                  <th class="min-w-100px">Date</th>
+                  <th class="min-w-80px">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-600 fw-semibold" id="payments-tbody">
+                <tr>
+                  <td colspan="8" class="text-center py-10">
+                    <div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+            <div class="text-muted fs-7" id="payments-pagination-info">Showing 0 results</div>
+            <div class="d-flex gap-2" id="payments-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Payment Detail Modal -->
+<div class="modal fade" id="paymentDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Payment Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-6" id="payment-detail-body">
+        <div class="text-center py-8">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+  const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  let allPayments = [];
+  let filtered = [];
+  let currentPage = 1;
+  const perPage = 10;
+
+  const statusBadge = (s) => {
+    const map = {
+      SUCCESS: 'badge-light-success',
+      PENDING: 'badge-light-warning',
+      FAILED: 'badge-light-danger',
+      REFUNDED: 'badge-light-info',
+      PARTIALLY_REFUNDED: 'badge-light-info',
+    };
+    const labels = { PARTIALLY_REFUNDED: 'Partial Refund' };
+    return `<span class="badge ${map[s] || 'badge-light-secondary'}">${labels[s] || s}</span>`;
+  };
+
+  async function loadPayments() {
+    try {
+      const res = await fetch('/admin/payments/list', { credentials: 'same-origin' });
+      const json = await res.json();
+      allPayments = json.data || [];
+      updateStats();
+      applyFilter();
+    } catch (e) {
+      document.getElementById('payments-tbody').innerHTML =
+        '<tr><td colspan="8" class="text-center text-danger py-8">Failed to load payments</td></tr>';
+    }
+  }
+
+  function updateStats() {
+    const success = allPayments.filter(p => p.status === 'SUCCESS');
+    const pending = allPayments.filter(p => p.status === 'PENDING');
+    const failed = allPayments.filter(p => ['FAILED', 'REFUNDED', 'PARTIALLY_REFUNDED'].includes(p.status));
+    const revenue = success.reduce((s, p) => s + (p.amount || 0), 0);
+
+    document.getElementById('stat-revenue').textContent = fmt(revenue);
+    document.getElementById('stat-success').textContent = success.length;
+    document.getElementById('stat-pending').textContent = pending.length;
+    document.getElementById('stat-failed').textContent = failed.length;
+    document.getElementById('total-collected').textContent = fmt(revenue);
+    document.getElementById('total-pending-count').textContent = pending.length;
+    document.getElementById('total-failed-count').textContent = failed.length;
+  }
+
+  function applyFilter() {
+    const search = document.getElementById('payment-search').value.toLowerCase();
+    const status = document.getElementById('payment-status-filter').value;
+    filtered = allPayments.filter(p => {
+      const matchStatus = !status || p.status === status;
+      const matchSearch = !search ||
+        String(p.id).includes(search) ||
+        String(p.orderId).includes(search) ||
+        (p.razorpayPaymentId || '').toLowerCase().includes(search) ||
+        (p.razorpayOrderId || '').toLowerCase().includes(search) ||
+        (p.order?.user?.name || '').toLowerCase().includes(search) ||
+        (p.order?.user?.email || '').toLowerCase().includes(search);
+      return matchStatus && matchSearch;
+    });
+    currentPage = 1;
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('payments-tbody');
+    const start = (currentPage - 1) * perPage;
+    const page = filtered.slice(start, start + perPage);
+
+    if (!page.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-10">No payments found</td></tr>';
+      document.getElementById('payments-pagination-info').textContent = 'No results';
+      document.getElementById('payments-pagination').innerHTML = '';
+      return;
+    }
+
+    tbody.innerHTML = page.map(p => {
+      const user = p.order?.user;
+      const avatar = user?.name ? user.name.charAt(0).toUpperCase() : '?';
+      return `
+        <tr>
+          <td><span class="text-dark fw-semibold">#${p.id}</span></td>
+          <td><a href="/admin/orders/${p.orderId}" class="text-primary fw-semibold">#${p.orderId}</a></td>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <div class="symbol symbol-35px">
+                <div class="symbol-label bg-light-primary text-primary fw-bold fs-6">${avatar}</div>
+              </div>
+              <div>
+                <div class="text-dark fw-semibold fs-7">${user?.name || '—'}</div>
+                <div class="text-muted fs-8">${user?.email || '—'}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="text-dark fw-bold">${fmt(p.amount)}</span>${p.refundedAmount ? `<br><span class="text-danger fs-8">Refunded: ${fmt(p.refundedAmount)}</span>` : ''}</td>
+          <td>${statusBadge(p.status)}</td>
+          <td>
+            <span class="text-muted fs-8 font-monospace">${p.razorpayPaymentId ? p.razorpayPaymentId.substring(0, 14) + '...' : '—'}</span>
+          </td>
+          <td><span class="text-muted fs-7">${fmtDate(p.createdAt)}</span></td>
+          <td>
+            <button class="btn btn-icon btn-light btn-sm" onclick="viewPayment(${p.id})" title="View Details">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/></svg>
+            </button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const total = filtered.length;
+    const pages = Math.ceil(total / perPage);
+    const start = (currentPage - 1) * perPage + 1;
+    const end = Math.min(currentPage * perPage, total);
+    document.getElementById('payments-pagination-info').textContent = `Showing ${start}–${end} of ${total} payments`;
+
+    let html = '';
+    if (currentPage > 1) html += `<button class="btn btn-sm btn-light" onclick="goPage(${currentPage - 1})">‹</button>`;
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(pages, currentPage + 2); i++) {
+      html += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-light'}" onclick="goPage(${i})">${i}</button>`;
+    }
+    if (currentPage < pages) html += `<button class="btn btn-sm btn-light" onclick="goPage(${currentPage + 1})">›</button>`;
+    document.getElementById('payments-pagination').innerHTML = html;
+  }
+
+  window.goPage = function(p) { currentPage = p; renderTable(); };
+
+  window.viewPayment = function(id) {
+    const p = allPayments.find(x => x.id === id);
+    if (!p) return;
+    const user = p.order?.user;
+    const modal = new bootstrap.Modal(document.getElementById('paymentDetailModal'));
+    document.getElementById('payment-detail-body').innerHTML = `
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="bg-light rounded p-4">
+            <div class="text-muted fs-8 fw-bold text-uppercase mb-3">Payment Info</div>
+            <table class="table table-borderless table-sm mb-0">
+              <tr><td class="text-muted pe-4 py-1">ID</td><td class="fw-semibold">#${p.id}</td></tr>
+              <tr><td class="text-muted pe-4 py-1">Status</td><td>${statusBadge(p.status)}</td></tr>
+              <tr><td class="text-muted pe-4 py-1">Amount</td><td class="fw-bold text-dark">${new Intl.NumberFormat('en-IN', {style:'currency',currency:'INR'}).format(p.amount)}</td></tr>
+              ${p.refundedAmount ? `<tr><td class="text-muted pe-4 py-1">Refunded</td><td class="text-danger fw-semibold">${new Intl.NumberFormat('en-IN', {style:'currency',currency:'INR'}).format(p.refundedAmount)}</td></tr>` : ''}
+              <tr><td class="text-muted pe-4 py-1">Date</td><td>${fmtDate(p.createdAt)}</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="bg-light rounded p-4">
+            <div class="text-muted fs-8 fw-bold text-uppercase mb-3">Razorpay Info</div>
+            <table class="table table-borderless table-sm mb-0">
+              <tr><td class="text-muted pe-4 py-1">Order ID</td><td class="font-monospace fs-8 text-break">${p.razorpayOrderId || '—'}</td></tr>
+              <tr><td class="text-muted pe-4 py-1">Payment ID</td><td class="font-monospace fs-8 text-break">${p.razorpayPaymentId || '—'}</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="bg-light rounded p-4">
+            <div class="text-muted fs-8 fw-bold text-uppercase mb-3">Customer & Order</div>
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="symbol symbol-45px"><div class="symbol-label bg-light-primary text-primary fw-bold fs-5">${user?.name?.charAt(0)?.toUpperCase() || '?'}</div></div>
+              <div>
+                <div class="fw-bold text-dark">${user?.name || '—'}</div>
+                <div class="text-muted fs-7">${user?.email || '—'}</div>
+              </div>
+            </div>
+            <a href="/admin/orders/${p.orderId}" class="btn btn-light-primary btn-sm">View Order #${p.orderId} →</a>
+          </div>
+        </div>
+      </div>`;
+    modal.show();
+  };
+
+  // Export CSV
+  document.getElementById('export-payments-btn').addEventListener('click', () => {
+    const rows = [['ID','Order ID','Customer','Email','Amount','Status','Razorpay Payment ID','Date']];
+    filtered.forEach(p => {
+      rows.push([p.id, p.orderId, p.order?.user?.name || '', p.order?.user?.email || '', p.amount, p.status, p.razorpayPaymentId || '', new Date(p.createdAt).toLocaleDateString()]);
+    });
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv,' + encodeURIComponent(csv);
+    a.download = 'payments.csv';
+    a.click();
+  });
+
+  document.getElementById('payment-search').addEventListener('input', applyFilter);
+  document.getElementById('payment-status-filter').addEventListener('change', applyFilter);
+
+  loadPayments();
+})();
+</script>

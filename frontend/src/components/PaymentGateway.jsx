@@ -39,9 +39,12 @@ const PaymentGateway = ({ onClose, total }) => {
           try {
             setStatusMessage("Confirming payment...");
 
+            // Send signature along with paymentId & orderId
             const verifyRes = await api.post("/payment/verify", {
               orderId,
               razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
             });
 
             if (verifyRes.data.data.verified) {
@@ -52,6 +55,14 @@ const PaymentGateway = ({ onClose, total }) => {
               navigate("/thank-you");
             }
           } catch (err) {
+            if (err?.response?.status === 408) {
+              setStatusMessage(
+                "Payment received. Verifying... please check orders page.",
+              );
+              navigate("/orders");
+              return;
+            }
+
             setError(err?.response?.data?.message || "Verification failed");
             setIsProcessing(false);
             setStatusMessage("");
@@ -71,6 +82,7 @@ const PaymentGateway = ({ onClose, total }) => {
         setError(res.error?.description || "Payment failed");
         setIsProcessing(false);
         setStatusMessage("");
+        navigate("/orders");
       });
 
       rzp.open();

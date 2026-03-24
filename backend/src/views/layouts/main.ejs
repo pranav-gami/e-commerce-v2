@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/assets/plugins/global/plugins.bundle.css" />
     <link rel="stylesheet" href="/assets/css/style.bundle.css" />
     <link rel="stylesheet" href="/css/admin-theme.css" />
-
+    <link rel="icon" type="image/svg+xml" href="/assets/media/logos/log.svg">
   </head>
 
   <body
@@ -81,6 +81,10 @@
 
     <% if (typeof page !== 'undefined' && page === 'order-details') { %>
       <script src="/js/order-details.js"></script>
+    <% } %>
+
+    <% if (typeof page !== 'undefined' && page === 'payments') { %>
+      <script src="/js/payments.js"></script>
     <% } %>
 
   </body>

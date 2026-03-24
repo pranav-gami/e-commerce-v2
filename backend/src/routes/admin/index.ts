@@ -5,6 +5,7 @@ import subcategoryRoute from "./subcategory.routes";
 import productRoute from "./product.routes";
 import orderRoute from "./order.routes";
 import heroRoute from "./hero.routes";
+import paymentRoute from "./payment.routes";
 
 const modules = [
   { route: "/", router: authRoute },
@@ -13,6 +14,7 @@ const modules = [
   { route: "/products", router: productRoute },
   { route: "/orders", router: orderRoute },
   { route: "/hero", router: heroRoute },
+  { route: "/payments", router: paymentRoute },
 ];
 
 const router = Router();

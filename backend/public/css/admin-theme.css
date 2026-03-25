@@ -1,7 +1,10 @@
 /* ============================================================
-   Shop.in Admin Panel — Premium Theme
-   Primary: #e94560 | Light Sidebar | Client-Ready Polish
+   Shop.in Admin Panel — Fixed Theme
+   Primary: #e94560 | Light Sidebar | Fixed Fonts + Sidebar + Cards
    ============================================================ */
+
+/* ── Google Fonts Import ── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
   --shopin-primary: #e94560;
@@ -12,12 +15,12 @@
   --shopin-dark-secondary: #16213e;
   --shopin-dark-hover: #0f3460;
 
-  /* Sidebar light palette */
+  /* Sidebar */
   --sidebar-bg: #ffffff;
   --sidebar-border: #eef0f4;
   --sidebar-text: #4a5568;
   --sidebar-text-muted: #a0aab8;
-  --sidebar-heading: #c0c8d8;
+  --sidebar-heading: #b0bac8;
   --sidebar-icon: #b0bac8;
   --sidebar-hover-bg: rgba(233, 69, 96, 0.07);
 
@@ -30,12 +33,18 @@
   --bs-link-hover-color: #c73652;
   --bs-focus-ring-color: rgba(233, 69, 96, 0.25);
   --bs-btn-focus-shadow-rgb: 233, 69, 96;
+
+  /* ✅ FIX: Base font size */
+  --base-font-size: 14px;
 }
 
 /* ═══════════════════════════════════════
-   GLOBAL FONT
+   ✅ FIX 1 — GLOBAL FONT & BASE SIZE
 ═══════════════════════════════════════ */
-*,
+html {
+  font-size: var(--base-font-size) !important;
+}
+
 body,
 .app-sidebar,
 .menu-title,
@@ -46,38 +55,38 @@ body,
 input,
 select,
 textarea,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+h1, h2, h3, h4, h5, h6,
+p, span, div, td, th, li, a {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+/* Readable body text */
+body {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: #3d4a5c !important;
 }
 
 /* ═══════════════════════════════════════
-   SIDEBAR — LIGHT & POLISHED
+   ✅ FIX 2 — SIDEBAR
 ═══════════════════════════════════════ */
 .app-sidebar {
   background-color: var(--sidebar-bg) !important;
   border-right: 1px solid var(--sidebar-border) !important;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04) !important;
+  width: 260px !important;
 }
 
 .app-sidebar-logo {
   border-bottom: 1px solid var(--sidebar-border) !important;
   background-color: var(--sidebar-bg) !important;
   padding: 0 1.5rem !important;
-  min-height: 65px !important;
+  min-height: 68px !important;
   display: flex !important;
   align-items: center !important;
 }
 
-.app-sidebar-logo a {
-  text-decoration: none !important;
-}
-
+/* Logo text */
 .shopin-logo {
   display: flex !important;
   align-items: baseline !important;
@@ -85,43 +94,49 @@ h6 {
 }
 
 .shopin-logo-shop {
-  font-family: "Outfit", sans-serif !important;
-  font-size: 1.5rem !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.6rem !important;
   font-weight: 800 !important;
   color: var(--shopin-dark) !important;
   letter-spacing: -0.5px !important;
 }
 
 .shopin-logo-in {
-  font-family: "Outfit", sans-serif !important;
-  font-size: 1rem !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.1rem !important;
   font-weight: 700 !important;
   color: var(--shopin-primary) !important;
 }
 
 .app-sidebar-menu {
   background-color: var(--sidebar-bg) !important;
+  padding: 0.5rem 0 !important;
 }
 
-/* Section headings */
+/* ✅ FIX: Section headings — was 0.65rem (too tiny) */
 .menu-heading {
   color: var(--sidebar-heading) !important;
-  font-size: 0.65rem !important;
+  font-size: 0.72rem !important;
   font-weight: 700 !important;
-  letter-spacing: 2px !important;
+  letter-spacing: 1.8px !important;
   text-transform: uppercase !important;
-  padding-left: 1rem !important;
-  margin-top: 0.5rem !important;
+  padding-left: 1.25rem !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.25rem !important;
 }
 
-/* Menu items */
+/* ✅ FIX: Menu items — properly sized and spaced */
 .menu-item .menu-link {
   color: var(--sidebar-text) !important;
   border-radius: 10px !important;
-  margin: 1px 8px !important;
-  padding: 0.6rem 1rem !important;
+  margin: 2px 10px !important;
+  padding: 0.7rem 1rem !important;
   transition: all 0.18s ease !important;
   font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
 }
 
 .menu-item .menu-link:hover {
@@ -131,13 +146,9 @@ h6 {
 }
 
 .menu-item .menu-link.active {
-  background: linear-gradient(
-    135deg,
-    var(--shopin-primary) 0%,
-    #c73652 100%
-  ) !important;
+  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 16px rgba(233, 69, 96, 0.4) !important;
+  box-shadow: 0 4px 16px rgba(233, 69, 96, 0.35) !important;
   font-weight: 600 !important;
 }
 
@@ -147,6 +158,8 @@ h6 {
 .menu-icon {
   color: var(--sidebar-icon) !important;
   transition: color 0.18s ease !important;
+  width: 20px !important;
+  min-width: 20px !important;
 }
 
 .menu-item .menu-link:hover .menu-icon,
@@ -162,13 +175,15 @@ h6 {
   color: #ffffff !important;
 }
 
+/* ✅ FIX: Menu title font — was inheriting too-small size */
 .menu-title {
   color: inherit !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9rem !important;
   font-weight: 500 !important;
+  line-height: 1.4 !important;
 }
 
-/* Sidebar toggle */
+/* Sidebar toggle button */
 #kt_app_sidebar_toggle {
   background-color: #f8f9fb !important;
   border: 1px solid #e8ecf0 !important;
@@ -187,6 +202,7 @@ h6 {
 .app-sidebar-footer {
   border-top: 1px solid var(--sidebar-border) !important;
   background-color: var(--sidebar-bg) !important;
+  padding: 0.75rem 0 !important;
 }
 
 /* ═══════════════════════════════════════
@@ -195,28 +211,32 @@ h6 {
 .app-header {
   background-color: #ffffff !important;
   border-bottom: 1px solid #eef0f4 !important;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04) !important;
+  min-height: 68px !important;
 }
 
 /* ═══════════════════════════════════════
    PAGE TITLES & BREADCRUMB
 ═══════════════════════════════════════ */
+/* ✅ FIX: Page title — bigger and bolder */
 .page-heading .page-title {
   font-weight: 700 !important;
   color: var(--shopin-dark) !important;
-  font-size: 1.4rem !important;
+  font-size: 1.35rem !important;
   letter-spacing: -0.3px !important;
+  line-height: 1.3 !important;
 }
 
+/* ✅ FIX: Breadcrumb — was 0.82rem, now readable */
 .breadcrumb-item a {
   color: var(--sidebar-text) !important;
   text-decoration: none !important;
-  font-size: 0.82rem !important;
+  font-size: 0.875rem !important;
 }
 
 .breadcrumb-item.active {
   color: var(--shopin-primary) !important;
-  font-size: 0.82rem !important;
+  font-size: 0.875rem !important;
   font-weight: 600 !important;
 }
 
@@ -225,31 +245,36 @@ h6 {
 }
 
 /* ═══════════════════════════════════════
-   CARDS
+   ✅ FIX 3 — CARDS
 ═══════════════════════════════════════ */
 .card {
-  border-radius: 16px !important;
+  border-radius: 14px !important;
   border: 1px solid #eef0f4 !important;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05) !important;
   transition: box-shadow 0.2s ease !important;
+  overflow: hidden !important;
 }
 
 .card:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.09) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
 .card-header {
   border-bottom: 1px solid #eef0f4 !important;
-  border-radius: 16px 16px 0 0 !important;
   background-color: #fafbfc !important;
-  padding: 1.2rem 1.5rem !important;
+  padding: 1.1rem 1.5rem !important;
+  min-height: 60px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
+/* ✅ FIX: Card title — properly visible */
 .card-title {
   font-weight: 700 !important;
   color: var(--shopin-dark) !important;
   font-size: 1rem !important;
   letter-spacing: -0.2px !important;
+  margin-bottom: 0 !important;
 }
 
 .card-body {
@@ -258,46 +283,42 @@ h6 {
 
 .card.bg-primary,
 .bg-primary {
-  background: linear-gradient(
-    135deg,
-    var(--shopin-primary) 0%,
-    #c73652 100%
-  ) !important;
+  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
   border: none !important;
 }
 
 .card.bg-info,
 .bg-info {
-  background: linear-gradient(
-    135deg,
-    var(--shopin-dark-hover) 0%,
-    #0a2a50 100%
-  ) !important;
+  background: linear-gradient(135deg, var(--shopin-dark-hover) 0%, #0a2a50 100%) !important;
   border: none !important;
 }
 
 /* ═══════════════════════════════════════
-   TABLES
+   ✅ FIX 3 — TABLES
 ═══════════════════════════════════════ */
+
+/* ✅ FIX: Table header — was 0.72rem (barely readable) */
 .table thead th {
   font-weight: 700 !important;
-  color: #8a95a8 !important;
-  font-size: 0.72rem !important;
+  color: #6b7a8d !important;
+  font-size: 0.78rem !important;
   text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  padding: 0.85rem 1rem !important;
+  letter-spacing: 0.8px !important;
+  padding: 1rem 1.1rem !important;
   border-bottom: 2px solid #eef0f4 !important;
-  background-color: #fafbfc !important;
+  background-color: #f8f9fb !important;
   white-space: nowrap !important;
 }
 
+/* ✅ FIX: Table body — was 0.875rem, keeping it but fixing padding */
 .table tbody td {
-  padding: 0.9rem 1rem !important;
+  padding: 0.95rem 1.1rem !important;
   vertical-align: middle !important;
   border-bottom: 1px solid #f4f5f7 !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9rem !important;
   color: #3d4a5c !important;
   font-weight: 500 !important;
+  line-height: 1.5 !important;
 }
 
 .table-hover tbody tr {
@@ -308,9 +329,25 @@ h6 {
   background-color: rgba(233, 69, 96, 0.03) !important;
 }
 
+/* DataTables search input */
+.dataTables_filter input {
+  font-size: 0.9rem !important;
+  padding: 0.45rem 0.9rem !important;
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
 .dataTables_filter input:focus {
   border-color: var(--shopin-primary) !important;
   box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1) !important;
+}
+
+/* DataTables length + info */
+.dataTables_length label,
+.dataTables_info,
+.dataTables_filter label {
+  font-size: 0.875rem !important;
+  color: var(--sidebar-text) !important;
 }
 
 /* ═══════════════════════════════════════
@@ -318,16 +355,14 @@ h6 {
 ═══════════════════════════════════════ */
 .btn {
   font-weight: 600 !important;
+  font-size: 0.875rem !important;
   letter-spacing: 0.1px !important;
   transition: all 0.2s ease !important;
+  line-height: 1.5 !important;
 }
 
 .btn-primary {
-  background: linear-gradient(
-    135deg,
-    var(--shopin-primary) 0%,
-    #c73652 100%
-  ) !important;
+  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
   border: none !important;
   color: #ffffff !important;
   border-radius: 50px !important;
@@ -374,13 +409,6 @@ h6 {
   transform: translateY(-1px) !important;
 }
 
-.btn-outline-success:hover,
-.btn-outline-success:focus {
-  background-color: #1a9e6e !important;
-  border-color: #1a9e6e !important;
-  color: #ffffff !important;
-}
-
 .btn-secondary,
 .btn-light {
   border-radius: 50px !important;
@@ -417,10 +445,10 @@ h6 {
 ═══════════════════════════════════════ */
 .badge {
   font-weight: 600 !important;
-  letter-spacing: 0.3px !important;
-  padding: 0.35em 0.8em !important;
+  letter-spacing: 0.2px !important;
+  padding: 0.4em 0.85em !important;
   border-radius: 50px !important;
-  font-size: 0.75rem !important;
+  font-size: 0.78rem !important;
 }
 
 .badge-light-primary,
@@ -436,16 +464,33 @@ h6 {
 .form-select {
   border-radius: 10px !important;
   border-color: #e2e8f0 !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9rem !important;
   color: var(--shopin-dark) !important;
-  padding: 0.55rem 0.9rem !important;
+  padding-top: 0.6rem !important;
+  padding-bottom: 0.6rem !important;
+  padding-right: 1rem !important;
+  /* ⚠️ DO NOT set padding-left here — ps-* classes handle it */
   transition: all 0.2s ease !important;
+  line-height: 1.5 !important;
+}
+
+/* Normal inputs (no icon) get standard left padding */
+.form-control:not([class*="ps-"]),
+.form-select:not([class*="ps-"]) {
+  padding-left: 1rem !important;
 }
 
 .form-control:focus,
 .form-select:focus {
   border-color: var(--shopin-primary) !important;
   box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.12) !important;
+}
+
+.form-label {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--shopin-dark) !important;
+  margin-bottom: 0.4rem !important;
 }
 
 .form-check-input:checked {
@@ -457,10 +502,7 @@ h6 {
   background-color: var(--shopin-primary) !important;
   border-color: var(--shopin-primary) !important;
 }
-/* ── Search input — preserve icon spacing ── */
-.form-control.ps-13 {
-  padding-left: 3.25rem !important;
-}
+
 /* ═══════════════════════════════════════
    PAGINATION
 ═══════════════════════════════════════ */
@@ -470,18 +512,14 @@ h6 {
   border-radius: 8px !important;
   margin: 0 2px !important;
   font-weight: 600 !important;
-  font-size: 0.85rem !important;
+  font-size: 0.875rem !important;
   border-color: #eef0f4 !important;
   transition: all 0.15s ease !important;
 }
 
 .pagination .page-item.active .page-link,
 .page-item.active .page-link {
-  background: linear-gradient(
-    135deg,
-    var(--shopin-primary) 0%,
-    #c73652 100%
-  ) !important;
+  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
   border-color: var(--shopin-primary) !important;
   color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3) !important;
@@ -516,6 +554,12 @@ a:hover {
   color: var(--shopin-primary) !important;
 }
 
+/* ✅ FIX: Ensure text-muted is readable */
+.text-muted {
+  color: #8a95a8 !important;
+  font-size: 0.85rem !important;
+}
+
 /* ═══════════════════════════════════════
    DROPDOWN MENUS
 ═══════════════════════════════════════ */
@@ -536,6 +580,7 @@ a:hover {
   font-size: 0.875rem !important;
   font-weight: 500 !important;
   transition: all 0.15s ease !important;
+  padding: 0.55rem 1rem !important;
 }
 
 .menu-sub-dropdown .menu-item .menu-link:hover,
@@ -555,11 +600,7 @@ a:hover {
 }
 
 .progress-bar {
-  background: linear-gradient(
-    90deg,
-    var(--shopin-primary) 0%,
-    #c73652 100%
-  ) !important;
+  background: linear-gradient(90deg, var(--shopin-primary) 0%, #c73652 100%) !important;
   border-radius: 50px !important;
 }
 
@@ -571,6 +612,7 @@ a:hover {
   border-color: rgba(233, 69, 96, 0.2) !important;
   color: var(--shopin-primary) !important;
   border-radius: 12px !important;
+  font-size: 0.9rem !important;
 }
 
 /* ═══════════════════════════════════════
@@ -583,14 +625,77 @@ a:hover {
 }
 
 /* ═══════════════════════════════════════
+   MODALS
+═══════════════════════════════════════ */
+.modal-content {
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid #eef0f4 !important;
+  padding: 1.4rem 1.5rem !important;
+}
+
+.modal-title {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: var(--shopin-dark) !important;
+}
+
+.modal-body {
+  padding: 1.5rem !important;
+  font-size: 0.9rem !important;
+}
+
+.modal-footer {
+  border-top: 1px solid #eef0f4 !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* ═══════════════════════════════════════
+   INPUT GROUPS
+═══════════════════════════════════════ */
+.input-group-text {
+  border-color: #e2e8f0 !important;
+  background-color: #f8f9fb !important;
+  color: #8a95a3 !important;
+  font-size: 0.9rem !important;
+}
+
+/* ═══════════════════════════════════════
+   SEPARATORS
+═══════════════════════════════════════ */
+.separator {
+  border-color: #eef0f4 !important;
+}
+
+/* ═══════════════════════════════════════
    LOGIN PAGE
 ═══════════════════════════════════════ */
-.login-page-bg {
-  background: linear-gradient(
-    135deg,
-    var(--shopin-dark) 0%,
-    var(--shopin-dark-hover) 100%
-  ) !important;
+.login-page-bg,
+#kt_app_body[data-kt-app-layout="auth"] {
+  background: linear-gradient(135deg, #1a1a2e, #0f3460) !important;
+}
+
+#kt_app_root .flex-lg-row-fluid.w-lg-50.p-10 {
+  background-color: #ffffff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* login page inputs handled by general .form-control rule */
+
+#kt_app_root button.btn-primary {
+  background: linear-gradient(135deg, #e94560 0%, #c73652 100%) !important;
+  border-radius: 50px !important;
+  padding: 0.5rem 1.5rem !important;
+}
+
+.d-flex.flex-lg-row-fluid.w-lg-50.order-1.order-lg-2 {
+  background-color: var(--shopin-dark) !important;
+  background-image: none !important;
 }
 
 /* ═══════════════════════════════════════
@@ -620,74 +725,73 @@ a:hover {
 }
 
 /* ═══════════════════════════════════════
-   MODALS
+   ✅ FIX: SEARCH INPUT ICON
 ═══════════════════════════════════════ */
-.modal-content {
-  border-radius: 20px !important;
-  border: none !important;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15) !important;
-}
 
-.modal-header {
-  border-bottom: 1px solid #eef0f4 !important;
-  padding: 1.5rem !important;
-}
+/* Preserve Metronic ps-* utilities — never let global padding override these */
+.ps-10 { padding-left: 2.5rem !important; }
+.ps-11 { padding-left: 2.75rem !important; }
+.ps-12 { padding-left: 3rem !important; }
+.ps-13 { padding-left: 3.25rem !important; }
+.ps-14 { padding-left: 3.5rem !important; }
 
-.modal-footer {
-  border-top: 1px solid #eef0f4 !important;
-  padding: 1rem 1.5rem !important;
+/* The SVG icon span — position it inside the input */
+span.svg-icon.position-absolute {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  /* ms-6 = 1.5rem but we override margin and use left directly */
+  left: 1rem !important;
+  margin-left: 0 !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #a0aab8 !important;
 }
 
 /* ═══════════════════════════════════════
-   INPUT GROUPS
+   SIDEBAR MINIMIZED MODE
+   Triggered by: data-kt-app-sidebar-minimize="on" on body
 ═══════════════════════════════════════ */
-.input-group-text {
-  border-color: #e2e8f0 !important;
-  background-color: #f8f9fb !important;
-  color: #8a95a3 !important;
+
+/* Release our fixed width so Metronic's 75px kicks in */
+[data-kt-app-sidebar-minimize="on"] .app-sidebar {
+  width: var(--kt-app-sidebar-width) !important;
 }
 
-/* ═══════════════════════════════════════
-   SEPARATORS
-═══════════════════════════════════════ */
-.separator {
-  border-color: #eef0f4 !important;
+/* Hide text labels, section headings */
+[data-kt-app-sidebar-minimize="on"] .menu-title,
+[data-kt-app-sidebar-minimize="on"] .menu-heading,
+[data-kt-app-sidebar-minimize="on"] .menu-arrow {
+  display: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
 }
 
-/* Login page background */
-#kt_app_body[data-kt-app-layout="auth"] {
-  background: linear-gradient(135deg, #1a1a2e, #0f3460) !important;
+/* Center menu items */
+[data-kt-app-sidebar-minimize="on"] .menu-item .menu-link {
+  justify-content: center !important;
+  padding: 0.7rem 0 !important;
+  margin: 2px 6px !important;
+  gap: 0 !important;
 }
 
-/* Login form wrapper */
-#kt_app_root .flex-lg-row-fluid.w-lg-50.p-10 {
-  background-color: #ffffff !important;
-  border-radius: 20px !important;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15) !important;
+/* Keep icons visible and centered */
+[data-kt-app-sidebar-minimize="on"] .menu-icon {
+  margin: 0 !important;
+  width: 24px !important;
+  min-width: 24px !important;
 }
 
-/* Input fields */
-#kt_app_root input.form-control {
-  border-radius: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-  padding: 0.75rem 1rem !important;
-  color: #1a1a2e !important;
+/* Hide logo text, show only logo icon */
+[data-kt-app-sidebar-minimize="on"] .app-sidebar-logo {
+  justify-content: center !important;
+  padding: 0 !important;
 }
 
-/* Submit button */
-#kt_app_root button.btn-primary {
-  background: linear-gradient(135deg, #e94560 0%, #c73652 100%) !important;
-  border-radius: 50px !important;
-  padding: 0.5rem 1.5rem !important;
-}
-
-/* Aside panel (right image + text) */
-#kt_app_root .bgi-size-cover {
-  background-image: url("/assets/media/misc/auth-image-dark.png") !important;
-}
-
-/* Override login page right-side background */
-.d-flex.flex-lg-row-fluid.w-lg-50.order-1.order-lg-2 {
-  background-color: var(--shopin-dark) !important; /* primary theme color */
-  background-image: none !important; /* remove existing image if needed */
+[data-kt-app-sidebar-minimize="on"] .shopin-logo-shop,
+[data-kt-app-sidebar-minimize="on"] .shopin-logo-in {
+  display: none !important;
 }

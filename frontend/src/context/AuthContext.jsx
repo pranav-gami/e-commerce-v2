@@ -39,7 +39,6 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
-  // ── phone is now full e.g. "+919876543210" ──
   const register = async (
     name,
     email,
@@ -55,12 +54,12 @@ export const AuthProvider = ({ children }) => {
       name,
       email,
       password,
-      phone, // full phone with country code
+      phone,
       address,
       countryId: Number(countryId),
       stateId: Number(stateId),
       cityId: Number(cityId),
-      postalCode, // plain string
+      postalCode,
     });
   };
 
@@ -89,22 +88,40 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (data) => {
     const payload = {
       name: data.name,
-      phone: data.phone, // full phone with country code
+      phone: data.phone,
       address: data.address,
     };
     if (data.countryId) payload.countryId = Number(data.countryId);
     if (data.stateId) payload.stateId = Number(data.stateId);
     if (data.cityId) payload.cityId = Number(data.cityId);
     if (data.postalCode) payload.postalCode = data.postalCode;
-
     await api.put("/auth/profile", payload);
     const profile = await api.get("/auth/profile");
     setUser(profile.data.data);
   };
 
-  const getOrders = async () => (await api.get("/orders")).data.data;
+  // ── Orders ──
+  const getOrders = async (params = {}) => {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", params.page);
+    if (params.limit) query.set("limit", params.limit);
+    if (params.status) query.set("status", params.status);
+    return (await api.get(`/orders?${query.toString()}`)).data.data;
+  };
   const cancelOrder = async (orderId) =>
     (await api.patch(`/orders/${orderId}/cancel`)).data;
+
+  // ── Addresses ──
+  const getAddresses = async () => (await api.get("/addresses")).data.addresses;
+  const getCheckoutAddresses = async () =>
+    (await api.get("/addresses/checkout")).data;
+  const addAddress = async (data) => (await api.post("/addresses", data)).data;
+  const updateAddress = async (id, data) =>
+    (await api.put(`/addresses/${id}`, data)).data;
+  const deleteAddress = async (id) =>
+    (await api.delete(`/addresses/${id}`)).data;
+  const setDefaultAddress = async (id) =>
+    (await api.patch(`/addresses/${id}/set-default`)).data;
 
   const value = {
     user,
@@ -121,6 +138,12 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     getOrders,
     cancelOrder,
+    getAddresses,
+    getCheckoutAddresses,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

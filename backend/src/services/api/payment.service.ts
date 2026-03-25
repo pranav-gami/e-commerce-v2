@@ -8,7 +8,25 @@ import {
   sendPaymentFailedEmail,
 } from "../../config/mailer";
 
-export const createRazorpayOrder = async (userId: number) => {
+export const createRazorpayOrder = async (
+  userId: number,
+  addressId: number,
+) => {
+  // 1. Validate address belongs to this user
+  const address = await prisma.address.findFirst({
+    where: { id: addressId, userId },
+    include: {
+      city: { select: { name: true } },
+      state: { select: { name: true } },
+      country: { select: { name: true } },
+    },
+  });
+
+  if (!address) {
+    throw new ApiError(404, "Address not found or does not belong to you");
+  }
+
+  // 2. Validate cart
   const cart = await prisma.cart.findUnique({
     where: { userId },
     include: { items: { include: { product: true } } },
@@ -18,6 +36,7 @@ export const createRazorpayOrder = async (userId: number) => {
     throw new ApiError(400, "Cart is empty");
   }
 
+  // 3. Calculate total
   const total = cart.items.reduce((sum, item) => {
     const discountedPrice =
       item.product.price -
@@ -25,11 +44,22 @@ export const createRazorpayOrder = async (userId: number) => {
     return sum + discountedPrice * item.quantity;
   }, 0);
 
+  // 4. Create order with address snapshot
   const order = await prisma.order.create({
     data: {
       userId,
+      addressId,
       total,
       status: "PENDING",
+
+      snapFullName: address.fullName,
+      snapPhone: address.phone,
+      snapAddress: address.address,
+      snapPostalCode: address.postalCode,
+      snapCity: address.city.name,
+      snapState: address.state.name,
+      snapCountry: address.country.name,
+
       items: {
         create: cart.items.map((item) => ({
           productId: item.productId,
@@ -40,6 +70,7 @@ export const createRazorpayOrder = async (userId: number) => {
     },
   });
 
+  // 5. Create Razorpay order
   const razorpayOrder = await razorpay.orders.create({
     amount: Math.round(total * 100),
     currency: "INR",
@@ -50,6 +81,7 @@ export const createRazorpayOrder = async (userId: number) => {
     },
   });
 
+  // 6. Create payment record
   await prisma.payment.create({
     data: {
       orderId: order.id,
@@ -77,7 +109,6 @@ export const verifyPayment = async (
     razorpaySignature: string;
   },
 ) => {
-  // Step 0: Verify signature
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
     .update(`${data.razorpayOrderId}|${data.razorpayPaymentId}`)
@@ -87,7 +118,6 @@ export const verifyPayment = async (
     throw new ApiError(400, "Invalid payment signature");
   }
 
-  // Step 1: Fetch minimal required data
   const payment = await prisma.payment.findUnique({
     where: { razorpayOrderId: data.razorpayOrderId },
     select: {
@@ -103,7 +133,6 @@ export const verifyPayment = async (
   const MAX_ATTEMPTS = 10;
   const INTERVAL_MS = 1500;
 
-  // Step 2: Poll only status
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const fresh = await prisma.payment.findUnique({
       where: { id: payment.id },
@@ -123,6 +152,10 @@ export const verifyPayment = async (
   );
 };
 
+// ─────────────────────────────────────────────
+// WEBHOOK HELPERS
+// ─────────────────────────────────────────────
+
 const verifyWebhookSignature = (body: string, signature: string) => {
   const expected = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
@@ -136,22 +169,16 @@ const verifyWebhookSignature = (body: string, signature: string) => {
 
 const handlePaymentSuccess = async (payment: any, entity: any) => {
   await prisma.$transaction(async (tx) => {
-    // 1. Update payment
     await tx.payment.update({
       where: { id: payment.id },
-      data: {
-        status: "SUCCESS",
-        razorpayPaymentId: entity.id,
-      },
+      data: { status: "SUCCESS", razorpayPaymentId: entity.id },
     });
 
-    // 2. Update order
     await tx.order.update({
       where: { id: payment.orderId },
       data: { status: "CONFIRMED" },
     });
 
-    // 3. Reduce stock
     const items = await tx.orderItem.findMany({
       where: { orderId: payment.orderId },
     });
@@ -159,17 +186,11 @@ const handlePaymentSuccess = async (payment: any, entity: any) => {
     for (const item of items) {
       await tx.product.update({
         where: { id: item.productId },
-        data: {
-          stock: { decrement: item.quantity },
-        },
+        data: { stock: { decrement: item.quantity } },
       });
     }
 
-    // 4. Clear cart
-    const order = await tx.order.findUnique({
-      where: { id: payment.orderId },
-    });
-
+    const order = await tx.order.findUnique({ where: { id: payment.orderId } });
     if (!order) return;
 
     const cart = await tx.cart.findUnique({ where: { userId: order.userId } });
@@ -178,7 +199,6 @@ const handlePaymentSuccess = async (payment: any, entity: any) => {
     }
   });
 
-  // 5. Send email
   const orderWithUser = await prisma.order.findUnique({
     where: { id: payment.orderId },
     include: { user: true, items: { include: { product: true } } },
@@ -228,41 +248,6 @@ const handlePaymentFailure = async (payment: any) => {
   }
 };
 
-// const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
-//   const razorpayPaymentId = paymentEntity.id;
-
-//   const dbPayment = await prisma.payment.findFirst({
-//     where: { razorpayPaymentId },
-//   });
-
-//   if (!dbPayment) return;
-
-//   const refundAmount = refundEntity.amount / 100; // paisa → rupees
-
-//   // Prevent duplicate updates (idempotency)
-//   if (
-//     dbPayment.status === "REFUNDED" &&
-//     dbPayment.refundedAmount === refundAmount
-//   ) {
-//     return;
-//   }
-
-//   await prisma.payment.update({
-//     where: { id: dbPayment.id },
-//     data: {
-//       status:
-//         refundAmount < dbPayment.amount ? "PARTIALLY_REFUNDED" : "REFUNDED",
-//       refundedAmount: refundAmount,
-//       updatedAt: new Date(),
-//     },
-//   });
-
-//   console.log("Refund processed via webhook:", {
-//     paymentId: razorpayPaymentId,
-//     refundAmount,
-//   });
-// };
-
 const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
   const razorpayPaymentId = paymentEntity.id;
 
@@ -275,11 +260,9 @@ const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
 
   const refundAmount = refundEntity.amount / 100;
 
-  // Prevent duplicate updates
   if (dbPayment.refundedAmount === refundAmount) return;
 
   await prisma.$transaction(async (tx) => {
-    // 1. Update payment
     await tx.payment.update({
       where: { id: dbPayment.id },
       data: {
@@ -290,13 +273,11 @@ const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
       },
     });
 
-    // 2. Update order
     await tx.order.update({
       where: { id: dbPayment.orderId },
       data: { status: "CANCELLED", updatedAt: new Date() },
     });
 
-    // 3. Restore stock
     const items = await tx.orderItem.findMany({
       where: { orderId: dbPayment.orderId },
     });
@@ -308,7 +289,6 @@ const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
     }
   });
 
-  // 4. Send refund email
   const orderWithUser = await prisma.order.findUnique({
     where: { id: dbPayment.orderId },
     include: { user: true, items: { include: { product: true } } },
@@ -329,16 +309,18 @@ const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
   });
 };
 
+// ─────────────────────────────────────────────
+// WEBHOOK HANDLER
+// ─────────────────────────────────────────────
+
 export const handleWebhook = async (body: string, signature: string) => {
   verifyWebhookSignature(body, signature);
 
   const event = JSON.parse(body);
   const type = event.event;
-
   const paymentEntity = event.payload?.payment?.entity;
   const refundEntity = event.payload?.refund?.entity;
 
-  // Try to resolve DB payment (works for both payment + refund events)
   let dbPayment = null;
 
   if (paymentEntity?.order_id) {
@@ -346,7 +328,6 @@ export const handleWebhook = async (body: string, signature: string) => {
       where: { razorpayOrderId: paymentEntity.order_id },
     });
   } else if (paymentEntity?.id) {
-    // fallback for refund events
     dbPayment = await prisma.payment.findFirst({
       where: { razorpayPaymentId: paymentEntity.id },
     });
@@ -355,28 +336,20 @@ export const handleWebhook = async (body: string, signature: string) => {
   if (!dbPayment) return { received: true };
 
   switch (type) {
-    //PAYMENT SUCCESS
     case "payment.captured": {
-      if (dbPayment.status === "SUCCESS") break; // idempotent
-
+      if (dbPayment.status === "SUCCESS") break;
       await handlePaymentSuccess(dbPayment, paymentEntity);
       break;
     }
-
-    // PAYMENT FAILED
     case "payment.failed": {
       if (dbPayment.status === "FAILED") break;
-
       await handlePaymentFailure(dbPayment);
       break;
     }
-
-    // REFUND PROCESSED
     case "refund.processed": {
       await handleRefundProcessed(paymentEntity, refundEntity);
       break;
     }
-
     default:
       break;
   }

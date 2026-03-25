@@ -477,23 +477,32 @@
 
 import api, { BACKEND_URL } from "../utils/api";
 
-export const fetchProducts = async (categoryId = null) => {
-  const params = categoryId ? `?categoryId=${categoryId}` : "";
-  const res = await api.get(`/products${params}`);
-  const products = res.data.data;
-  return products.map((product) => ({
-    ...product,
-    image: product.image ? `${BACKEND_URL}${product.image}` : null,
-    images: product.images?.map((img) => `${BACKEND_URL}${img}`) || [],
-  }));
+const mapProduct = (product) => ({
+  ...product,
+  image: product.image ? `${BACKEND_URL}${product.image}` : null,
+  images: product.images?.map((img) => `${BACKEND_URL}${img}`) || [],
+});
+
+export const fetchProducts = async (params = {}) => {
+  const query = new URLSearchParams();
+  if (params.categoryId) query.set("categoryId", params.categoryId);
+  if (params.subCategoryId) query.set("subCategoryId", params.subCategoryId);
+  if (params.search) query.set("search", params.search);
+  if (params.isFeatured) query.set("isFeatured", "true");
+  if (params.page) query.set("page", params.page);
+  if (params.limit) query.set("limit", params.limit);
+
+  const res = await api.get(`/products?${query.toString()}`);
+  const { products, pagination } = res.data.data;
+
+  return {
+    products: products.map(mapProduct),
+    pagination,
+  };
 };
 
 export const fetchProductById = async (id) => {
   const res = await api.get(`/products/${id}`);
   const product = res.data.data;
-  return {
-    ...product,
-    image: product.image ? `${BACKEND_URL}${product.image}` : null,
-    images: product.images?.map((img) => `${BACKEND_URL}${img}`) || [],
-  };
+  return mapProduct(product);
 };

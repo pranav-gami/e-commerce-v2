@@ -37,7 +37,8 @@ const Header = () => {
           api.get("/products"),
         ]);
         const allCategories = catRes.data.data?.categories || [];
-        const allProducts = prodRes.data.data || [];
+        const allProducts =
+          prodRes.data.data?.products || prodRes.data.data || [];
         const categoryIdsWithProducts = new Set(
           allProducts.map((p) => p.subCategory?.category?.id).filter(Boolean),
         );

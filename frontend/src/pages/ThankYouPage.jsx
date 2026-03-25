@@ -99,7 +99,7 @@ const ThankYouPage = () => {
             </svg>
           </div>
 
-          <h1 className="text-2xl font-extrabold text-brand-dark">Order Placed! 🎉</h1>
+          <h1 className="text-2xl font-extrabold text-brand-dark">Order Placed!</h1>
           <p className="text-brand-gray text-sm mt-1">Thank you for shopping with Shop.in</p>
 
           {orderId && (

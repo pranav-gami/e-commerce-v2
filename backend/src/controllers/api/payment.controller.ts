@@ -9,7 +9,14 @@ import prisma from "../../config/prisma";
 export const createOrder = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     if (!req.user) throw new ApiError(401, "Not authenticated");
-    const data = await paymentService.createRazorpayOrder(req.user.id);
+
+    const { addressId } = req.body;
+    if (!addressId) throw new ApiError(400, "addressId is required");
+
+    const data = await paymentService.createRazorpayOrder(
+      req.user.id,
+      Number(addressId),
+    );
     return sendResponse(res, 200, "Order created", data);
   },
 );

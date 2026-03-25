@@ -8,6 +8,8 @@ import productRoute from "./product.routes";
 import paymentRoute from "./payment.routes";
 import locationRoute from "./location.routes";
 import heroRoute from "./hero.routes";
+import addressRoute from "./address.routes";
+import reviewRoute from "./review.routes";
 
 const modules = [
   { route: "/auth", router: authRoute },
@@ -19,6 +21,8 @@ const modules = [
   { route: "/payment", router: paymentRoute },
   { route: "/location", router: locationRoute },
   { route: "/hero", router: heroRoute },
+  { route: "/addresses", router: addressRoute },
+  { route: "/reviews", router: reviewRoute },
 ];
 
 const router = Router();

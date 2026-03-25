@@ -65,26 +65,28 @@ export const createProduct = async (data: {
   });
 };
 
-// ── get all products ──────────────────────────────────────
+// ── get all products (with pagination) ───────────────────
 export const getAllProducts = async (filters?: {
   categoryId?: number;
   subCategoryId?: number;
   search?: string;
   isFeatured?: boolean;
+  status?: ProductStatus;
+  page?: number;
+  limit?: number;
 }) => {
+  const page = Math.max(1, filters?.page ?? 1);
+  const limit = Math.min(100, Math.max(1, filters?.limit ?? 10));
+  const skip = (page - 1) * limit;
+
   const where: any = {};
 
-  // ── Search: product name + description + subcategory name + category name ──
   if (filters?.search && filters.search.trim().length > 0) {
     const term = filters.search.trim();
     where.OR = [
-      // match product name — e.g. "Samsung Galaxy S24"
       { name: { contains: term, mode: "insensitive" } },
-      // match product description
       { description: { contains: term, mode: "insensitive" } },
-      // match subcategory name — e.g. search "mobiles" returns all mobile products
       { subCategory: { name: { contains: term, mode: "insensitive" } } },
-      // match category name — e.g. search "electronics" returns all electronics
       {
         subCategory: {
           category: { name: { contains: term, mode: "insensitive" } },
@@ -93,26 +95,44 @@ export const getAllProducts = async (filters?: {
     ];
   }
 
-  // ── Filter by category id (used by category page/dropdown) ──
   if (filters?.categoryId) {
     where.subCategory = { categoryId: filters.categoryId };
   }
 
-  // ── Filter by subcategory id ──
   if (filters?.subCategoryId) {
     where.subCategoryId = filters.subCategoryId;
   }
 
-  // ── Featured only ──
   if (filters?.isFeatured !== undefined) {
     where.isFeatured = filters.isFeatured;
   }
 
-  return prisma.product.findMany({
-    where,
-    include: productInclude,
-    orderBy: { createdAt: "desc" },
-  });
+  if (filters?.status) {
+    where.status = filters.status;
+  }
+
+  const [total, products] = await Promise.all([
+    prisma.product.count({ where }),
+    prisma.product.findMany({
+      where,
+      include: productInclude,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+  ]);
+
+  return {
+    products,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPrevPage: page > 1,
+    },
+  };
 };
 
 // ── get one product ───────────────────────────────────────
@@ -147,7 +167,6 @@ export const updateProduct = async (
   if (data.name || data.subCategoryId) {
     const checkName = data.name ?? product.name;
     const checkSubCategoryId = data.subCategoryId ?? product.subCategoryId;
-
     const existing = await prisma.product.findFirst({
       where: {
         name: { equals: checkName, mode: "insensitive" },
@@ -155,7 +174,6 @@ export const updateProduct = async (
         NOT: { id },
       },
     });
-
     if (existing)
       throw new ApiError(
         409,
@@ -175,7 +193,6 @@ export const updateProduct = async (
   }
 
   const updateData: any = {};
-
   if (data.name !== undefined) updateData.name = data.name;
   if (data.description !== undefined) updateData.description = data.description;
   if (data.price !== undefined) updateData.price = data.price;

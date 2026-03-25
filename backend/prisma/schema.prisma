@@ -7,67 +7,123 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id          Int       @id @default(autoincrement())
-  name        String
-  email       String    @unique
-  password    String
-  otp         String?
-  otpExpiry   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
-  role        Role      @default(USER)
 
-  phone       String
-  address     String?
-  postalCode  String? 
+enum Role {
+  USER
+  ADMIN
+}
 
-  countryId   Int?
-  stateId     Int?
-  cityId      Int?
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
 
-  country     Country?  @relation(fields: [countryId], references: [id])
-  state       State?    @relation(fields: [stateId], references: [id])
-  city        City?     @relation(fields: [cityId], references: [id])
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
 
-  cart        Cart?
-  orders      Order[]
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum ReviewStatus {
+  PUBLISHED
+  DELETED     
 }
 
 model Country {
-  id        Int     @id @default(autoincrement())
-  name      String  @unique
-  isoCode   String  @unique
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  isoCode   String    @unique
   phoneCode String
   flag      String?
   currency  String?
-
   states    State[]
   users     User[]
+  addresses Address[]
 }
 
 model State {
-  id        Int    @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
   isoCode   String
   countryId Int
-
-  country   Country @relation(fields: [countryId], references: [id])
+  country   Country   @relation(fields: [countryId], references: [id])
   cities    City[]
   users     User[]
+  addresses Address[]
 
   @@unique([isoCode, countryId])
 }
 
 model City {
-  id      Int    @id @default(autoincrement())
+  id      Int       @id @default(autoincrement())
   name    String
   stateId Int
-
-  state   State @relation(fields: [stateId], references: [id])
+  state   State     @relation(fields: [stateId], references: [id])
   users   User[]
+  addresses Address[]
 
   @@unique([name, stateId])
+}
+
+
+model User {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  password   String
+  otp        String?
+  otpExpiry  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime?
+  role       Role      @default(USER)
+  phone      String
+  address    String?
+  postalCode String?
+  countryId  Int?
+  stateId    Int?
+  cityId     Int?
+
+  country   Country?  @relation(fields: [countryId], references: [id])
+  state     State?    @relation(fields: [stateId], references: [id])
+  city      City?     @relation(fields: [cityId], references: [id])
+  addresses Address[]
+  cart      Cart?
+  orders    Order[]
+  reviews    Review[]
+
+}
+
+
+model Address {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  label      String?
+  fullName   String
+  phone      String
+  address    String
+  postalCode String
+  countryId  Int
+  stateId    Int
+  cityId     Int
+  isDefault  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  country Country @relation(fields: [countryId], references: [id])
+  state   State   @relation(fields: [stateId], references: [id])
+  city    City    @relation(fields: [cityId], references: [id])
+  orders  Order[]
 }
 
 model PendingVerification {
@@ -78,18 +134,20 @@ model PendingVerification {
   createdAt DateTime @default(now())
 }
 
+
 model HeroSlide {
   id        Int       @id @default(autoincrement())
-  image     String                    
-  eyebrow   String                    
-  title     String                    
-  titleSpan String                    
-  subtitle  String                    
-  order     Int       @default(0)     
-  isActive  Boolean   @default(true)  
+  image     String
+  eyebrow   String
+  title     String
+  titleSpan String
+  subtitle  String
+  order     Int       @default(0)
+  isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime?
 }
+
 
 model Category {
   id            Int           @id @default(autoincrement())
@@ -131,15 +189,17 @@ model Product {
   status        ProductStatus @default(ACTIVE)
   cartItems     CartItem[]
   orderItems    OrderItem[]
+  reviews    Review[]
   subCategory   SubCategory   @relation(fields: [subCategoryId], references: [id])
 }
+
 
 model Cart {
   id        Int        @id @default(autoincrement())
   userId    Int        @unique
   createdAt DateTime   @default(now())
   updatedAt DateTime?
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade) // 👈
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     CartItem[]
 }
 
@@ -160,13 +220,25 @@ model CartItem {
 model Order {
   id        Int         @id @default(autoincrement())
   userId    Int
+  addressId Int
   total     Float
   status    OrderStatus @default(PENDING)
   createdAt DateTime    @default(now())
   updatedAt DateTime?
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payment   Payment? 
-  items     OrderItem[]
+
+  snapFullName   String
+  snapPhone      String
+  snapAddress    String
+  snapPostalCode String
+  snapCity       String
+  snapState      String
+  snapCountry    String
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address Address     @relation(fields: [addressId], references: [id])
+  payment Payment?
+  items   OrderItem[]
+  reviews    Review[]
 }
 
 model OrderItem {
@@ -179,6 +251,7 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
 }
 
+
 model Payment {
   id                Int           @id @default(autoincrement())
   orderId           Int           @unique
@@ -186,7 +259,7 @@ model Payment {
   razorpayPaymentId String?
   razorpaySignature String?
   amount            Float
-  refundedAmount    Float?        @default(0)   
+  refundedAmount    Float?        @default(0)
   currency          String        @default("INR")
   status            PaymentStatus @default(PENDING)
   createdAt         DateTime      @default(now())
@@ -194,28 +267,22 @@ model Payment {
   order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  FAILED
-  REFUNDED
-  PARTIALLY_REFUNDED
-}
+model Review {
+  id         Int          @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  orderId    Int          
+  rating     Int          
+  title      String?
+  body       String?
+  verified   Boolean      @default(false) 
+  status     ReviewStatus @default(PUBLISHED)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime?
 
-enum Role {
-  USER
-  ADMIN
-}
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order      Order        @relation(fields: [orderId], references: [id])
 
-enum ProductStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  SHIPPED
-  DELIVERED
-  CANCELLED
+  @@unique([userId, productId, orderId])
 }

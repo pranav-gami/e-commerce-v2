@@ -169,11 +169,11 @@ export const bulkDeleteProducts = catchAsyncHandler(
 export const getProductsPage = async (req: AuthRequest, res: Response) => {
   try {
     if (req.headers.accept?.includes("application/json")) {
-      const products = await productService.getAllProducts();
+      const result = await productService.getAllProducts();
       return res.json({
         success: true,
-        count: products.length,
-        data: products,
+        count: result.pagination.total,
+        data: result.products,
       });
     }
 

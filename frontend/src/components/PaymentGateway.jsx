@@ -1,9 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import api from "../utils/api";
 
-const PaymentGateway = ({ onClose, total }) => {
+const PaymentGateway = ({
+  onClose,
+  total,
+  addressId: addressIdProp,
+  isPage = false,
+}) => {
+  const location = useLocation();
+  const addressId = addressIdProp ?? location.state?.addressId;
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -24,7 +31,7 @@ const PaymentGateway = ({ onClose, total }) => {
     setStatusMessage("");
 
     try {
-      const res = await api.post("/payment/create-order");
+      const res = await api.post("/payment/create-order", { addressId });
       const { razorpayOrderId, amount, currency, keyId, orderId } =
         res.data.data;
 
@@ -38,8 +45,6 @@ const PaymentGateway = ({ onClose, total }) => {
         handler: async (response) => {
           try {
             setStatusMessage("Confirming payment...");
-
-            // Send signature along with paymentId & orderId
             const verifyRes = await api.post("/payment/verify", {
               orderId,
               razorpayOrderId: response.razorpay_order_id,
@@ -62,7 +67,6 @@ const PaymentGateway = ({ onClose, total }) => {
               navigate("/orders");
               return;
             }
-
             setError(err?.response?.data?.message || "Verification failed");
             setIsProcessing(false);
             setStatusMessage("");
@@ -87,21 +91,29 @@ const PaymentGateway = ({ onClose, total }) => {
 
       rzp.open();
     } catch (err) {
-      setError("Failed to initiate payment");
+      setError(err?.response?.data?.message || "Failed to initiate payment");
       setIsProcessing(false);
     }
   };
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      {/* Backdrop — only in modal mode */}
+      {!isPage && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+          onClick={onClose}
+        />
+      )}
 
-      {/* Modal */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded shadow-2xl overflow-hidden animate-fade-in">
+      {/* Card — fixed center in modal mode, plain block in page mode */}
+      <div
+        className={
+          isPage
+            ? "bg-white rounded shadow-sm overflow-hidden w-full"
+            : "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded shadow-2xl overflow-hidden animate-fade-in"
+        }
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-light">
           <div className="flex items-center gap-3">
@@ -119,7 +131,7 @@ const PaymentGateway = ({ onClose, total }) => {
               </svg>
             </div>
             <h2 className="text-base font-extrabold text-brand-dark">
-              Checkout
+              Payment
             </h2>
           </div>
           <button
@@ -147,7 +159,6 @@ const PaymentGateway = ({ onClose, total }) => {
               {error}
             </div>
           )}
-
           {statusMessage && (
             <div className="bg-blue-50 border border-blue-200 text-blue-600 text-sm px-4 py-3 rounded mb-5 font-medium">
               {statusMessage}
@@ -155,7 +166,7 @@ const PaymentGateway = ({ onClose, total }) => {
           )}
 
           <form onSubmit={handlePlaceOrder}>
-            {/* Order summary */}
+            {/* Order Summary */}
             <div className="bg-brand-light rounded border border-brand-border p-4 mb-5">
               <h3 className="text-xs font-extrabold text-brand-gray uppercase tracking-wider mb-3">
                 Order Summary
@@ -180,7 +191,7 @@ const PaymentGateway = ({ onClose, total }) => {
               </div>
             </div>
 
-            {/* Cart items preview */}
+            {/* Cart Items Preview */}
             {cartItems.length > 0 && (
               <div className="mb-5 space-y-2 max-h-36 overflow-y-auto">
                 {cartItems.map((item) => {
@@ -215,7 +226,7 @@ const PaymentGateway = ({ onClose, total }) => {
               </div>
             )}
 
-            {/* Razorpay note */}
+            {/* Razorpay Note */}
             <div className="flex items-center gap-2 text-xs text-brand-gray mb-5 bg-blue-50 border border-blue-100 px-3 py-2 rounded">
               <img
                 src="https://razorpay.com/favicon.ico"
@@ -228,7 +239,6 @@ const PaymentGateway = ({ onClose, total }) => {
               </span>
             </div>
 
-            {/* Pay button */}
             <button
               type="submit"
               disabled={isProcessing}
@@ -258,7 +268,6 @@ const PaymentGateway = ({ onClose, total }) => {
               )}
             </button>
 
-            {/* Cancel */}
             <button
               type="button"
               onClick={() => {

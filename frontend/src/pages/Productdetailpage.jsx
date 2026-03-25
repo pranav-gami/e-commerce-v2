@@ -145,9 +145,9 @@ const ProductDetailPage = () => {
         setActiveImg(0);
         setImgError(false);
         const simRes = await api.get(
-          `/products?subCategoryId=${p.subCategoryId}`,
+          `/products?subCategoryId=${p.subCategoryId}&limit=7`,
         );
-        const all = simRes.data.data || [];
+        const all = simRes.data.data?.products || simRes.data.data || [];
         setSimilar(all.filter((x) => x.id !== p.id).slice(0, 6));
       } catch {
         navigate("/products");
@@ -387,11 +387,6 @@ const ProductDetailPage = () => {
                   ? `In Stock (${product.stock})`
                   : "The Product is currently sold out."}
               </span>
-              {/* <span
-                className={`text-sm font-semibold ${status === "ACTIVE" && inStock ? "text-green-600" : "text-red-500"}`}
-              >
-                {status === "ACTIVE" && inStock ? `AVAILABLE` : "NOT AVAILABLE"}
-              </span> */}
             </div>
 
             {/* Price */}

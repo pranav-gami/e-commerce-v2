@@ -20,6 +20,8 @@ import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/WishlistPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ProductDetailPage from "./pages/Productdetailpage";
+import CheckoutAddressPage from "./pages/CheckoutAddressPage";
+import CheckoutPaymentPage from "./pages/CheckoutPaymentPage";
 import "./styles/global.css";
 
 function App() {
@@ -45,8 +47,22 @@ function App() {
                       <Route path="/signup" element={<SignupPage />} />
                       <Route path="/contact" element={<ContactPage />} />
                       <Route path="/thank-you" element={<ThankYouPage />} />
-                      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                      <Route path="/products/:id" element={<ProductDetailPage />} />
+                      <Route
+                        path="/forgot-password"
+                        element={<ForgotPasswordPage />}
+                      />
+                      <Route
+                        path="/products/:id"
+                        element={<ProductDetailPage />}
+                      />
+                      <Route
+                        path="/checkout/address"
+                        element={<CheckoutAddressPage />}
+                      />
+                      <Route
+                        path="/checkout/payment"
+                        element={<CheckoutPaymentPage />}
+                      />
                     </Routes>
                   </main>
                   <Footer />

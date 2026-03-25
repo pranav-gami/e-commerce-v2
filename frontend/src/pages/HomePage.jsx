@@ -63,7 +63,8 @@ const HomePage = () => {
           api.get("/products"),
         ]);
         const allCategories = catRes.data.data?.categories || [];
-        const allProducts = prodRes.data.data || [];
+        const allProducts =
+          prodRes.data.data?.products || prodRes.data.data || [];
         const categoryIdsWithProducts = new Set(
           allProducts.map((p) => p.subCategory?.category?.id).filter(Boolean),
         );
@@ -88,8 +89,8 @@ const HomePage = () => {
   useEffect(() => {
     const loadFeatured = async () => {
       try {
-        const res = await api.get("/products");
-        const data = res.data.data || [];
+        const res = await api.get("/products?limit=8&isFeatured=true");
+        const data = res.data.data?.products || res.data.data || [];
         setFeaturedProducts(Array.isArray(data) ? data.slice(0, 8) : []);
       } catch (err) {
         console.error(err);

@@ -1,150 +1,427 @@
+// /**
+//  * seedProducts.js
+//  * Run: node seedProducts.js
+//  */
+
+// import { PrismaClient } from "@prisma/client";
+// import fs from "fs";
+// import path from "path";
+// import { fileURLToPath } from "url";
+// import { createReadStream } from "fs";
+// import readline from "readline";
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+// const prisma = new PrismaClient();
+
+// function parsePrice(raw) {
+//   const cleaned = (raw || "0").replace(/[₹,\s]/g, "").trim();
+//   const num = parseFloat(cleaned);
+//   return isNaN(num) ? 0 : num;
+// }
+
+// function parseDiscount(raw) {
+//   const cleaned = (raw || "0").replace("%", "").trim();
+//   const num = parseFloat(cleaned);
+//   return isNaN(num) ? 0 : num;
+// }
+
+// function slugify(str) {
+//   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+// }
+
+// function parseCategoryPath(raw) {
+//   const parts = (raw || "").split("|").map((p) => p.trim()).filter(Boolean);
+//   return {
+//     categoryName: parts[0] || "Uncategorized",
+//     subCategoryName: parts[parts.length - 1] || "General",
+//   };
+// }
+
+// function parseCSVLine(line) {
+//   const result = [];
+//   let current = "";
+//   let inQuotes = false;
+
+//   for (let i = 0; i < line.length; i++) {
+//     const char = line[i];
+//     if (char === '"') {
+//       if (inQuotes && line[i + 1] === '"') {
+//         current += '"';
+//         i++;
+//       } else {
+//         inQuotes = !inQuotes;
+//       }
+//     } else if (char === "," && !inQuotes) {
+//       result.push(current);
+//       current = "";
+//     } else {
+//       current += char;
+//     }
+//   }
+//   result.push(current);
+//   return result;
+// }
+
+// async function readCSV(filePath) {
+//   return new Promise((resolve, reject) => {
+//     const rows = [];
+//     let isFirstLine = true;
+
+//     const rl = readline.createInterface({
+//       input: createReadStream(filePath, { encoding: "utf-8" }),
+//       crlfDelay: Infinity,
+//     });
+
+//     rl.on("line", (line) => {
+//       if (isFirstLine) { isFirstLine = false; return; }
+//       if (line.trim()) rows.push(parseCSVLine(line));
+//     });
+
+//     rl.on("close", () => resolve(rows));
+//     rl.on("error", reject);
+//   });
+// }
+
+// async function main() {
+//   // ✅ Update filename if yours is different
+//   const csvPath = path.join(__dirname, "public", "upload", "productData.csv");
+
+//   if (!fs.existsSync(csvPath)) {
+//     console.error("❌  File not found:", csvPath);
+//     process.exit(1);
+//   }
+
+//   console.log("📂  Reading CSV from:", csvPath);
+//   const rows = await readCSV(csvPath);
+//   console.log(`📦  Found ${rows.length} rows`);
+
+//   const categoryCache = new Map();
+//   const subCategoryCache = new Map();
+//   let created = 0, skipped = 0, errors = 0;
+
+//   for (let i = 0; i < rows.length; i++) {
+//     const row = rows[i];
+//     const name        = (row[0] || "").trim();
+//     const categoryRaw = (row[1] || "").trim();
+//     const priceRaw    = (row[2] || "0").trim();
+//     const discountRaw = (row[3] || "0").trim();
+//     const description = (row[5] || "").trim();
+//     const image       = (row[8] || "").trim();
+
+//     if (!name || !categoryRaw) { skipped++; continue; }
+
+//     const price    = parsePrice(priceRaw);
+//     const discount = parseDiscount(discountRaw);
+//     const { categoryName, subCategoryName } = parseCategoryPath(categoryRaw);
+
+//     try {
+//       let category = categoryCache.get(categoryName);
+//       if (!category) {
+//         category = await prisma.category.upsert({
+//           where: { slug: slugify(categoryName) },
+//           update: {},
+//           create: { name: categoryName, slug: slugify(categoryName) },
+//         });
+//         categoryCache.set(categoryName, category);
+//       }
+
+//       const subKey = `${category.id}:${subCategoryName}`;
+//       let subCategory = subCategoryCache.get(subKey);
+//       if (!subCategory) {
+//         subCategory = await prisma.subCategory.upsert({
+//           where: { name_categoryId: { name: subCategoryName, categoryId: category.id } },
+//           update: {},
+//           create: { name: subCategoryName, categoryId: category.id },
+//         });
+//         subCategoryCache.set(subKey, subCategory);
+//       }
+
+//       await prisma.product.create({
+//         data: {
+//           name:          name.substring(0, 500),
+//           description:   description || null,
+//           price,
+//           discount,
+//           stock:         50,
+//           image:         image || "https://placehold.co/300x300?text=No+Image",
+//           images:        image ? [image] : [],
+//           isFeatured:    false,
+//           status:        "ACTIVE",
+//           subCategoryId: subCategory.id,
+//         },
+//       });
+
+//       created++;
+//       if (created % 100 === 0) console.log(`✅  Inserted ${created} products...`);
+//     } catch (err) {
+//       errors++;
+//       console.error(`❌  Row ${i + 2}: ${err.message.split("\n")[0]}`);
+//     }
+//   }
+
+//   console.log("\n─────────────────────────────────────");
+//   console.log(`✅  Created   : ${created} products`);
+//   console.log(`⏭️   Skipped   : ${skipped} rows`);
+//   console.log(`❌  Errors    : ${errors} rows`);
+//   console.log(`📁  Categories: ${categoryCache.size}`);
+//   console.log(`📂  SubCats   : ${subCategoryCache.size}`);
+//   console.log("─────────────────────────────────────\n");
+// }
+
+// main()
+//   .catch((e) => { console.error("Fatal:", e); process.exit(1); })
+//   .finally(() => prisma.$disconnect());
+
+/**
+ * seedProducts.js
+ * Seeds: Categories, SubCategories, Products, Reviews
+ * Run: node seedProducts.js
+ */
+
+import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
-import csv from "csv-parser";
-import { PrismaClient } from "@prisma/client";
+import { fileURLToPath } from "url";
+import { createReadStream } from "fs";
+import readline from "readline";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const prisma = new PrismaClient();
-console.log("Initializing seeding...", process.cwd());
 
-const filePath = path.join(process.cwd(), "public/upload/productData.csv");
+// ─── ✅ Update these with real IDs once you have them ─────────────────────────
+// For now using placeholder IDs — script will create fake users/orders if needed
+const USER_IDS  = [1, 2, 3, 4, 5, 6, 7];
+const ORDER_IDS = [1, 2, 3, 4, 5, 6, 7];
 
-const rows = [];
-
-const SUBCATEGORY_MAP = {
-  mobiles: 23,
-  cameras: 24,
-  tvs: 25,
-  audio: 26,
-  "women's bags": 27,
-  perfumes: 28,
-  skincare: 29,
-};
-
-function getSubCategoryId(name) {
-  return SUBCATEGORY_MAP[name?.trim().toLowerCase()] || null;
+function randomFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// 🔥 batch helper
-async function chunkInsert(data, size, fn) {
-  for (let i = 0; i < data.length; i += size) {
-    const chunk = data.slice(i, i + size);
-    await fn(chunk);
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function parsePrice(raw) {
+  const cleaned = (raw || "0").replace(/[₹,\s]/g, "").trim();
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? 0 : num;
+}
+
+function parseDiscount(raw) {
+  const cleaned = (raw || "0").replace("%", "").trim();
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? 0 : num;
+}
+
+function slugify(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function parseCategoryPath(raw) {
+  const parts = (raw || "").split("|").map((p) => p.trim()).filter(Boolean);
+  return {
+    categoryName: parts[0] || "Uncategorized",
+    subCategoryName: parts[parts.length - 1] || "General",
+  };
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
   }
+  result.push(current);
+  return result;
 }
 
-async function main() {
+async function readCSV(filePath) {
   return new Promise((resolve, reject) => {
-    fs.createReadStream(filePath)
-      .pipe(csv())
-      .on("data", (data) => rows.push(data))
-      .on("end", async () => {
-        try {
-          const productsToInsert = [];
-          const reviewsToInsert = [];
-
-          for (const row of rows) {
-            const {
-              name,
-              description,
-              price,
-              image,
-              category,
-              rating,
-              title,
-              body,
-            } = row;
-
-            if (!name || !price || !category) continue;
-
-            const subCategoryId = getSubCategoryId(category);
-            if (!subCategoryId) continue;
-
-            productsToInsert.push({
-              name,
-              description: description || null,
-              price: Number(price),
-              stock: 100,
-              image: image || "/placeholder.png",
-              images: image ? [image] : [],
-              subCategoryId,
-              discount: 0,
-              isFeatured: false,
-              status: "ACTIVE",
-            });
-          }
-
-          console.log(`📦 Products to insert: ${productsToInsert.length}`);
-
-          // ─────────────────────────────
-          // 1. BULK INSERT PRODUCTS
-          // ─────────────────────────────
-          await chunkInsert(productsToInsert, 100, async (chunk) => {
-            await prisma.product.createMany({
-              data: chunk,
-              skipDuplicates: true,
-            });
-          });
-
-          console.log("✅ Products inserted");
-
-          // ─────────────────────────────
-          // 2. FETCH INSERTED PRODUCTS (for review mapping)
-          // ─────────────────────────────
-          const insertedProducts = await prisma.product.findMany({
-            where: {
-              name: {
-                in: productsToInsert.map((p) => p.name),
-              },
-            },
-            select: { id: true, name: true },
-          });
-
-          const productMap = {};
-          insertedProducts.forEach((p) => {
-            productMap[p.name] = p.id;
-          });
-
-          // ─────────────────────────────
-          // 3. PREPARE REVIEWS
-          // ─────────────────────────────
-          for (const row of rows) {
-            const { name, rating, title, body } = row;
-
-            if (!rating || !productMap[name]) continue;
-
-            reviewsToInsert.push({
-              userId: 16,
-              orderId: 47,
-              productId: productMap[name],
-              rating: Number(rating),
-              title: title || null,
-              body: body || null,
-              verified: false,
-            });
-          }
-
-          console.log(`📝 Reviews to insert: ${reviewsToInsert.length}`);
-
-          // ─────────────────────────────
-          // 4. BULK INSERT REVIEWS
-          // ─────────────────────────────
-          await chunkInsert(reviewsToInsert, 100, async (chunk) => {
-            await prisma.review.createMany({
-              data: chunk,
-              skipDuplicates: true,
-            });
-          });
-
-          console.log("🎉 Seeding completed!");
-          resolve();
-        } catch (err) {
-          console.error("❌ Error:", err);
-          reject(err);
-        } finally {
-          await prisma.$disconnect();
-        }
-      });
+    const rows = [];
+    let isFirstLine = true;
+    const rl = readline.createInterface({
+      input: createReadStream(filePath, { encoding: "utf-8" }),
+      crlfDelay: Infinity,
+    });
+    rl.on("line", (line) => {
+      if (isFirstLine) { isFirstLine = false; return; }
+      if (line.trim()) rows.push(parseCSVLine(line));
+    });
+    rl.on("close", () => resolve(rows));
+    rl.on("error", reject);
   });
 }
 
-main();
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const csvPath = path.join(__dirname, "public", "upload", "productData.csv");
+
+  if (!fs.existsSync(csvPath)) {
+    console.error("❌  File not found:", csvPath);
+    process.exit(1);
+  }
+
+  console.log("📂  Reading CSV:", csvPath);
+  const rows = await readCSV(csvPath);
+  console.log(`📦  Found ${rows.length} rows\n`);
+
+  const categoryCache    = new Map();
+  const subCategoryCache = new Map();
+
+  // Track used (userId, productId, orderId) combos to avoid unique constraint errors
+  const reviewCombos = new Set();
+
+  let productsCreated = 0;
+  let reviewsCreated  = 0;
+  let productErrors   = 0;
+  let reviewErrors    = 0;
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+
+    // CSV columns:
+    // 0:name | 1:category | 2:price | 3:discount | 4:rating
+    // 5:description | 6:title (comma-separated) | 7:body (comma-separated) | 8:image
+    const name        = (row[0] || "").trim();
+    const categoryRaw = (row[1] || "").trim();
+    const priceRaw    = (row[2] || "0").trim();
+    const discountRaw = (row[3] || "0").trim();
+    const ratingRaw   = (row[4] || "4").trim();
+    const description = (row[5] || "").trim();
+    const titlesRaw   = (row[6] || "").trim();
+    const bodiesRaw   = (row[7] || "").trim();
+    const image       = (row[8] || "").trim();
+
+    if (!name || !categoryRaw) continue;
+
+    const price    = parsePrice(priceRaw);
+    const discount = parseDiscount(discountRaw);
+    const baseRating = parseFloat(ratingRaw) || 4;
+    const { categoryName, subCategoryName } = parseCategoryPath(categoryRaw);
+
+    let productId;
+
+    try {
+      // 1. Upsert Category
+      let category = categoryCache.get(categoryName);
+      if (!category) {
+        category = await prisma.category.upsert({
+          where:  { slug: slugify(categoryName) },
+          update: {},
+          create: { name: categoryName, slug: slugify(categoryName) },
+        });
+        categoryCache.set(categoryName, category);
+      }
+
+      // 2. Upsert SubCategory
+      const subKey = `${category.id}:${subCategoryName}`;
+      let subCategory = subCategoryCache.get(subKey);
+      if (!subCategory) {
+        subCategory = await prisma.subCategory.upsert({
+          where:  { name_categoryId: { name: subCategoryName, categoryId: category.id } },
+          update: {},
+          create: { name: subCategoryName, categoryId: category.id },
+        });
+        subCategoryCache.set(subKey, subCategory);
+      }
+
+      // 3. Create Product
+      const product = await prisma.product.create({
+        data: {
+          name:          name.substring(0, 500),
+          description:   description || null,
+          price,
+          discount,
+          stock:         50,
+          image:         image || "https://placehold.co/300x300?text=No+Image",
+          images:        image ? [image] : [],
+          isFeatured:    false,
+          status:        "ACTIVE",
+          subCategoryId: subCategory.id,
+        },
+      });
+
+      productId = product.id;
+      productsCreated++;
+      if (productsCreated % 100 === 0) console.log(`✅  Products: ${productsCreated}`);
+
+    } catch (err) {
+      productErrors++;
+      console.error(`❌  Product row ${i + 2}: ${err.message.split("\n")[0]}`);
+      continue; // skip reviews if product failed
+    }
+
+    // 4. Seed Reviews from title/body CSV columns
+    // Each product has comma-separated titles and bodies — pair them up
+    const titles = titlesRaw.split(",").map(t => t.trim()).filter(t => t && !t.startsWith("http"));
+    const bodies = bodiesRaw.split(",").map(b => b.trim()).filter(b => b && !b.startsWith("http"));
+    const count  = Math.min(titles.length, bodies.length, 4); // max 4 reviews per product
+
+    for (let r = 0; r < count; r++) {
+      const title   = titles[r] || null;
+      const body    = bodies[r] || null;
+      const rating  = Math.min(5, Math.max(1, Math.round(baseRating + (Math.random() * 1 - 0.5))));
+
+      // Pick unique combo of userId + orderId for this product
+      let userId, orderId, comboKey;
+      let attempts = 0;
+      do {
+        userId   = randomFrom(USER_IDS);
+        orderId  = randomFrom(ORDER_IDS);
+        comboKey = `${userId}:${productId}:${orderId}`;
+        attempts++;
+      } while (reviewCombos.has(comboKey) && attempts < 20);
+
+      if (reviewCombos.has(comboKey)) continue; // skip if no unique combo found
+      reviewCombos.add(comboKey);
+
+      try {
+        await prisma.review.create({
+          data: {
+            userId,
+            productId,
+            orderId,
+            rating,
+            title,
+            body,
+            verified: true,
+            status:   "PUBLISHED",
+          },
+        });
+        reviewsCreated++;
+      } catch (err) {
+        reviewErrors++;
+        // silently skip duplicate constraint errors
+      }
+    }
+  }
+
+  console.log("\n─────────────────────────────────────────");
+  console.log(`✅  Products created : ${productsCreated}`);
+  console.log(`❌  Product errors   : ${productErrors}`);
+  console.log(`⭐  Reviews created  : ${reviewsCreated}`);
+  console.log(`❌  Review errors    : ${reviewErrors}`);
+  console.log(`📁  Categories       : ${categoryCache.size}`);
+  console.log(`📂  SubCategories    : ${subCategoryCache.size}`);
+  console.log("─────────────────────────────────────────\n");
+  console.log("💡  Once you have real userIds and orderIds,");
+  console.log("    update USER_IDS and ORDER_IDS at the top of this file");
+  console.log("    and re-run to get accurate review data.\n");
+}
+
+main()
+  .catch((e) => { console.error("Fatal:", e); process.exit(1); })
+  .finally(() => prisma.$disconnect());

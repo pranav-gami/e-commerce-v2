@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchProducts } from "../data/products";
 import { useSearch } from "../context/SearchContext";
@@ -7,8 +7,10 @@ import ProductCard from "../components/ProductCard";
 import { trackSearch } from "../utils/analytics";
 import api from "../utils/api";
 
-const LIMIT = 12;
+const LIMIT = 40;
+const MAX_PRICE = 5000;
 
+// ─── Pagination ───────────────────────────────────────────────────────────────
 const Pagination = ({ pagination, page, onPage }) => {
   if (!pagination || pagination.totalPages <= 1) return null;
   const { totalPages, hasNextPage, hasPrevPage } = pagination;
@@ -27,7 +29,7 @@ const Pagination = ({ pagination, page, onPage }) => {
       <button
         onClick={() => onPage(page - 1)}
         disabled={!hasPrevPage}
-        className="w-9 h-9 flex items-center justify-center border border-brand-border bg-white rounded text-brand-gray hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="w-9 h-9 flex items-center justify-center border border-[#d4d5d9] bg-white text-[#94969f] hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         <svg
           width="14"
@@ -40,12 +42,11 @@ const Pagination = ({ pagination, page, onPage }) => {
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
-
       {pages.map((p, i) =>
         p === "..." ? (
           <span
             key={`d${i}`}
-            className="w-9 h-9 flex items-center justify-center text-brand-gray text-sm"
+            className="w-9 h-9 flex items-center justify-center text-[#94969f] text-sm"
           >
             …
           </span>
@@ -53,21 +54,20 @@ const Pagination = ({ pagination, page, onPage }) => {
           <button
             key={p}
             onClick={() => onPage(p)}
-            className={`w-9 h-9 flex items-center justify-center border rounded text-sm font-bold transition-colors ${
+            className={`w-9 h-9 flex items-center justify-center border text-sm font-bold transition-colors ${
               p === page
                 ? "bg-primary text-white border-primary"
-                : "bg-white border-brand-border text-brand-dark hover:border-primary hover:text-primary"
+                : "bg-white border-[#d4d5d9] text-[#282c3f] hover:border-primary hover:text-primary"
             }`}
           >
             {p}
           </button>
         ),
       )}
-
       <button
         onClick={() => onPage(page + 1)}
         disabled={!hasNextPage}
-        className="w-9 h-9 flex items-center justify-center border border-brand-border bg-white rounded text-brand-gray hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="w-9 h-9 flex items-center justify-center border border-[#d4d5d9] bg-white text-[#94969f] hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         <svg
           width="14"
@@ -84,6 +84,278 @@ const Pagination = ({ pagination, page, onPage }) => {
   );
 };
 
+// ─── Sort Dropdown (top-right hover) ─────────────────────────────────────────
+const SORT_OPTIONS = [
+  { value: "", label: "Recommended" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "name_asc", label: "Name: A → Z" },
+  { value: "name_desc", label: "Name: Z → A" },
+];
+
+const SortDropdown = ({ sortBy, setSortBy }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const currentLabel =
+    SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Recommended";
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        className="flex items-center gap-2 border border-[#d4d5d9] px-4 py-2.5 text-[13px] font-semibold text-[#282c3f] bg-white hover:border-[#282c3f] transition-colors min-w-[200px] justify-between"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span>
+          <span className="text-[#94969f] font-normal">Sort by : </span>
+          {currentLabel}
+        </span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#282c3f"
+          strokeWidth="2.5"
+          className={`transition-transform duration-200 flex-shrink-0 ${open ? "rotate-180" : ""}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full z-50 bg-white border border-[#d4d5d9] shadow-lg min-w-[200px] py-1">
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                setSortBy(opt.value);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
+                sortBy === opt.value
+                  ? "bg-[#fff0f3] text-primary font-semibold"
+                  : "text-[#282c3f] hover:bg-[#f5f5f6]"
+              }`}
+            >
+              {opt.label}
+              {sortBy === opt.value && (
+                <span className="float-right text-primary">✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── "More Items" Modal ───────────────────────────────────────────────────────
+const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
+  const [search, setSearch] = useState("");
+  const filtered = items.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative bg-white w-[480px] max-h-[70vh] flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#eaeaec]">
+          <h3 className="text-[15px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">
+            {title}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-[#94969f] hover:text-[#282c3f]"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="px-5 py-3 border-b border-[#eaeaec]">
+          <div className="flex items-center gap-2 border border-[#d4d5d9] px-3 py-2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#94969f"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              placeholder={`Search ${title}`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 text-[13px] text-[#282c3f] outline-none placeholder:text-[#94969f]"
+              autoFocus
+            />
+          </div>
+        </div>
+
+        {/* Items */}
+        <div className="overflow-y-auto flex-1 px-5 py-3">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+            {filtered.map((item) => (
+              <label
+                key={item.id}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedItems.includes(item.id)}
+                  onChange={() => onToggle(item.id)}
+                  className="accent-primary w-3.5 h-3.5 flex-shrink-0"
+                />
+                <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors truncate">
+                  {item.name}
+                  {item.count !== undefined && (
+                    <span className="text-[#94969f] ml-1">({item.count})</span>
+                  )}
+                </span>
+              </label>
+            ))}
+            {filtered.length === 0 && (
+              <p className="col-span-2 text-[13px] text-[#94969f] text-center py-4">
+                No results found
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#eaeaec]">
+          <span className="text-[12px] text-[#94969f]">
+            {selectedItems.length} selected
+          </span>
+          <button
+            onClick={onClose}
+            className="bg-primary text-white px-6 py-2 text-[13px] font-bold hover:bg-primary-hover transition-colors"
+          >
+            APPLY
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Price Range Slider ───────────────────────────────────────────────────────
+const PriceSlider = ({ priceRange, setPriceRange }) => {
+  const trackRef = useRef(null);
+  const minVal = priceRange.min === "" ? 0 : Number(priceRange.min);
+  const maxVal = priceRange.max === "" ? MAX_PRICE : Number(priceRange.max);
+
+  const minPercent = (minVal / MAX_PRICE) * 100;
+  const maxPercent = (maxVal / MAX_PRICE) * 100;
+
+  return (
+    <div className="px-1">
+      {/* Track */}
+      <div ref={trackRef} className="relative h-1 bg-[#eaeaec] mt-5 mb-5 mx-1">
+        {/* Filled range */}
+        <div
+          className="absolute h-full bg-primary"
+          style={{
+            left: `${minPercent}%`,
+            width: `${maxPercent - minPercent}%`,
+          }}
+        />
+        {/* Min thumb */}
+        <input
+          type="range"
+          min={0}
+          max={MAX_PRICE}
+          step={100}
+          value={minVal}
+          onChange={(e) => {
+            const v = Math.min(Number(e.target.value), maxVal - 100);
+            setPriceRange((p) => ({ ...p, min: v === 0 ? "" : String(v) }));
+          }}
+          className="absolute w-full h-full opacity-0 cursor-pointer"
+          style={{ zIndex: minVal > MAX_PRICE - 200 ? 5 : 3 }}
+        />
+        {/* Max thumb */}
+        <input
+          type="range"
+          min={0}
+          max={MAX_PRICE}
+          step={100}
+          value={maxVal}
+          onChange={(e) => {
+            const v = Math.max(Number(e.target.value), minVal + 100);
+            setPriceRange((p) => ({
+              ...p,
+              max: v === MAX_PRICE ? "" : String(v),
+            }));
+          }}
+          className="absolute w-full h-full opacity-0 cursor-pointer"
+          style={{ zIndex: 4 }}
+        />
+        {/* Min handle dot */}
+        <div
+          className="absolute w-4 h-4 bg-primary rounded-full border-2 border-white shadow-md top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ left: `${minPercent}%` }}
+        />
+        {/* Max handle dot */}
+        <div
+          className="absolute w-4 h-4 bg-primary rounded-full border-2 border-white shadow-md top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ left: `${maxPercent}%` }}
+        />
+      </div>
+      {/* Labels */}
+      <div className="flex items-center justify-between text-[12px] font-semibold text-[#282c3f] mt-1">
+        <span>₹{minVal.toLocaleString("en-IN")}</span>
+        <span>
+          ₹
+          {maxVal >= MAX_PRICE
+            ? `${MAX_PRICE.toLocaleString("en-IN")}+`
+            : maxVal.toLocaleString("en-IN")}
+        </span>
+      </div>
+
+      {/* Style to make range inputs stack */}
+      <style>{`
+        input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; }
+      `}</style>
+    </div>
+  );
+};
+
+// ─── Discount Range ───────────────────────────────────────────────────────────
+const DISCOUNT_OPTIONS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
+
+// ─── Main ProductsPage ────────────────────────────────────────────────────────
 const ProductsPage = () => {
   const { searchQuery, setSearchQuery } = useSearch();
   const { initInventory } = useInventory();
@@ -99,44 +371,107 @@ const ProductsPage = () => {
   const [subcategories, setSubcategories] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Modal state
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [subcategoryModalOpen, setSubcategoryModalOpen] = useState(false);
+
+  // Sticky-then-release sidebar (Myntra effect)
+  const layoutRef = useRef(null);
+  const sidebarWrapRef = useRef(null);
+  const sidebarInnerRef = useRef(null);
+  const [sidebarStyle, setSidebarStyle] = useState({});
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const layout = layoutRef.current;
+      const wrap = sidebarWrapRef.current;
+      const inner = sidebarInnerRef.current;
+      if (!layout || !wrap || !inner) return;
+
+      const scrollY = window.scrollY;
+      const layoutRect = layout.getBoundingClientRect();
+      const layoutTop = layoutRect.top + scrollY;
+      const layoutBottom = layoutTop + layout.offsetHeight;
+      const innerHeight = inner.offsetHeight;
+      const viewportHeight = window.innerHeight;
+
+      // Sidebar shorter than viewport — simple sticky
+      if (innerHeight <= viewportHeight) {
+        setSidebarStyle({
+          position: "sticky",
+          top: 0,
+          alignSelf: "flex-start",
+        });
+        return;
+      }
+
+      // Sidebar taller than viewport — Myntra 3-phase scroll:
+      // Phase 1: scroll naturally until sidebar bottom hits viewport bottom
+      // Phase 2: fix sidebar so its bottom tracks viewport bottom
+      // Phase 3: release when layout ends
+
+      const fixedSidebarBottom = scrollY + viewportHeight;
+
+      if (scrollY <= layoutTop) {
+        setSidebarStyle({});
+      } else if (fixedSidebarBottom >= layoutBottom) {
+        // Pin to layout bottom (absolute)
+        setSidebarStyle({
+          position: "absolute",
+          top: `${layoutBottom - layoutTop - innerHeight}px`,
+          width: `${wrap.offsetWidth}px`,
+        });
+      } else {
+        // Fixed to viewport bottom
+        setSidebarStyle({
+          position: "fixed",
+          bottom: 0,
+          top: "auto",
+          width: `${wrap.offsetWidth}px`,
+        });
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  const toggleValue = (value, setter) => {
+    setter((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
+  };
+
   const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category") || "",
+    searchParams.get("category") ? [searchParams.get("category")] : [],
   );
-  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [sortBy, setSortBy] = useState("");
   const [discountOnly, setDiscountOnly] = useState(false);
+  const [minDiscount, setMinDiscount] = useState(null); // e.g. 10, 20, ...
 
-  // sync category from URL
   useEffect(() => {
     const cat = searchParams.get("category") || "";
-    setSelectedCategory(cat);
+    setSelectedCategory(cat ? [cat] : []);
     setPage(1);
   }, [searchParams]);
 
-  // sync search from URL on mount
   useEffect(() => {
     const urlSearch = searchParams.get("search");
     if (urlSearch) setSearchQuery(urlSearch);
   }, []);
 
-  // load categories once
   useEffect(() => {
     const load = async () => {
       try {
-        const [catRes, prodRes] = await Promise.all([
-          api.get("/categories"),
-          api.get("/products?limit=1000"),
-        ]);
-        const allCategories = catRes.data.data?.categories || [];
-        const allProducts = prodRes.data.data?.products || [];
-        const catIds = new Set();
-        allProducts.forEach((p) => {
-          if (p.subCategory?.category?.id)
-            catIds.add(p.subCategory.category.id);
-          if (p.subCategory?.categoryId) catIds.add(p.subCategory.categoryId);
-        });
-        setCategories(allCategories.filter((c) => catIds.has(c.id)));
+        const res = await api.get("/categories");
+        setCategories(res.data.data?.categories || []);
       } catch (err) {
         console.error(err);
       }
@@ -144,24 +479,22 @@ const ProductsPage = () => {
     load();
   }, []);
 
-  // load subcategories when category changes
   useEffect(() => {
-    if (!selectedCategory) {
+    if (!selectedCategory.length) {
       setSubcategories([]);
-      setSelectedSubcategory("");
+      setSelectedSubcategory([]);
       return;
     }
+    // Load subcategories for first selected category
     api
-      .get(`/subcategories?categoryId=${selectedCategory}`)
+      .get(`/subcategories?categoryId=${selectedCategory[0]}`)
       .then((res) => {
         setSubcategories(res.data.data?.subCategories || []);
-        setSelectedSubcategory("");
+        setSelectedSubcategory([]);
       })
       .catch(console.error);
   }, [selectedCategory]);
 
-  // fetch products from server — fires on page, category, subcategory, searchQuery, discountOnly
-  // client-side filters (price range, sort) work on the current page results
   const loadProducts = async (p = page) => {
     try {
       setLoading(true);
@@ -169,10 +502,11 @@ const ProductsPage = () => {
       const result = await fetchProducts({
         page: p,
         limit: LIMIT,
-        categoryId: selectedCategory || undefined,
-        subCategoryId: selectedSubcategory || undefined,
+        categoryId: selectedCategory.length ? selectedCategory[0] : undefined,
+        subCategoryId: selectedSubcategory.length
+          ? selectedSubcategory[0]
+          : undefined,
         search: searchQuery.trim() || undefined,
-        isFeatured: undefined,
       });
       setProducts(result.products);
       setPagination(result.pagination);
@@ -187,7 +521,7 @@ const ProductsPage = () => {
   useEffect(() => {
     setPage(1);
     loadProducts(1);
-  }, [selectedCategory, selectedSubcategory, searchQuery, discountOnly]);
+  }, [selectedCategory, selectedSubcategory, searchQuery]);
 
   const handlePage = (p) => {
     setPage(p);
@@ -195,22 +529,17 @@ const ProductsPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // client-side price, discount, sort filtering on current page
   const filteredProducts = useMemo(() => {
     let result = [...products];
     if (discountOnly) result = result.filter((p) => p.discount > 0);
-    if (priceRange.min !== "") {
-      result = result.filter((p) => {
-        const fp = p.price - (p.price * (p.discount || 0)) / 100;
-        return fp >= Number(priceRange.min);
-      });
-    }
-    if (priceRange.max !== "") {
-      result = result.filter((p) => {
-        const fp = p.price - (p.price * (p.discount || 0)) / 100;
-        return fp <= Number(priceRange.max);
-      });
-    }
+    if (minDiscount !== null)
+      result = result.filter((p) => (p.discount || 0) >= minDiscount);
+    const minPrice = priceRange.min !== "" ? Number(priceRange.min) : 0;
+    const maxPrice = priceRange.max !== "" ? Number(priceRange.max) : Infinity;
+    result = result.filter((p) => {
+      const fp = p.price - (p.price * (p.discount || 0)) / 100;
+      return fp >= minPrice && fp <= maxPrice;
+    });
     if (sortBy === "price_asc") result.sort((a, b) => a.price - b.price);
     if (sortBy === "price_desc") result.sort((a, b) => b.price - a.price);
     if (sortBy === "name_asc")
@@ -218,308 +547,290 @@ const ProductsPage = () => {
     if (sortBy === "name_desc")
       result.sort((a, b) => b.name.localeCompare(a.name));
     return result;
-  }, [products, discountOnly, priceRange, sortBy]);
+  }, [products, discountOnly, minDiscount, priceRange, sortBy]);
 
   useEffect(() => {
     if (searchQuery.trim()) trackSearch(searchQuery, filteredProducts.length);
   }, [searchQuery, filteredProducts.length]);
 
   const handleClearFilters = () => {
-    setSelectedCategory("");
-    setSelectedSubcategory("");
+    setSelectedCategory([]);
+    setSelectedSubcategory([]);
     setPriceRange({ min: "", max: "" });
     setSortBy("");
     setDiscountOnly(false);
+    setMinDiscount(null);
     setSearchQuery("");
   };
 
-  const categoryName = selectedCategory
-    ? categories.find((c) => String(c.id) === String(selectedCategory))?.name
+  const categoryName = selectedCategory.length
+    ? categories.find((c) => String(c.id) === String(selectedCategory[0]))?.name
     : "";
+
   const hasActiveFilters =
-    selectedCategory ||
-    selectedSubcategory ||
+    selectedCategory.length ||
+    selectedSubcategory.length ||
     priceRange.min ||
     priceRange.max ||
     discountOnly ||
+    minDiscount !== null ||
     searchQuery;
 
+  const activeFilterCount = [
+    selectedCategory.length > 0,
+    selectedSubcategory.length > 0,
+    priceRange.min,
+    priceRange.max,
+    discountOnly,
+    minDiscount !== null,
+    searchQuery,
+  ].filter(Boolean).length;
+
+  // ── FilterSection ─────────────────────────────────────────────────────────
   const FilterSection = ({ title, children }) => (
-    <div className="py-4 border-b border-brand-border">
-      <p className="text-xs font-extrabold text-brand-dark uppercase tracking-wider mb-3">
-        {title}
-      </p>
-      {children}
+    <div className="border-b border-[#eaeaec]">
+      <div className="py-3.5">
+        <span className="text-[13px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">
+          {title}
+        </span>
+      </div>
+      <div className="pb-4">{children}</div>
+    </div>
+  );
+
+  // ── SidebarContent ────────────────────────────────────────────────────────
+  const SidebarContent = () => (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between py-3.5 border-b border-[#eaeaec]">
+        <h3 className="text-[15px] font-semibold text-[#282c3f] uppercase tracking-[0.8px]">
+          Filters
+        </h3>
+        {hasActiveFilters && (
+          <button
+            onClick={handleClearFilters}
+            className="text-[13px] font-semibold text-primary hover:underline uppercase tracking-wide"
+          >
+            Clear All
+          </button>
+        )}
+      </div>
+
+      {/* Category */}
+      <FilterSection title="Category">
+        <div className="space-y-2.5">
+          {categories.slice(0, 8).map((cat) => (
+            <label
+              key={cat.id}
+              className="flex items-center gap-2.5 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                checked={selectedCategory.includes(cat.id)}
+                onChange={() => toggleValue(cat.id, setSelectedCategory)}
+                className="accent-primary w-3.5 h-3.5"
+              />
+              <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
+                {cat.name}
+                {cat.count !== undefined && (
+                  <span className="text-[#94969f] ml-1">({cat.count})</span>
+                )}
+              </span>
+            </label>
+          ))}
+          {categories.length > 8 && (
+            <button
+              onClick={() => setCategoryModalOpen(true)}
+              className="text-[13px] text-primary font-semibold hover:underline"
+            >
+              + {categories.length - 8} more
+            </button>
+          )}
+        </div>
+      </FilterSection>
+
+      {/* Subcategory */}
+      {subcategories.length > 0 && (
+        <FilterSection title="Subcategory">
+          <div className="space-y-2.5">
+            {subcategories.slice(0, 8).map((sub) => (
+              <label
+                key={sub.id}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSubcategory.includes(sub.id)}
+                  onChange={() => toggleValue(sub.id, setSelectedSubcategory)}
+                  className="accent-primary w-3.5 h-3.5"
+                />
+                <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
+                  {sub.name}
+                  {sub.count !== undefined && (
+                    <span className="text-[#94969f] ml-1">({sub.count})</span>
+                  )}
+                </span>
+              </label>
+            ))}
+            {subcategories.length > 8 && (
+              <button
+                onClick={() => setSubcategoryModalOpen(true)}
+                className="text-[13px] text-primary font-semibold hover:underline"
+              >
+                + {subcategories.length - 8} more
+              </button>
+            )}
+          </div>
+        </FilterSection>
+      )}
+
+      {/* Price Range Slider */}
+      <FilterSection title="Price Range (₹)">
+        <PriceSlider priceRange={priceRange} setPriceRange={setPriceRange} />
+      </FilterSection>
+
+      {/* Discount Range */}
+      <FilterSection title="Discount Range">
+        <div className="space-y-2.5">
+          {DISCOUNT_OPTIONS.map((pct) => (
+            <label
+              key={pct}
+              className="flex items-center gap-2.5 cursor-pointer group"
+            >
+              <input
+                type="radio"
+                name="discount_range"
+                checked={minDiscount === pct}
+                onChange={() =>
+                  setMinDiscount(minDiscount === pct ? null : pct)
+                }
+                className="accent-primary w-3.5 h-3.5"
+              />
+              <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
+                {pct}% and above
+              </span>
+            </label>
+          ))}
+        </div>
+      </FilterSection>
+
+      {/* Offers */}
+      <FilterSection title="Offers">
+        <label className="flex items-center gap-2.5 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={discountOnly}
+            onChange={(e) => setDiscountOnly(e.target.checked)}
+            className="accent-primary w-3.5 h-3.5"
+          />
+          <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
+            Discounted Only
+          </span>
+        </label>
+      </FilterSection>
     </div>
   );
 
   return (
-    <div className="bg-brand-light min-h-screen">
-      {/* Banner */}
-      <div className="bg-brand-dark text-white">
-        <div className="max-w-screen-xl mx-auto px-4 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-extrabold">
+    <div className="bg-white min-h-screen">
+      {/* Category Modal */}
+      {categoryModalOpen && (
+        <MoreModal
+          title="Category"
+          items={categories}
+          selectedItems={selectedCategory}
+          onToggle={(id) => toggleValue(id, setSelectedCategory)}
+          onClose={() => setCategoryModalOpen(false)}
+        />
+      )}
+
+      {/* Subcategory Modal */}
+      {subcategoryModalOpen && (
+        <MoreModal
+          title="Subcategory"
+          items={subcategories}
+          selectedItems={selectedSubcategory}
+          onToggle={(id) => toggleValue(id, setSelectedSubcategory)}
+          onClose={() => setSubcategoryModalOpen(false)}
+        />
+      )}
+
+      <div className="w-full px-36 py-5">
+        {/* Page title + count + sort */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-baseline gap-2.5">
+            <h3 className="text-[17px] font-bold text-[#282c3f]">
               {categoryName ||
                 (searchQuery ? `"${searchQuery}"` : "All Products")}
-            </h1>
-            <p className="text-white/60 text-sm mt-0.5">
-              {categoryName
-                ? `Explore our ${categoryName} collection`
-                : "Discover premium products at great prices"}
-            </p>
+            </h3>
+            {!loading && pagination && (
+              <span className="text-[17px] text-[#94969f]">
+                - {pagination.total} items
+              </span>
+            )}
           </div>
-          {!loading && pagination && (
-            <span className="bg-white/10 text-white text-sm font-semibold px-4 py-1.5 rounded-full">
-              {pagination.total} {pagination.total === 1 ? "item" : "items"}
-            </span>
-          )}
         </div>
-      </div>
 
-      <div className="max-w-screen-xl mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          {/* Sidebar */}
-          <aside
-            className={`lg:block lg:w-64 flex-shrink-0 ${sidebarOpen ? "block fixed inset-0 z-50 bg-white w-72 overflow-y-auto p-4" : "hidden"}`}
+        <div className="flex gap-0 relative" ref={layoutRef}>
+          {/* Mobile backdrop */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
+          {/* Desktop sidebar wrapper — holds column space */}
+          <div
+            ref={sidebarWrapRef}
+            className="hidden lg:block w-[220px] flex-shrink-0"
           >
-            {sidebarOpen && (
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden flex items-center gap-2 text-sm text-brand-gray mb-4"
-              >
+            {/* Inner sidebar — repositioned by scroll logic */}
+            <div ref={sidebarInnerRef} style={sidebarStyle} className="p-2">
+              <SidebarContent />
+            </div>
+          </div>
+
+          {/* Mobile sidebar */}
+          <aside
+            className={`
+              lg:hidden
+              fixed inset-y-0 left-0 z-50 w-[280px] bg-white overflow-y-auto
+              transition-transform duration-300
+              ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            `}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-[#eaeaec]">
+              <span className="font-extrabold text-[#282c3f]">Filters</span>
+              <button onClick={() => setSidebarOpen(false)}>
                 <svg
-                  width="16"
-                  height="16"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="currentColor"
+                  stroke="#282c3f"
                   strokeWidth="2"
                 >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
-                Close Filters
               </button>
-            )}
-
-            <div className="bg-white rounded shadow-sm p-4">
-              <div className="flex items-center justify-between pb-3 border-b border-brand-border">
-                <h3 className="text-base font-extrabold text-brand-dark uppercase tracking-wide flex items-center gap-2">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <line x1="4" y1="6" x2="20" y2="6" />
-                    <line x1="8" y1="12" x2="16" y2="12" />
-                    <line
-                      x1="12"
-                      y1="18"
-                      x2="12"
-                      y2="18"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  Filters
-                </h3>
-                {hasActiveFilters && (
-                  <button
-                    onClick={handleClearFilters}
-                    className="text-xs font-bold text-primary hover:underline"
-                  >
-                    CLEAR ALL
-                  </button>
-                )}
-              </div>
-
-              <FilterSection title="Sort By">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full border border-brand-border rounded px-3 py-2 text-sm text-brand-dark focus:outline-none focus:border-primary"
-                >
-                  <option value="">Recommended</option>
-                  <option value="price_asc">Price: Low → High</option>
-                  <option value="price_desc">Price: High → Low</option>
-                  <option value="name_asc">Name: A → Z</option>
-                  <option value="name_desc">Name: Z → A</option>
-                </select>
-              </FilterSection>
-
-              <FilterSection title="Category">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="cat"
-                      value=""
-                      checked={selectedCategory === ""}
-                      onChange={() => setSelectedCategory("")}
-                      className="accent-primary"
-                    />
-                    <span className="text-sm text-brand-dark group-hover:text-primary transition-colors">
-                      All Categories
-                    </span>
-                  </label>
-                  {categories.map((cat) => (
-                    <label
-                      key={cat.id}
-                      className="flex items-center gap-2 cursor-pointer group"
-                    >
-                      <input
-                        type="radio"
-                        name="cat"
-                        value={cat.id}
-                        checked={String(selectedCategory) === String(cat.id)}
-                        onChange={() => setSelectedCategory(cat.id)}
-                        className="accent-primary"
-                      />
-                      <span className="text-sm text-brand-dark group-hover:text-primary transition-colors">
-                        {cat.name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              {subcategories.length > 0 && (
-                <FilterSection title="Subcategory">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="subcat"
-                        value=""
-                        checked={selectedSubcategory === ""}
-                        onChange={() => setSelectedSubcategory("")}
-                        className="accent-primary"
-                      />
-                      <span className="text-sm text-brand-dark group-hover:text-primary transition-colors">
-                        All
-                      </span>
-                    </label>
-                    {subcategories.map((sub) => (
-                      <label
-                        key={sub.id}
-                        className="flex items-center gap-2 cursor-pointer group"
-                      >
-                        <input
-                          type="radio"
-                          name="subcat"
-                          value={sub.id}
-                          checked={
-                            String(selectedSubcategory) === String(sub.id)
-                          }
-                          onChange={() => setSelectedSubcategory(sub.id)}
-                          className="accent-primary"
-                        />
-                        <span className="text-sm text-brand-dark group-hover:text-primary transition-colors">
-                          {sub.name}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </FilterSection>
-              )}
-
-              <FilterSection title="Price Range (₹)">
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceRange.min}
-                    min="0"
-                    onChange={(e) =>
-                      setPriceRange((p) => ({ ...p, min: e.target.value }))
-                    }
-                    className="w-1/2 border border-brand-border rounded px-2 py-1.5 text-sm focus:outline-none focus:border-primary"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceRange.max}
-                    min="0"
-                    onChange={(e) =>
-                      setPriceRange((p) => ({ ...p, max: e.target.value }))
-                    }
-                    className="w-1/2 border border-brand-border rounded px-2 py-1.5 text-sm focus:outline-none focus:border-primary"
-                  />
-                </div>
-              </FilterSection>
-
-              <FilterSection title="Offers">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={discountOnly}
-                    onChange={(e) => setDiscountOnly(e.target.checked)}
-                    className="accent-primary w-4 h-4"
-                  />
-                  <span className="text-sm text-brand-dark group-hover:text-primary transition-colors">
-                    Discounted Only
-                  </span>
-                </label>
-              </FilterSection>
-
-              {hasActiveFilters && (
-                <div className="pt-3">
-                  <p className="text-xs font-extrabold text-brand-dark uppercase tracking-wider mb-2">
-                    Active Filters
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {searchQuery && (
-                      <span className="flex items-center gap-1 bg-primary-light text-primary text-xs font-semibold px-2 py-1 rounded-full">
-                        "{searchQuery}"{" "}
-                        <button onClick={() => setSearchQuery("")}>×</button>
-                      </span>
-                    )}
-                    {selectedSubcategory && (
-                      <span className="flex items-center gap-1 bg-primary-light text-primary text-xs font-semibold px-2 py-1 rounded-full">
-                        {
-                          subcategories.find(
-                            (s) => String(s.id) === String(selectedSubcategory),
-                          )?.name
-                        }
-                        <button onClick={() => setSelectedSubcategory("")}>
-                          ×
-                        </button>
-                      </span>
-                    )}
-                    {discountOnly && (
-                      <span className="flex items-center gap-1 bg-primary-light text-primary text-xs font-semibold px-2 py-1 rounded-full">
-                        Offers Only{" "}
-                        <button onClick={() => setDiscountOnly(false)}>
-                          ×
-                        </button>
-                      </span>
-                    )}
-                    {(priceRange.min || priceRange.max) && (
-                      <span className="flex items-center gap-1 bg-primary-light text-primary text-xs font-semibold px-2 py-1 rounded-full">
-                        ₹{priceRange.min || "0"} – ₹{priceRange.max || "∞"}
-                        <button
-                          onClick={() => setPriceRange({ min: "", max: "" })}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
+            </div>
+            <div className="p-4">
+              <SidebarContent />
             </div>
           </aside>
 
-          {/* Products Area */}
-          <div className="flex-1 min-w-0">
-            {/* Mobile filter toggle */}
-            <div className="lg:hidden mb-4">
+          <div className="hidden lg:block w-px bg-[#eaeaec] flex-shrink-0" />
+
+          {/* Products grid */}
+          <div className="flex-1 min-w-0 ">
+            {/* <div className="flex items-center gap-3 justify-end">
+              <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="flex items-center gap-2 border border-brand-border bg-white px-4 py-2 rounded text-sm font-semibold text-brand-dark"
+                className="lg:hidden flex items-center gap-2 border border-[#d4d5d9] px-4 py-2 text-[13px] font-semibold text-[#282c3f]"
               >
                 <svg
                   width="14"
@@ -531,21 +842,231 @@ const ProductsPage = () => {
                 >
                   <line x1="4" y1="6" x2="20" y2="6" />
                   <line x1="8" y1="12" x2="16" y2="12" />
-                  <line x1="12" y1="18" x2="12" y2="18" />
                 </svg>
-                Filters{" "}
-                {hasActiveFilters
-                  ? `(${[selectedCategory, selectedSubcategory, priceRange.min, priceRange.max, discountOnly, searchQuery].filter(Boolean).length})`
-                  : ""}
+                Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
               </button>
-            </div>
 
+              {hasActiveFilters && (
+                <div className="flex flex-wrap items-center gap-2 mb-4 border-b border-[#eaeaec]">
+                  {selectedCategory.map((catId) => {
+                    const cat = categories.find(
+                      (c) => String(c.id) === String(catId),
+                    );
+                    return cat ? (
+                      <span
+                        key={catId}
+                        className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors"
+                      >
+                        {cat.name}
+                        <button
+                          onClick={() =>
+                            toggleValue(catId, setSelectedCategory)
+                          }
+                          className="text-[#94969f] hover:text-primary font-bold leading-none"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ) : null;
+                  })}
+                  {selectedSubcategory.map((subId) => {
+                    const sub = subcategories.find(
+                      (s) => String(s.id) === String(subId),
+                    );
+                    return sub ? (
+                      <span
+                        key={subId}
+                        className="flex items-center gap-1.5 border border-[#d4d5d9] text-[#282c3f] text-[12px] font-semibold px-3 py-1.5 bg-white hover:border-primary transition-colors"
+                      >
+                        {sub.name}
+                        <button
+                          onClick={() =>
+                            toggleValue(subId, setSelectedSubcategory)
+                          }
+                          className="text-[#94969f] hover:text-primary font-bold leading-none"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ) : null;
+                  })}
+                  {discountOnly && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] text-[#282c3f] text-[12px] font-semibold px-3 py-1.5 bg-white hover:border-primary transition-colors">
+                      Offers
+                      <button
+                        onClick={() => setDiscountOnly(false)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {minDiscount !== null && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] text-[#282c3f] text-[12px] font-semibold px-3 py-1.5 bg-white hover:border-primary transition-colors">
+                      {minDiscount}% and above
+                      <button
+                        onClick={() => setMinDiscount(null)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {(priceRange.min || priceRange.max) && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] text-[#282c3f] text-[12px] font-semibold px-3 py-1.5 bg-white hover:border-primary transition-colors">
+                      ₹{priceRange.min || "0"} – ₹
+                      {priceRange.max || `${MAX_PRICE}+`}
+                      <button
+                        onClick={() => setPriceRange({ min: "", max: "" })}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {searchQuery && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] text-[#282c3f] text-[12px] font-semibold px-3 py-1.5 bg-white hover:border-primary transition-colors">
+                      "{searchQuery}"
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div> */}
+            {/* Products grid header */}
+            <div className="flex items-end justify-between gap-4 flex-wrap m-1.5">
+              {/* LEFT → Active filter chips */}
+              {hasActiveFilters && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedCategory.map((catId) => {
+                    const cat = categories.find(
+                      (c) => String(c.id) === String(catId),
+                    );
+                    return cat ? (
+                      <span
+                        key={catId}
+                        className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors"
+                      >
+                        {cat.name}
+                        <button
+                          onClick={() =>
+                            toggleValue(catId, setSelectedCategory)
+                          }
+                          className="text-[#94969f] hover:text-primary font-bold leading-none"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ) : null;
+                  })}
+
+                  {selectedSubcategory.map((subId) => {
+                    const sub = subcategories.find(
+                      (s) => String(s.id) === String(subId),
+                    );
+                    return sub ? (
+                      <span
+                        key={subId}
+                        className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors"
+                      >
+                        {sub.name}
+                        <button
+                          onClick={() =>
+                            toggleValue(subId, setSelectedSubcategory)
+                          }
+                          className="text-[#94969f] hover:text-primary font-bold leading-none"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ) : null;
+                  })}
+
+                  {discountOnly && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
+                      Offers
+                      <button
+                        onClick={() => setDiscountOnly(false)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+
+                  {minDiscount !== null && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
+                      {minDiscount}% and above
+                      <button
+                        onClick={() => setMinDiscount(null)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+
+                  {(priceRange.min || priceRange.max) && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
+                      ₹{priceRange.min || "0"} – ₹
+                      {priceRange.max || `${MAX_PRICE}+`}
+                      <button
+                        onClick={() => setPriceRange({ min: "", max: "" })}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+
+                  {searchQuery && (
+                    <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
+                      "{searchQuery}"
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* RIGHT → Sort + Mobile Filter */}
+              <div className="flex items-center gap-3 ml-auto">
+                <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden flex items-center gap-2 border border-[#d4d5d9] px-4 py-2 text-[13px] font-semibold text-[#282c3f]"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+                </button>
+              </div>
+            </div>
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-12">
                 {[...Array(LIMIT)].map((_, i) => (
                   <div
                     key={i}
-                    className="bg-white rounded aspect-[3/4] animate-pulse"
+                    className="bg-[#f5f5f6] aspect-[3/4] animate-pulse"
                   />
                 ))}
               </div>
@@ -555,19 +1076,17 @@ const ProductsPage = () => {
               </div>
             ) : filteredProducts.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-12 p-5 mt-3 border-t border-[#eaeaec] shadow-[0_-1px_8px_rgba(0,0,0,0.03)]">
                   {filteredProducts.map((product, i) => (
                     <div
                       key={product.id}
-                      className="animate-fade-up"
-                      style={{ animationDelay: `${i * 0.04}s` }}
+                      style={{ animationDelay: `${i * 0.03}s` }}
                     >
                       <ProductCard product={product} />
                     </div>
                   ))}
                 </div>
 
-                {/* Pagination */}
                 <Pagination
                   pagination={pagination}
                   page={page}
@@ -575,7 +1094,7 @@ const ProductsPage = () => {
                 />
 
                 {pagination && (
-                  <p className="text-center text-xs text-brand-gray mt-3">
+                  <p className="text-center text-xs text-[#94969f] mt-3">
                     Showing {(page - 1) * LIMIT + 1}–
                     {Math.min(page * LIMIT, pagination.total)} of{" "}
                     {pagination.total} products
@@ -595,15 +1114,15 @@ const ProductsPage = () => {
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.35-4.35" />
                 </svg>
-                <h2 className="text-xl font-bold text-brand-dark mt-4">
+                <h2 className="text-xl font-bold text-[#282c3f] mt-4">
                   No products found
                 </h2>
-                <p className="text-brand-gray mt-1 text-sm">
+                <p className="text-[#94969f] mt-1 text-sm">
                   Try adjusting your filters or search term
                 </p>
                 <button
                   onClick={handleClearFilters}
-                  className="mt-5 bg-primary text-white px-6 py-2.5 text-sm font-bold hover:bg-primary-hover transition-colors rounded-sm"
+                  className="mt-5 bg-primary text-white px-6 py-2.5 text-sm font-bold hover:bg-primary-hover transition-colors"
                 >
                   CLEAR FILTERS
                 </button>

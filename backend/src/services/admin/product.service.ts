@@ -76,7 +76,7 @@ export const getAllProducts = async (filters?: {
   limit?: number;
 }) => {
   const page = Math.max(1, filters?.page ?? 1);
-  const limit = Math.min(100, Math.max(1, filters?.limit ?? 10));
+  const limit = Math.min(10000, Math.max(1, filters?.limit ?? 10)); // ← 100 to 10000
   const skip = (page - 1) * limit;
 
   const where: any = {};

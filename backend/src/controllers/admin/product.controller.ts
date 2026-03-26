@@ -169,7 +169,9 @@ export const bulkDeleteProducts = catchAsyncHandler(
 export const getProductsPage = async (req: AuthRequest, res: Response) => {
   try {
     if (req.headers.accept?.includes("application/json")) {
-      const result = await productService.getAllProducts();
+      const result = await productService.getAllProducts({
+        limit: 10000, // ← add this
+      });
       return res.json({
         success: true,
         count: result.pagination.total,

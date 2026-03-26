@@ -7,12 +7,13 @@ $(document).ready(function () {
     serverSide: false,
     processing: true,
     ajax: {
-      url: productUrl,
+      url: `${productUrl}?limit=10000`, // ← fetch all
       type: "GET",
       headers: { Accept: "application/json" },
       xhrFields: { withCredentials: true },
       dataSrc: function (json) {
-        allProducts = json.data || [];
+        console.log("API response:", json);
+        allProducts = json.data?.products || json.data || [];
         return allProducts;
       },
       cache: true,

@@ -32,20 +32,9 @@ const Header = () => {
   useEffect(() => {
     const loadNavCategories = async () => {
       try {
-        const [catRes, prodRes] = await Promise.all([
-          api.get("/categories"),
-          api.get("/products"),
-        ]);
-        const allCategories = catRes.data.data?.categories || [];
-        const allProducts =
-          prodRes.data.data?.products || prodRes.data.data || [];
-        const categoryIdsWithProducts = new Set(
-          allProducts.map((p) => p.subCategory?.category?.id).filter(Boolean),
-        );
-        const filtered = allCategories.filter((cat) =>
-          categoryIdsWithProducts.has(cat.id),
-        );
-        setNavCategories(filtered);
+        const res = await api.get("/categories");
+        const allCategories = res.data.data?.categories || [];
+        setNavCategories(allCategories.slice(0, 4)); // show only 4 in nav
       } catch (err) {
         console.error("Failed to load nav categories", err);
       }
@@ -90,6 +79,13 @@ const Header = () => {
     navigate("/");
   };
 
+  const handleContactUs = async () => {
+    navigate("/contact");
+  };
+
+  const handleWishlist = async () => {
+    navigate("/wishlist");
+  };
   const formatPrice = (price) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -103,7 +99,7 @@ const Header = () => {
   const isActiveCat = (catId) => location.search.includes(`category=${catId}`);
 
   const navLinkClass = (active) =>
-    `flex-shrink-0 flex items-center justify-center h-14 px-3 font-bold tracking-[0.8px] whitespace-nowrap border-b-2 transition-all duration-150 no-underline text-md ${
+    `flex-shrink-0 flex items-center justify-center h-14 px-3 font-bold tracking-[0.8px] whitespace-nowrap border-b-2 transition-all duration-150 no-underline text-sm ${
       active
         ? "border-[#ff3f6c] text-[#ff3f6c]"
         : "border-transparent text-[#282c3f] hover:text-[#ff3f6c] hover:border-[#ff3f6c]"
@@ -342,6 +338,58 @@ const Header = () => {
                     </svg>
                     My Orders
                   </button>
+
+                  <button
+                    onClick={handleWishlist}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px]  text-left hover:bg-[#f5f5f6] transition-colors"
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#282c3f"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="group-hover:stroke-[#ff3f6c] transition-colors duration-150 block"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    Wishlist
+                  </button>
+
+                  <button
+                    onClick={handleContactUs}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px]  text-left hover:bg-[#f5f5f6] transition-colors"
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 
+    19.79 19.79 0 0 1-8.63-3.07 
+    19.5 19.5 0 0 1-6-6 
+    19.79 19.79 0 0 1-3.07-8.67A2 
+    2 0 0 1 4.11 2h3a2 2 0 0 1 
+    2 1.72c.12.89.32 1.76.59 
+    2.59a2 2 0 0 1-.45 
+    2.11L8.09 9.91a16 
+    16 0 0 0 6 6l1.49-1.16a2 
+    2 0 0 1 2.11-.45c.83.27 
+    1.7.47 2.59.59A2 2 0 0 1 22 16.92z"
+                      />
+                    </svg>
+                    Contact Us
+                  </button>
+
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px] text-[#ff3f6c] text-left hover:bg-[#fff0f3] transition-colors"

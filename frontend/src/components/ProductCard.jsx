@@ -1,51 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useNavigate } from "react-router-dom";
 
-const STATIC_REVIEWS = [
-  {
-    id: 1,
-    name: "Priya Sharma",
-    avatar: "PS",
-    rating: 5,
-    date: "March 12, 2026",
-    title: "Absolutely love this product!",
-    body: "The quality exceeded my expectations. Packaging was secure and delivery was fast. Will definitely order again from this store.",
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Rohan Mehta",
-    avatar: "RM",
-    rating: 4,
-    date: "February 28, 2026",
-    title: "Great value for money",
-    body: "Solid product, works exactly as described. Minor quibble with the packaging but the item itself is perfect.",
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Anjali Patel",
-    avatar: "AP",
-    rating: 5,
-    date: "February 15, 2026",
-    title: "Exceeded all my expectations",
-    body: "I was a bit skeptical ordering online but this completely changed my mind. Premium quality, fast shipping, and great customer support.",
-    verified: false,
-  },
-  {
-    id: 4,
-    name: "Vikram Singh",
-    avatar: "VS",
-    rating: 4,
-    date: "January 30, 2026",
-    title: "Highly recommend!",
-    body: "Used it for a month now and it's holding up great. Looks even better in person than the photos suggest.",
-    verified: true,
-  },
-];
+const formatPrice = (price) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  })
+    .format(price)
+    .replace("₹", "Rs. ");
 
 const ProductCard = ({ product }) => {
   const { addToCart, updateQuantity, cartItems } = useCart();
@@ -57,216 +23,158 @@ const ProductCard = ({ product }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState("");
 
-  const avgRating = 4.5;
-  const ratingCount = STATIC_REVIEWS.length;
-
-  const inStock = product.stock > 0;
-  const lowStock = product.stock > 0 && product.stock <= 5;
-  const status = product.status;
-
-  const cartItem = cartItems?.find(
-    (item) => item.id === product.id || item.productId === product.id,
+  const cartItem = useMemo(
+    () =>
+      cartItems?.find(
+        (item) => item.id === product.id || item.productId === product.id,
+      ),
+    [cartItems, product.id],
   );
+
   const quantity = cartItem?.quantity || 0;
+  const inStock = product.stock > 0;
+  const isActive = product.status === "ACTIVE";
 
   const discountedPrice = product.discount
     ? product.price - (product.price * product.discount) / 100
     : product.price;
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price);
+  const handleNavigate = () => navigate(`/products/${product.id}`);
 
-  const handleCardClick = () => navigate(`/products/${product.id}`);
+  const requireAuth = () => {
+    if (!user) {
+      navigate("/login");
+      return false;
+    }
+    return true;
+  };
 
   const handleWishlist = (e) => {
     e.stopPropagation();
-    if (!user) return navigate("/login");
+    if (!requireAuth()) return;
+
     const added = toggleWishlist(product);
     setWishlistMsg(added ? "Added to Wishlist!" : "Removed from Wishlist");
+
     setTimeout(() => setWishlistMsg(""), 2000);
-  };
-
-  const handleAddToCart = async (e) => {
-    e.stopPropagation();
-    if (!user) return navigate("/login");
-    if (!inStock) return;
-    try {
-      setIsAdding(true);
-      setError("");
-      await addToCart(product);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to add to cart");
-    } finally {
-      setIsAdding(false);
-    }
-  };
-
-  const handleIncrease = async (e) => {
-    e.stopPropagation();
-    if (!user) return navigate("/login");
-    if (quantity >= product.stock) return;
-    await updateQuantity(cartItem.cartItemId, quantity + 1);
-  };
-
-  const handleDecrease = async (e) => {
-    e.stopPropagation();
-    if (!user) return navigate("/login");
-    await updateQuantity(cartItem.cartItemId, quantity - 1);
   };
 
   return (
     <div
-      onClick={handleCardClick}
-      className={`group relative bg-white cursor-pointer overflow-hidden border border-brand-border hover:shadow-md transition-all duration-300 ${
-        !inStock ? "opacity-70" : ""
-      }`}
+      onClick={handleNavigate}
+      className="group relative bg-white cursor-pointer overflow-hidden hover:shadow-sm transition"
     >
-      {/* Image */}
-      <div className="relative overflow-hidden bg-brand-light aspect-[3/4]">
+      {/* IMAGE */}
+      <div className="relative aspect-[4/5] bg-[#f5f5f6] overflow-hidden">
         <img
           src={product.image || "/placeholder.png"}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Badges */}
-        {product.discount > 0 && (
-          <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-sm">
-            {product.discount}% OFF
+        {/* RATING (on image like Myntra) */}
+        <div className="absolute bottom-2 left-2 bg-white px-2 py-[2px] flex items-center text-[11px] font-semibold rounded shadow-sm">
+          <span className="flex items-center gap-[2px] text-[#282c3f]">
+            4.5
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="#14958f">
+              <polygon points="12 2 15 9 22 9 17 14 19 22 12 18 5 22 7 14 2 9 9 9" />
+            </svg>
           </span>
-        )}
 
-        {lowStock && inStock && (
-          <span className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
-            Only {product.stock} left
-          </span>
-        )}
+          <span className="mx-1 text-[#94969f]">|</span>
 
-        {!inStock && (
-          <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-            <span className="text-xs font-bold text-brand-gray border border-brand-border px-3 py-1 bg-white rounded-sm">
-              OUT OF STOCK
-            </span>
-          </div>
-        )}
-
-        {status !== "ACTIVE" && (
-          <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-            <span className="text-xs font-bold text-brand-gray border border-brand-border px-3 py-1 bg-white rounded-sm">
-              Product is not Available
-            </span>
-          </div>
-        )}
-
-        {/* Default bottom (Rating) */}
-        <div className="absolute inset-x-0 bottom-0 bg-white/90 backdrop-blur-sm px-2 py-1.5 text-xs flex items-center justify-between transition-opacity duration-300 group-hover:opacity-0">
-          <div className="flex items-center gap-1">
-            <span className="bg-green-600 text-white px-1 rounded text-[10px] font-bold">
-              {avgRating} ★
-            </span>
-            <span className="text-brand-gray">({ratingCount})</span>
-          </div>
+          <span className="text-[#94969f]">4</span>
         </div>
 
-        {/* Hover Wishlist */}
+        {/* OUT OF STOCK */}
+        {!inStock && <Overlay label="OUT OF STOCK" />}
+        {!isActive && <Overlay label="Not available" />}
+
+        {/* HOVER PANEL */}
         <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-all duration-300">
-          <button
-            onClick={handleWishlist}
-            className={`w-full text-xs font-bold py-2.5 tracking-wider flex items-center justify-center gap-1.5
-            ${
-              isInWishlist(product.id)
-                ? "bg-primary text-white"
-                : "bg-brand-dark text-white hover:bg-primary"
-            }`}
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill={isInWishlist(product.id) ? "white" : "none"}
-              stroke="white"
-              strokeWidth="2"
+          <div className="bg-white border-t border-[#eaeaec] p-2">
+            <button
+              onClick={handleWishlist}
+              className={`w-full text-[12px] font-bold py-2 flex items-center justify-center gap-1.5 rounded
+                ${
+                  isInWishlist(product.id)
+                    ? "bg-gray-700 text-white"
+                    : "border border-[#d4d5d9] text-[#282c3f] hover:border-gray-600"
+                }`}
             >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            {isInWishlist(product.id) ? "WISHLISTED ✓" : "WISHLIST"}
-          </button>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill={isInWishlist(product.id) ? "#ff3f6c" : "none"}
+                stroke={isInWishlist(product.id) ? "#ff3f6c" : "#282c3f"}
+                strokeWidth="2"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+
+              {isInWishlist(product.id) ? "WISHLISTED" : "WISHLIST"}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Info */}
-      <div className="p-3">
-        <p className="text-[11px] font-bold text-brand-dark uppercase tracking-wide truncate">
-          {product.subCategory?.category?.name || "Brand"}
-        </p>
+      {/* INFO */}
+      <div className="px-2 py-2">
+        {/* FIXED HEIGHT → no jump */}
+        <div className="relative overflow-hidden">
+          {/* NORMAL */}
+          <div className="transition-all duration-200 group-hover:opacity-0 group-hover:-translate-y-2">
+            <p className="text-[16px] font-bold text-[#282c3f] truncate">
+              {product.subCategory?.category?.name || "Brand"}
+            </p>
 
-        <p className="text-sm text-brand-gray line-clamp-2 mt-0.5">
-          {product.name}
-        </p>
+            <p className="text-[14px] text-[#535766] truncate">
+              {product.name}
+            </p>
+          </div>
 
-        {/* Price */}
-        <div className="flex items-baseline gap-2 mt-1.5 flex-wrap">
-          <span className="text-sm font-bold text-brand-dark">
+          {/* HOVER */}
+          <div className="absolute inset-0 flex items-center opacity-0 translate-y-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+            <p className="text-[14px] text-[#535766]">Sizes: OneSize</p>
+          </div>
+        </div>
+
+        {/* PRICE (stable, no jump) */}
+        <div className="flex items-center gap-2 mt-1 text-[14px]">
+          <span className="font-bold text-[#282c3f]">
             {formatPrice(discountedPrice)}
           </span>
 
           {product.discount > 0 && (
             <>
-              <span className="text-xs text-brand-gray line-through">
+              <span className="line-through text-[#94969f]">
                 {formatPrice(product.price)}
               </span>
-              <span className="text-xs font-bold text-primary">
+              <span className="text-[#ff905a] font-semibold">
                 ({product.discount}% OFF)
               </span>
             </>
           )}
         </div>
 
-        {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+        {error && <p className="text-[11px] text-red-500 mt-1">{error}</p>}
         {wishlistMsg && (
-          <p className="text-xs text-primary font-semibold mt-1">
+          <p className="text-[11px] text-primary mt-1 font-semibold">
             {wishlistMsg}
           </p>
         )}
-
-        {/* Cart */}
-        <div className="mt-2.5" onClick={(e) => e.stopPropagation()}>
-          {quantity > 0 ? (
-            <div className="flex items-center border border-primary rounded overflow-hidden w-fit">
-              <button
-                onClick={handleDecrease}
-                className="w-8 h-8 text-primary font-bold"
-              >
-                −
-              </button>
-              <span className="w-8 h-8 flex items-center justify-center text-sm font-bold text-primary border-x border-primary">
-                {quantity}
-              </span>
-              <button
-                onClick={handleIncrease}
-                disabled={quantity >= product.stock}
-                className="w-8 h-8 text-primary font-bold disabled:opacity-40"
-              >
-                +
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleAddToCart}
-              disabled={!inStock || isAdding || status !== "ACTIVE"}
-              className="w-full border border-primary text-primary text-xs font-bold py-2 rounded-sm hover:bg-primary hover:text-white transition-all disabled:opacity-50"
-            >
-              {isAdding ? "ADDING..." : "ADD TO BAG"}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
 };
+
+const Overlay = ({ label }) => (
+  <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+    <span className="text-xs font-bold border px-3 py-1 bg-white rounded-sm">
+      {label}
+    </span>
+  </div>
+);
 
 export default ProductCard;

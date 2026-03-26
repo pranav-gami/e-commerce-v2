@@ -2,15 +2,15 @@ import Joi from "joi";
 import { ProductStatus } from "@prisma/client";
 
 export const createProductSchema = Joi.object({
-  name: Joi.string().trim().min(2).max(25).required().messages({
+  name: Joi.string().trim().min(2).max(200).required().messages({
     "string.empty": "Name is required",
     "any.required": "Name is required",
     "string.min": "Name must be at least 2 characters",
-    "string.max": "Name must not exceed 25 characters",
+    "string.max": "Name must not exceed 200 characters",
   }),
 
-  description: Joi.string().trim().max(1000).optional().allow("").messages({
-    "string.max": "Description must not exceed 1000 characters",
+  description: Joi.string().trim().max(1500).optional().allow("").messages({
+    "string.max": "Description must not exceed 1500 characters",
   }),
 
   price: Joi.number().positive().required().messages({
@@ -50,13 +50,13 @@ export const createProductSchema = Joi.object({
 });
 
 export const updateProductSchema = Joi.object({
-  name: Joi.string().trim().min(2).max(25).optional().messages({
+  name: Joi.string().trim().min(2).max(200).optional().messages({
     "string.min": "Name must be at least 2 characters",
-    "string.max": "Name must not exceed 25 characters",
+    "string.max": "Name must not exceed 200 characters",
   }),
 
-  description: Joi.string().trim().max(1000).optional().allow("").messages({
-    "string.max": "Description must not exceed 1000 characters",
+  description: Joi.string().trim().max(1500).optional().allow("").messages({
+    "string.max": "Description must not exceed 1500 characters",
   }),
 
   price: Joi.number().positive().optional().messages({

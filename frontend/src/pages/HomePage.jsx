@@ -58,21 +58,12 @@ const HomePage = () => {
     const loadCategories = async () => {
       try {
         setCategoriesLoading(true);
-        const [catRes, prodRes] = await Promise.all([
-          api.get("/categories"),
-          api.get("/products"),
-        ]);
-        const allCategories = catRes.data.data?.categories || [];
-        const allProducts =
-          prodRes.data.data?.products || prodRes.data.data || [];
-        const categoryIdsWithProducts = new Set(
-          allProducts.map((p) => p.subCategory?.category?.id).filter(Boolean),
-        );
-        const filtered = allCategories.filter((cat) =>
-          categoryIdsWithProducts.has(cat.id),
-        );
+        const res = await api.get("/categories");
+        const allCategories = res.data.data?.categories || [];
+        console.log("Categories found:", allCategories.length);
+
         setCategories(
-          filtered.map((cat) => ({
+          allCategories.map((cat) => ({
             ...cat,
             image: cat.image ? `${BACKEND_URL}${cat.image}` : null,
           })),
@@ -89,9 +80,9 @@ const HomePage = () => {
   useEffect(() => {
     const loadFeatured = async () => {
       try {
-        const res = await api.get("/products?limit=8&isFeatured=true");
+        const res = await api.get("/products?limit=12&isFeatured=true");
         const data = res.data.data?.products || res.data.data || [];
-        setFeaturedProducts(Array.isArray(data) ? data.slice(0, 8) : []);
+        setFeaturedProducts(Array.isArray(data) ? data.slice(0, 12) : []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -276,7 +267,7 @@ const HomePage = () => {
         </h2>
 
         {categoriesLoading ? (
-          <div className="grid grid-cols-6 gap-6 justify-center">
+          <div className="grid grid-cols-6 gap-6">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
@@ -286,11 +277,7 @@ const HomePage = () => {
             ))}
           </div>
         ) : categories.length > 0 ? (
-          <div
-            className={`grid grid-cols-6 gap-6 ${
-              categories.length < 6 ? "justify-items-center" : ""
-            }`}
-          >
+          <div className="grid grid-cols-6 gap-6">
             {categories.slice(0, 6).map((cat) => (
               <Link
                 to={`/products?category=${cat.id}`}
@@ -431,7 +418,7 @@ const HomePage = () => {
       </section> */}
       {/* Featured Products */}
       <section className="py-10 bg-brand-light">
-        <div className="max-w-screen-xl mx-auto px-4">
+        <div className="w-full px-16">
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-xs font-bold text-primary uppercase tracking-widest">
@@ -450,8 +437,8 @@ const HomePage = () => {
           </div>
 
           {featuredLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+              {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
                   className="bg-white rounded aspect-[3/4] animate-pulse"
@@ -459,7 +446,7 @@ const HomePage = () => {
               ))}
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
               {featuredProducts.map((product, i) => {
                 const discounted = product.discount
                   ? product.price - (product.price * product.discount) / 100

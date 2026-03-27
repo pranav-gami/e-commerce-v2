@@ -6,6 +6,7 @@ import { useInventory } from "../context/InventoryContext";
 import ProductCard from "../components/ProductCard";
 import { trackSearch } from "../utils/analytics";
 import api from "../utils/api";
+import Slider from "@mui/material/Slider";
 
 const LIMIT = 40;
 
@@ -30,13 +31,25 @@ const Pagination = ({ pagination, page, onPage }) => {
         disabled={!hasPrevPage}
         className="w-9 h-9 flex items-center justify-center border border-[#d4d5d9] bg-white text-[#94969f] hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
       {pages.map((p, i) =>
         p === "..." ? (
-          <span key={`d${i}`} className="w-9 h-9 flex items-center justify-center text-[#94969f] text-sm">…</span>
+          <span
+            key={`d${i}`}
+            className="w-9 h-9 flex items-center justify-center text-[#94969f] text-sm"
+          >
+            …
+          </span>
         ) : (
           <button
             key={p}
@@ -56,7 +69,14 @@ const Pagination = ({ pagination, page, onPage }) => {
         disabled={!hasNextPage}
         className="w-9 h-9 flex items-center justify-center border border-[#d4d5d9] bg-white text-[#94969f] hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
@@ -78,35 +98,62 @@ const SortDropdown = ({ sortBy, setSortBy }) => {
   const ref = useRef(null);
 
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const currentLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Recommended";
+  const currentLabel =
+    SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Recommended";
 
   return (
-    <div ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <button
         className="flex items-center gap-2 border border-[#d4d5d9] px-4 py-2.5 text-[13px] font-semibold text-[#282c3f] bg-white hover:border-[#282c3f] transition-colors min-w-[200px] justify-between"
         onClick={() => setOpen((o) => !o)}
       >
-        <span><span className="text-[#94969f] font-normal">Sort by : </span>{currentLabel}</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#282c3f" strokeWidth="2.5"
-          className={`transition-transform duration-200 flex-shrink-0 ${open ? "rotate-180" : ""}`}>
+        <span>
+          <span className="text-[#94969f] font-normal">Sort by : </span>
+          {currentLabel}
+        </span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#282c3f"
+          strokeWidth="2.5"
+          className={`transition-transform duration-200 flex-shrink-0 ${open ? "rotate-180" : ""}`}
+        >
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
       {open && (
         <div className="absolute right-0 top-full z-50 bg-white border border-[#d4d5d9] shadow-lg min-w-[200px] py-1">
           {SORT_OPTIONS.map((opt) => (
-            <button key={opt.value} onClick={() => { setSortBy(opt.value); setOpen(false); }}
+            <button
+              key={opt.value}
+              onClick={() => {
+                setSortBy(opt.value);
+                setOpen(false);
+              }}
               className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
-                sortBy === opt.value ? "bg-[#fff0f3] text-primary font-semibold" : "text-[#282c3f] hover:bg-[#f5f5f6]"
+                sortBy === opt.value
+                  ? "bg-[#fff0f3] text-primary font-semibold"
+                  : "text-[#282c3f] hover:bg-[#f5f5f6]"
               }`}
             >
               {opt.label}
-              {sortBy === opt.value && <span className="float-right text-primary">✓</span>}
+              {sortBy === opt.value && (
+                <span className="float-right text-primary">✓</span>
+              )}
             </button>
           ))}
         </div>
@@ -118,50 +165,94 @@ const SortDropdown = ({ sortBy, setSortBy }) => {
 // ─── More Items Modal ─────────────────────────────────────────────────────────
 const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
   const [search, setSearch] = useState("");
-  const filtered = items.filter((item) => item.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = items.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white w-[480px] max-h-[70vh] flex flex-col shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#eaeaec]">
-          <h3 className="text-[15px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">{title}</h3>
-          <button onClick={onClose} className="text-[#94969f] hover:text-[#282c3f]">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          <h3 className="text-[15px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">
+            {title}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-[#94969f] hover:text-[#282c3f]"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
         <div className="px-5 py-3 border-b border-[#eaeaec]">
           <div className="flex items-center gap-2 border border-[#d4d5d9] px-3 py-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#94969f"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
             </svg>
-            <input type="text" placeholder={`Search ${title}`} value={search}
+            <input
+              type="text"
+              placeholder={`Search ${title}`}
+              value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 text-[13px] text-[#282c3f] outline-none placeholder:text-[#94969f]" autoFocus />
+              className="flex-1 text-[13px] text-[#282c3f] outline-none placeholder:text-[#94969f]"
+              autoFocus
+            />
           </div>
         </div>
         <div className="overflow-y-auto flex-1 px-5 py-3">
           <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
             {filtered.map((item) => (
-              <label key={item.id} className="flex items-center gap-2.5 cursor-pointer group">
-                <input type="checkbox" checked={selectedItems.includes(item.id)}
-                  onChange={() => onToggle(item.id)} className="accent-primary w-3.5 h-3.5 flex-shrink-0" />
+              <label
+                key={item.id}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedItems.includes(item.id)}
+                  onChange={() => onToggle(item.id)}
+                  className="accent-primary w-3.5 h-3.5 flex-shrink-0"
+                />
                 <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors truncate">
                   {item.name}
-                  {item.count !== undefined && <span className="text-[#94969f] ml-1">({item.count})</span>}
+                  {item.count !== undefined && (
+                    <span className="text-[#94969f] ml-1">({item.count})</span>
+                  )}
                 </span>
               </label>
             ))}
             {filtered.length === 0 && (
-              <p className="col-span-2 text-[13px] text-[#94969f] text-center py-4">No results found</p>
+              <p className="col-span-2 text-[13px] text-[#94969f] text-center py-4">
+                No results found
+              </p>
             )}
           </div>
         </div>
         <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#eaeaec]">
-          <span className="text-[12px] text-[#94969f]">{selectedItems.length} selected</span>
-          <button onClick={onClose} className="bg-primary text-white px-6 py-2 text-[13px] font-bold hover:bg-primary-hover transition-colors">
+          <span className="text-[12px] text-[#94969f]">
+            {selectedItems.length} selected
+          </span>
+          <button
+            onClick={onClose}
+            className="bg-primary text-white px-6 py-2 text-[13px] font-bold hover:bg-primary-hover transition-colors"
+          >
             APPLY
           </button>
         </div>
@@ -170,105 +261,46 @@ const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
   );
 };
 
-const MAX_PRICE =8000;
-// ─── Price Range Slider ───────────────────────────────────────────────────────
 const PriceSlider = ({ priceRange, setPriceRange }) => {
-  const minVal = priceRange.min === "" ? 0 : Number(priceRange.min);
-  const maxVal = priceRange.max === "" ? MAX_PRICE : Number(priceRange.max);
-  const minPct = (minVal / MAX_PRICE) * 100;
-  const maxPct = (maxVal / MAX_PRICE) * 100;
+  const value = [
+    priceRange.min ? Number(priceRange.min) : 0,
+    priceRange.max ? Number(priceRange.max) : 8000,
+  ];
 
   return (
-    <div className="px-1 select-none">
-      {/* Track */}
-      <div className="relative h-1 bg-[#eaeaec] mt-6 mb-1 mx-2">
-        {/* Filled range between thumbs */}
-        <div
-          className="absolute h-full bg-primary pointer-events-none"
-          style={{ left: `${minPct}%`, width: `${maxPct - minPct}%` }}
-        />
+    <Slider
+      sx={{
+        color: "#ff3f6c", // main color (track + thumb)
+        height: 4,
 
-        {/* Min range input — pointer-events only on thumb */}
-        <input
-          type="range"
-          min={0} max={MAX_PRICE} step={100}
-          value={minVal}
-          onChange={(e) => {
-            const v = Math.min(Number(e.target.value), maxVal - 100);
-            setPriceRange((p) => ({ ...p, min: v === 0 ? "" : String(v) }));
-          }}
-          className="dual-thumb"
-          style={{ zIndex: minPct >= maxPct - 5 ? 5 : 3 }}
-        />
-        {/* Max range input */}
-        <input
-          type="range"
-          min={0} max={MAX_PRICE} step={100}
-          value={maxVal}
-          onChange={(e) => {
-            const v = Math.max(Number(e.target.value), minVal + 100);
-            setPriceRange((p) => ({ ...p, max: v === MAX_PRICE ? "" : String(v) }));
-          }}
-          className="dual-thumb"
-          style={{ zIndex: 4 }}
-        />
+        "& .MuiSlider-thumb": {
+          height: 16,
+          width: 16,
+          backgroundColor: "#ff3f6c",
+          border: "2px solid white",
+        },
 
-        {/* Visual thumb dots — decorative only */}
-        <div
-          className="absolute w-4 h-4 bg-primary rounded-full border-2 border-white shadow pointer-events-none"
-          style={{ left: `${minPct}%`, top: "50%", transform: "translate(-50%,-50%)" }}
-        />
-        <div
-          className="absolute w-4 h-4 bg-primary rounded-full border-2 border-white shadow pointer-events-none"
-          style={{ left: `${maxPct}%`, top: "50%", transform: "translate(-50%,-50%)" }}
-        />
-      </div>
+        "& .MuiSlider-track": {
+          border: "none",
+        },
 
-      {/* Price labels */}
-      <div className="flex items-center justify-between text-[12px] font-semibold text-[#282c3f] mt-4">
-        <span>₹{minVal.toLocaleString("en-IN")}</span>
-        <span>
-          ₹{maxVal >= MAX_PRICE
-            ? `${MAX_PRICE.toLocaleString("en-IN")}+`
-            : maxVal.toLocaleString("en-IN")}
-        </span>
-      </div>
-
-      <style>{`
-        .dual-thumb {
-          position: absolute;
-          left: 0; top: 0;
-          width: 100%; height: 100%;
-          margin: 0; padding: 0;
-          background: transparent;
-          -webkit-appearance: none;
-          appearance: none;
-          pointer-events: all;
-        }
-        .dual-thumb::-webkit-slider-thumb {
-          position: relative;
-          z-index: 2;
-          -webkit-appearance: none;
-          width: 22px; height: 22px;
-          border-radius: 50%;
-          background: transparent;
-          cursor: grab;
-          pointer-events: all;
-        }
-        .dual-thumb:active::-webkit-slider-thumb { cursor: grabbing; }
-        .dual-thumb::-moz-range-thumb {
-          width: 22px; height: 22px;
-          border-radius: 50%;
-          background: transparent;
-          border: none;
-          cursor: grab;
-          pointer-events: all;
-        }
-        .dual-thumb:active::-moz-range-thumb { cursor: grabbing; }
-        .dual-thumb::-webkit-slider-runnable-track { background: transparent; }
-        .dual-thumb::-moz-range-track { background: transparent; }
-      `}</style>
-    </div>
+        "& .MuiSlider-rail": {
+          opacity: 0.3,
+          backgroundColor: "#ccc",
+        },
+      }}
+      value={value}
+      min={0}
+      max={8000}
+      step={100}
+      onChange={(e, newValue) => {
+        setPriceRange({
+          min: newValue[0] === 0 ? "" : String(newValue[0]),
+          max: newValue[1] === 8000 ? "" : String(newValue[1]),
+        });
+      }}
+      valueLabelDisplay="auto"
+    />
   );
 };
 const DISCOUNT_OPTIONS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
@@ -291,7 +323,14 @@ const ScrollToTopBtn = () => {
       className="fixed bottom-8 right-8 z-50 w-11 h-11 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary-hover transition-all hover:scale-110 active:scale-95"
       aria-label="Scroll to top"
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      >
         <polyline points="18 15 12 9 6 15" />
       </svg>
     </button>
@@ -299,7 +338,13 @@ const ScrollToTopBtn = () => {
 };
 
 // ─── Breadcrumb ───────────────────────────────────────────────────────────────
-const Breadcrumb = ({ categories, selectedCategory, selectedSubcategory, subcategories, searchQuery }) => {
+const Breadcrumb = ({
+  categories,
+  selectedCategory,
+  selectedSubcategory,
+  subcategories,
+  searchQuery,
+}) => {
   const cat = selectedCategory.length
     ? categories.find((c) => String(c.id) === String(selectedCategory[0]))
     : null;
@@ -308,20 +353,35 @@ const Breadcrumb = ({ categories, selectedCategory, selectedSubcategory, subcate
     : null;
 
   const sep = (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="2" className="flex-shrink-0">
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#94969f"
+      strokeWidth="2"
+      className="flex-shrink-0"
+    >
       <polyline points="9 18 15 12 9 6" />
     </svg>
   );
 
   return (
     <nav className="flex items-center gap-1.5 text-[13px] text-[#94969f] mb-4 flex-wrap">
-      <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+      <Link to="/" className="hover:text-primary transition-colors">
+        Home
+      </Link>
       {sep}
-      <Link to="/products" className="hover:text-primary transition-colors">Products</Link>
+      <Link to="/products" className="hover:text-primary transition-colors">
+        Products
+      </Link>
       {cat && (
         <>
           {sep}
-          <Link to={`/products?category=${cat.id}`} className="hover:text-primary transition-colors">
+          <Link
+            to={`/products?category=${cat.id}`}
+            className="hover:text-primary transition-colors"
+          >
             {cat.name}
           </Link>
         </>
@@ -349,7 +409,7 @@ const ProductsPage = () => {
   const [searchParams] = useSearchParams();
 
   const [products, setProducts] = useState([]);
-  
+
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -362,70 +422,10 @@ const ProductsPage = () => {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [subcategoryModalOpen, setSubcategoryModalOpen] = useState(false);
 
-  // ── Sidebar scroll — 3-phase, anti-blink ────────────────────────────────
-  const layoutRef = useRef(null);
-  const sidebarWrapRef = useRef(null);
-  const sidebarInnerRef = useRef(null);
-  const [sidebarStyle, setSidebarStyle] = useState({});
-  const lastStyleKey = useRef("");
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const layout = layoutRef.current;
-      const wrap   = sidebarWrapRef.current;
-      const inner  = sidebarInnerRef.current;
-      if (!layout || !wrap || !inner) return;
-
-      const scrollY      = window.scrollY;
-      const layoutTop    = layout.getBoundingClientRect().top + scrollY;
-      const layoutBottom = layoutTop + layout.offsetHeight;
-      const innerHeight  = inner.offsetHeight;
-      const viewportH    = window.innerHeight;
-      const wrapW        = wrap.offsetWidth;
-
-      let newStyle;
-
-      if (innerHeight <= viewportH) {
-        newStyle = { position: "sticky", top: 0, alignSelf: "flex-start" };
-      } else if (scrollY <= layoutTop) {
-        newStyle = {};
-      } else if (scrollY + viewportH >= layoutBottom) {
-        newStyle = {
-          position: "absolute",
-          top: `${layoutBottom - layoutTop - innerHeight}px`,
-          width: `${wrapW}px`,
-        };
-      } else {
-        const scrolled = scrollY - layoutTop;
-        let snapOffset = 0;
-        inner.querySelectorAll("[data-filter-title]").forEach((el) => {
-          if (el.offsetTop <= scrolled + 1) snapOffset = el.offsetTop;
-        });
-        newStyle = {
-          position: "fixed",
-          top: `${-snapOffset}px`,
-          width: `${wrapW}px`,
-        };
-      }
-
-      const key = JSON.stringify(newStyle);
-      if (key !== lastStyleKey.current) {
-        lastStyleKey.current = key;
-        setSidebarStyle(newStyle);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll, { passive: true });
-    handleScroll();
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, []);
-
   const toggleValue = (value, setter) => {
-    setter((prev) => prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]);
+    setter((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
   };
 
   const [selectedCategory, setSelectedCategory] = useState(
@@ -453,7 +453,9 @@ const ProductsPage = () => {
       try {
         const res = await api.get("/categories");
         setCategories(res.data.data?.categories || []);
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error(err);
+      }
     };
     load();
   }, []);
@@ -468,17 +470,27 @@ const ProductsPage = () => {
     // Fetch subcategories for all selected categories and merge them
     Promise.all(
       selectedCategory.map((catId) =>
-        api.get(`/subcategories?categoryId=${catId}`).then((res) => res.data.data?.subCategories || [])
-      )
-    ).then((results) => {
-      const merged = results.flat();
-      // Deduplicate by id
-      const seen = new Set();
-      const unique = merged.filter((s) => { if (seen.has(s.id)) return false; seen.add(s.id); return true; });
-      setSubcategories(unique);
-      // Keep only subcategories that still belong to selected categories
-      setSelectedSubcategory((prev) => prev.filter((id) => unique.some((s) => String(s.id) === String(id))));
-    }).catch(console.error);
+        api
+          .get(`/subcategories?categoryId=${catId}`)
+          .then((res) => res.data.data?.subCategories || []),
+      ),
+    )
+      .then((results) => {
+        const merged = results.flat();
+        // Deduplicate by id
+        const seen = new Set();
+        const unique = merged.filter((s) => {
+          if (seen.has(s.id)) return false;
+          seen.add(s.id);
+          return true;
+        });
+        setSubcategories(unique);
+        // Keep only subcategories that still belong to selected categories
+        setSelectedSubcategory((prev) =>
+          prev.filter((id) => unique.some((s) => String(s.id) === String(id))),
+        );
+      })
+      .catch(console.error);
   }, [selectedCategory]);
 
   // ── FIX 1: Send ALL selected categoryIds & subCategoryIds to API ─────────
@@ -491,14 +503,17 @@ const ProductsPage = () => {
         limit: LIMIT,
         // Pass all selected IDs as comma-separated string (backend must support it)
         // If your backend only supports one ID, we loop — but ideally update backend
-        categoryId: selectedCategory.length ? selectedCategory.join(",") : undefined,
-        subCategoryId: selectedSubcategory.length ? selectedSubcategory.join(",") : undefined,
+        categoryId: selectedCategory.length
+          ? selectedCategory.join(",")
+          : undefined,
+        subCategoryId: selectedSubcategory.length
+          ? selectedSubcategory.join(",")
+          : undefined,
         search: searchQuery.trim() || undefined,
       });
       setProducts(result.products);
       setPagination(result.pagination);
       initInventory(result.products);
-
     } catch (err) {
       setError("Failed to load products.");
     } finally {
@@ -520,7 +535,8 @@ const ProductsPage = () => {
   const filteredProducts = useMemo(() => {
     let result = [...products];
     if (discountOnly) result = result.filter((p) => p.discount > 0);
-    if (minDiscount !== null) result = result.filter((p) => (p.discount || 0) >= minDiscount);
+    if (minDiscount !== null)
+      result = result.filter((p) => (p.discount || 0) >= minDiscount);
     const minPrice = priceRange.min !== "" ? Number(priceRange.min) : 0;
     const maxPrice = priceRange.max !== "" ? Number(priceRange.max) : Infinity;
     result = result.filter((p) => {
@@ -529,8 +545,10 @@ const ProductsPage = () => {
     });
     if (sortBy === "price_asc") result.sort((a, b) => a.price - b.price);
     if (sortBy === "price_desc") result.sort((a, b) => b.price - a.price);
-    if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name));
-    if (sortBy === "name_desc") result.sort((a, b) => b.name.localeCompare(a.name));
+    if (sortBy === "name_asc")
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === "name_desc")
+      result.sort((a, b) => b.name.localeCompare(a.name));
     return result;
   }, [products, discountOnly, minDiscount, priceRange, sortBy]);
 
@@ -548,12 +566,29 @@ const ProductsPage = () => {
     setSearchQuery("");
   };
 
-  const categoryName = selectedCategory.length
-    ? selectedCategory
-        .map((id) => categories.find((c) => String(c.id) === String(id))?.name)
-        .filter(Boolean)
-        .join(", ")
-    : "";
+  const categoryName = useMemo(() => {
+    if (!categories?.length || !selectedCategory?.length) return "";
+
+    return selectedCategory
+      .map((id) => {
+        const cat = categories.find((c) => String(c.id) === String(id));
+        return cat?.name || "";
+      })
+      .filter(Boolean)
+      .join(", ");
+  }, [categories, selectedCategory]);
+
+  useEffect(() => {
+    let title = "Buy Latest Fashion Online at Best Prices | Myntra";
+
+    if (categoryName) {
+      title = `${categoryName} | Buy ${categoryName} Online at Best Prices | Myntra`;
+    } else if (searchQuery) {
+      title = `"${searchQuery}" |Buy ${searchQuery} Online at Best Prices | Myntra`;
+    }
+
+    document.title = title;
+  }, [categoryName, searchQuery]);
 
   const hasActiveFilters =
     selectedCategory.length ||
@@ -578,7 +613,9 @@ const ProductsPage = () => {
   const FilterSection = ({ title, children }) => (
     <div className="border-b border-[#eaeaec]">
       <div className="py-3.5" data-filter-title>
-        <span className="text-[13px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">{title}</span>
+        <span className="text-[13px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">
+          {title}
+        </span>
       </div>
       <div className="pb-4">{children}</div>
     </div>
@@ -587,9 +624,14 @@ const ProductsPage = () => {
   const SidebarContent = () => (
     <div>
       <div className="flex items-center justify-between py-3.5 border-b border-[#eaeaec]">
-        <h3 className="text-[15px] font-semibold text-[#282c3f] uppercase tracking-[0.8px]">Filters</h3>
+        <h3 className="text-[15px] font-semibold text-[#282c3f] uppercase tracking-[0.8px]">
+          Filters
+        </h3>
         {hasActiveFilters && (
-          <button onClick={handleClearFilters} className="text-[13px] font-semibold text-primary hover:underline uppercase tracking-wide">
+          <button
+            onClick={handleClearFilters}
+            className="text-[13px] font-semibold text-primary hover:underline uppercase tracking-wide"
+          >
             Clear All
           </button>
         )}
@@ -599,18 +641,30 @@ const ProductsPage = () => {
       <FilterSection title="Category">
         <div className="space-y-2.5">
           {categories.slice(0, 8).map((cat) => (
-            <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="checkbox" checked={selectedCategory.includes(cat.id)}
-                onChange={() => toggleValue(cat.id, setSelectedCategory)}
-                className="accent-primary w-3.5 h-3.5" />
+            <label
+              key={cat.id}
+              className="flex items-center gap-2.5 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                checked={selectedCategory.includes(String(cat.id))}
+                onChange={() =>
+                  toggleValue(String(cat.id), setSelectedCategory)
+                }
+              />
               <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
                 {cat.name}
-                {cat.count !== undefined && <span className="text-[#94969f] ml-1">({cat.count})</span>}
+                {cat.count !== undefined && (
+                  <span className="text-[#94969f] ml-1">({cat.count})</span>
+                )}
               </span>
             </label>
           ))}
           {categories.length > 8 && (
-            <button onClick={() => setCategoryModalOpen(true)} className="text-[13px] text-primary font-semibold hover:underline">
+            <button
+              onClick={() => setCategoryModalOpen(true)}
+              className="text-[13px] text-primary font-semibold hover:underline"
+            >
               + {categories.length - 8} more
             </button>
           )}
@@ -622,18 +676,31 @@ const ProductsPage = () => {
         <FilterSection title="Subcategory">
           <div className="space-y-2.5">
             {subcategories.slice(0, 8).map((sub) => (
-              <label key={sub.id} className="flex items-center gap-2.5 cursor-pointer group">
-                <input type="checkbox" checked={selectedSubcategory.includes(sub.id)}
-                  onChange={() => toggleValue(sub.id, setSelectedSubcategory)}
-                  className="accent-primary w-3.5 h-3.5" />
+              <label
+                key={sub.id}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSubcategory.includes(String(sub.id))}
+                  onChange={() =>
+                    toggleValue(String(sub.id), setSelectedSubcategory)
+                  }
+                  className="accent-primary w-3.5 h-3.5"
+                />
                 <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
                   {sub.name}
-                  {sub.count !== undefined && <span className="text-[#94969f] ml-1">({sub.count})</span>}
+                  {sub.count !== undefined && (
+                    <span className="text-[#94969f] ml-1">({sub.count})</span>
+                  )}
                 </span>
               </label>
             ))}
             {subcategories.length > 8 && (
-              <button onClick={() => setSubcategoryModalOpen(true)} className="text-[13px] text-primary font-semibold hover:underline">
+              <button
+                onClick={() => setSubcategoryModalOpen(true)}
+                className="text-[13px] text-primary font-semibold hover:underline"
+              >
                 + {subcategories.length - 8} more
               </button>
             )}
@@ -650,10 +717,19 @@ const ProductsPage = () => {
       <FilterSection title="Discount Range">
         <div className="space-y-2.5">
           {DISCOUNT_OPTIONS.map((pct) => (
-            <label key={pct} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="discount_range" checked={minDiscount === pct}
-                onChange={() => setMinDiscount(minDiscount === pct ? null : pct)}
-                className="accent-primary w-3.5 h-3.5" />
+            <label
+              key={pct}
+              className="flex items-center gap-2.5 cursor-pointer group"
+            >
+              <input
+                type="radio"
+                name="discount_range"
+                checked={minDiscount === pct}
+                onChange={() =>
+                  setMinDiscount(minDiscount === pct ? null : pct)
+                }
+                className="accent-primary w-3.5 h-3.5"
+              />
               <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
                 {pct}% and above
               </span>
@@ -665,9 +741,15 @@ const ProductsPage = () => {
       {/* Offers */}
       <FilterSection title="Offers">
         <label className="flex items-center gap-2.5 cursor-pointer group">
-          <input type="checkbox" checked={discountOnly} onChange={(e) => setDiscountOnly(e.target.checked)}
-            className="accent-primary w-3.5 h-3.5" />
-          <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">Discounted Only</span>
+          <input
+            type="checkbox"
+            checked={discountOnly}
+            onChange={(e) => setDiscountOnly(e.target.checked)}
+            className="accent-primary w-3.5 h-3.5"
+          />
+          <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
+            Discounted Only
+          </span>
         </label>
       </FilterSection>
     </div>
@@ -680,18 +762,27 @@ const ProductsPage = () => {
 
       {/* Category Modal */}
       {categoryModalOpen && (
-        <MoreModal title="Category" items={categories} selectedItems={selectedCategory}
-          onToggle={(id) => toggleValue(id, setSelectedCategory)} onClose={() => setCategoryModalOpen(false)} />
+        <MoreModal
+          title="Category"
+          items={categories}
+          selectedItems={selectedCategory}
+          onToggle={(id) => toggleValue(id, setSelectedCategory)}
+          onClose={() => setCategoryModalOpen(false)}
+        />
       )}
 
       {/* Subcategory Modal */}
       {subcategoryModalOpen && (
-        <MoreModal title="Subcategory" items={subcategories} selectedItems={selectedSubcategory}
-          onToggle={(id) => toggleValue(id, setSelectedSubcategory)} onClose={() => setSubcategoryModalOpen(false)} />
+        <MoreModal
+          title="Subcategory"
+          items={subcategories.map((s) => ({ ...s, id: String(s.id) }))}
+          selectedItems={selectedSubcategory}
+          onToggle={(id) => toggleValue(id, setSelectedSubcategory)}
+          onClose={() => setSubcategoryModalOpen(false)}
+        />
       )}
 
       <div className="w-full px-36 py-5">
-
         {/* ── FIX 2: Breadcrumb nav ─────────────────────────────────────── */}
         <Breadcrumb
           categories={categories}
@@ -705,37 +796,58 @@ const ProductsPage = () => {
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-baseline gap-2.5">
             <h3 className="text-[17px] font-bold text-[#282c3f]">
-              {categoryName || (searchQuery ? `"${searchQuery}"` : "All Products")}
+              {categoryName ||
+                (searchQuery ? `"${searchQuery}"` : "All Products")}
             </h3>
             {!loading && pagination && (
-              <span className="text-[17px] text-[#94969f]">- {pagination.total} items</span>
+              <span className="text-[17px] text-[#94969f]">
+                - {pagination.total} items
+              </span>
             )}
           </div>
         </div>
 
-        <div className="flex gap-0 relative" ref={layoutRef}>
+        <div className="flex gap-0 relative">
           {sidebarOpen && (
-            <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+            <div
+              className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
           )}
 
           {/* Desktop sidebar */}
-          <div ref={sidebarWrapRef} className="hidden lg:block w-[220px] flex-shrink-0">
-            <div ref={sidebarInnerRef} style={sidebarStyle} className="p-2">
+          <div className="hidden lg:block w-[220px] flex-shrink-0">
+            <div
+              className="sticky top-0 max-h-screen overflow-y-auto p-2"
+              style={{ scrollbarWidth: "none" }}
+            >
               <SidebarContent />
             </div>
           </div>
 
           {/* Mobile sidebar */}
-          <aside className={`lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] bg-white overflow-y-auto transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <aside
+            className={`lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] bg-white overflow-y-auto transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+          >
             <div className="flex items-center justify-between p-4 border-b border-[#eaeaec]">
               <span className="font-extrabold text-[#282c3f]">Filters</span>
               <button onClick={() => setSidebarOpen(false)}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#282c3f" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#282c3f"
+                  strokeWidth="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
-            <div className="p-4"><SidebarContent /></div>
+            <div className="p-4">
+              <SidebarContent />
+            </div>
           </aside>
 
           <div className="hidden lg:block w-px bg-[#eaeaec] flex-shrink-0" />
@@ -747,45 +859,90 @@ const ProductsPage = () => {
               {hasActiveFilters && (
                 <div className="flex flex-wrap items-center gap-2">
                   {selectedCategory.map((catId) => {
-                    const cat = categories.find((c) => String(c.id) === String(catId));
+                    const cat = categories.find(
+                      (c) => String(c.id) === String(catId),
+                    );
                     return cat ? (
-                      <span key={catId} className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
+                      <span
+                        key={catId}
+                        className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors"
+                      >
                         {cat.name}
-                        <button onClick={() => toggleValue(catId, setSelectedCategory)} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                        <button
+                          onClick={() =>
+                            toggleValue(catId, setSelectedCategory)
+                          }
+                          className="text-[#94969f] hover:text-primary font-bold leading-none"
+                        >
+                          ×
+                        </button>
                       </span>
                     ) : null;
                   })}
                   {selectedSubcategory.map((subId) => {
-                    const sub = subcategories.find((s) => String(s.id) === String(subId));
+                    const sub = subcategories.find(
+                      (s) => String(s.id) === String(subId),
+                    );
                     return sub ? (
-                      <span key={subId} className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
+                      <span
+                        key={subId}
+                        className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors"
+                      >
                         {sub.name}
-                        <button onClick={() => toggleValue(subId, setSelectedSubcategory)} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                        <button
+                          onClick={() =>
+                            toggleValue(String(subId), setSelectedSubcategory)
+                          }
+                          className="text-[#94969f] hover:text-primary font-bold leading-none"
+                        >
+                          ×
+                        </button>
                       </span>
                     ) : null;
                   })}
                   {discountOnly && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
                       Offers
-                      <button onClick={() => setDiscountOnly(false)} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      <button
+                        onClick={() => setDiscountOnly(false)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {minDiscount !== null && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
                       {minDiscount}% and above
-                      <button onClick={() => setMinDiscount(null)} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      <button
+                        onClick={() => setMinDiscount(null)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {(priceRange.min || priceRange.max) && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
-                      ₹{priceRange.min || "0"} – ₹{priceRange.max || `${MAX_PRICE}+`}
-                      <button onClick={() => setPriceRange({ min: "", max: "" })} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      ₹{priceRange.min || "0"} – ₹
+                      {priceRange.max || `${MAX_PRICE}+`}
+                      <button
+                        onClick={() => setPriceRange({ min: "", max: "" })}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {searchQuery && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
                       "{searchQuery}"
-                      <button onClick={() => setSearchQuery("")} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                 </div>
@@ -794,9 +951,20 @@ const ProductsPage = () => {
               {/* Sort + mobile filter btn */}
               <div className="flex items-center gap-3 ml-auto">
                 <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
-                <button onClick={() => setSidebarOpen(true)} className="lg:hidden flex items-center gap-2 border border-[#d4d5d9] px-4 py-2 text-[13px] font-semibold text-[#282c3f]">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" />
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden flex items-center gap-2 border border-[#d4d5d9] px-4 py-2 text-[13px] font-semibold text-[#282c3f]"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
                   </svg>
                   Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
                 </button>
@@ -805,7 +973,12 @@ const ProductsPage = () => {
 
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-12">
-                {[...Array(LIMIT)].map((_, i) => <div key={i} className="bg-[#f5f5f6] aspect-[3/4] animate-pulse" />)}
+                {[...Array(LIMIT)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-[#f5f5f6] aspect-[3/4] animate-pulse"
+                  />
+                ))}
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -815,26 +988,50 @@ const ProductsPage = () => {
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-12 p-5 mt-3 border-t border-[#eaeaec] shadow-[0_-1px_8px_rgba(0,0,0,0.03)]">
                   {filteredProducts.map((product, i) => (
-                    <div key={product.id} style={{ animationDelay: `${i * 0.03}s` }}>
+                    <div
+                      key={product.id}
+                      style={{ animationDelay: `${i * 0.03}s` }}
+                    >
                       <ProductCard product={product} />
                     </div>
                   ))}
                 </div>
-                <Pagination pagination={pagination} page={page} onPage={handlePage} />
+                <Pagination
+                  pagination={pagination}
+                  page={page}
+                  onPage={handlePage}
+                />
                 {pagination && (
                   <p className="text-center text-xs text-[#94969f] mt-3">
-                    Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, pagination.total)} of {pagination.total} products
+                    Showing {(page - 1) * LIMIT + 1}–
+                    {Math.min(page * LIMIT, pagination.total)} of{" "}
+                    {pagination.total} products
                   </p>
                 )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="1.2">
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#94969f"
+                  strokeWidth="1.2"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
                 </svg>
-                <h2 className="text-xl font-bold text-[#282c3f] mt-4">No products found</h2>
-                <p className="text-[#94969f] mt-1 text-sm">Try adjusting your filters or search term</p>
-                <button onClick={handleClearFilters} className="mt-5 bg-primary text-white px-6 py-2.5 text-sm font-bold hover:bg-primary-hover transition-colors">
+                <h2 className="text-xl font-bold text-[#282c3f] mt-4">
+                  No products found
+                </h2>
+                <p className="text-[#94969f] mt-1 text-sm">
+                  Try adjusting your filters or search term
+                </p>
+                <button
+                  onClick={handleClearFilters}
+                  className="mt-5 bg-primary text-white px-6 py-2.5 text-sm font-bold hover:bg-primary-hover transition-colors"
+                >
                   CLEAR FILTERS
                 </button>
               </div>

@@ -73,18 +73,20 @@ const ProductCard = ({ product }) => {
         />
 
         {/* RATING (on image like Myntra) */}
-        <div className="absolute bottom-2 left-2 bg-white px-2 py-[2px] flex items-center text-[11px] font-semibold rounded shadow-sm">
-          <span className="flex items-center gap-[2px] text-[#282c3f]">
-            4.5
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="#14958f">
-              <polygon points="12 2 15 9 22 9 17 14 19 22 12 18 5 22 7 14 2 9 9 9" />
-            </svg>
-          </span>
+        {product.reviewCount && (
+          <div className="absolute bottom-2 left-2 bg-white px-2 py-[2px] flex items-center text-[11px] font-semibold rounded shadow-sm">
+            <span className="flex items-center gap-[2px] text-[#282c3f]">
+              {product.averageRating}
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="#14958f">
+                <polygon points="12 2 15 9 22 9 17 14 19 22 12 18 5 22 7 14 2 9 9 9" />
+              </svg>
+            </span>
 
-          <span className="mx-1 text-[#94969f]">|</span>
+            <span className="mx-1 text-[#94969f]">|</span>
 
-          <span className="text-[#94969f]">4</span>
-        </div>
+            <span className="text-[#94969f]">{product.reviewCount}</span>
+          </div>
+        )}
 
         {/* OUT OF STOCK */}
         {!inStock && <Overlay label="OUT OF STOCK" />}

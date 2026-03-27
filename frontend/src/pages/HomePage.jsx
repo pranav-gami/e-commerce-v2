@@ -4,18 +4,6 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import api, { BACKEND_URL } from "../utils/api";
 
-const renderTitle = (title, titleSpan) => {
-  if (!titleSpan || !title.includes(titleSpan)) return title;
-  const parts = title.split(titleSpan);
-  return (
-    <>
-      {parts[0]}
-      <span className="text-primary">{titleSpan}</span>
-      {parts[1]}
-    </>
-  );
-};
-
 const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [heroSlides, setHeroSlides] = useState([]);
@@ -29,6 +17,11 @@ const HomePage = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title =
+      "Online Shopping for Women,Man,Kids Fashion & Lifestyle...";
+  }, []);
 
   useEffect(() => {
     const loadHeroSlides = async () => {
@@ -60,7 +53,6 @@ const HomePage = () => {
         setCategoriesLoading(true);
         const res = await api.get("/categories");
         const allCategories = res.data.data?.categories || [];
-        console.log("Categories found:", allCategories.length);
 
         setCategories(
           allCategories.map((cat) => ({
@@ -168,6 +160,7 @@ const HomePage = () => {
             {heroSlides.map((slide, i) => (
               <div
                 key={slide.id}
+                onClick={() => navigate("/products")}
                 className={`absolute inset-0 transition-opacity duration-700 ${i === currentSlide ? "opacity-100" : "opacity-0"}`}
               >
                 <img
@@ -178,7 +171,7 @@ const HomePage = () => {
                     e.target.style.display = "none";
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent">
+                {/* <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent">
                   <div className="max-w-screen-xl mx-auto px-8 h-full flex items-center">
                     <div className="max-w-lg">
                       <span className="text-xs font-bold text-primary uppercase tracking-widest">
@@ -217,7 +210,7 @@ const HomePage = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             ))}
             {/* Indicators */}
@@ -237,7 +230,7 @@ const HomePage = () => {
       </section>
 
       {/* Trust Bar */}
-      <div className="bg-brand-light border-y border-brand-border">
+      {/* <div className="bg-brand-light border-y border-brand-border">
         <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-center gap-8 flex-wrap">
           {trustItems.map((t, i) => (
             <div
@@ -258,41 +251,41 @@ const HomePage = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
-      {/* Categories */}
       <section className="py-8 w-full px-16">
         <h2 className="text-xl font-extrabold text-brand-dark uppercase tracking-widest mb-10">
           Shop by Category
         </h2>
 
         {categoriesLoading ? (
-          <div className="grid grid-cols-6 gap-6">
+          <div className="flex flex-wrap justify-center gap-8">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
                 className="rounded"
-                style={{ aspectRatio: "200/270", background: "#f0f0f0" }}
+                style={{
+                  width: "260px",
+                  height: "260px",
+                  background: "#f0f0f0",
+                }}
               />
             ))}
           </div>
         ) : categories.length > 0 ? (
-          <div className="grid grid-cols-6 gap-6">
-            {categories.slice(0, 6).map((cat) => (
+          <div className="flex flex-wrap justify-center gap-8">
+            {categories.map((cat) => (
               <Link
                 to={`/products?category=${cat.id}`}
                 key={cat.id}
                 className="group relative overflow-hidden block"
-                style={{ aspectRatio: "200/270" }}
+                style={{ width: "260px", height: "360px" }}
               >
                 {cat.image ? (
                   <img
                     src={cat.image}
                     alt={cat.name}
                     className="w-full h-full object-cover transition-transform duration-500"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-brand-light">
@@ -302,7 +295,7 @@ const HomePage = () => {
                   </div>
                 )}
 
-                {/* Transparent overlay */}
+                {/* Overlay */}
                 <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />
 
                 <div
@@ -312,26 +305,13 @@ const HomePage = () => {
                       "linear-gradient(135deg, rgba(202, 90, 9, 0.5) 0%, #e8641f 100%)",
                   }}
                 >
-                  <p
-                    className="text-white leading-tight"
-                    style={{ fontSize: "18px", fontWeight: 500 }}
-                  >
+                  <p className="text-white text-[18px] font-medium leading-tight">
                     {cat.name}
                   </p>
-                  <p
-                    className="text-white font-extrabold leading-tight"
-                    style={{ fontSize: "26px", letterSpacing: "-0.3px" }}
-                  >
+                  <p className="text-white text-[26px] font-extrabold leading-tight">
                     40-80% OFF
                   </p>
-                  <p
-                    className="text-white leading-tight"
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: 400,
-                      marginTop: "1px",
-                    }}
-                  >
+                  <p className="text-white text-[18px] font-normal leading-tight">
                     Shop Now
                   </p>
                 </div>
@@ -345,86 +325,11 @@ const HomePage = () => {
         )}
       </section>
 
-      {/* <section className="py-10 max-w-screen-xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-xs font-bold text-primary uppercase tracking-widest">
-              Browse
-            </p>
-            <h2 className="text-2xl font-extrabold text-brand-dark mt-0.5">
-              Shop by Category
-            </h2>
-          </div>
-          {categories.length > 3 && (
-            <Link
-              to="/products"
-              className="text-primary text-sm font-bold hover:underline"
-            >
-              View All →
-            </Link>
-          )}
-        </div>
-
-        {categoriesLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[4/3] bg-brand-light rounded animate-pulse"
-              />
-            ))}
-          </div>
-        ) : categories.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {categories.slice(0, 3).map((cat) => (
-              <Link
-                to={`/products?category=${cat.id}`}
-                key={cat.id}
-                className="group relative aspect-[4/3] overflow-hidden rounded bg-brand-light block"
-              >
-                {cat.image ? (
-                  <img
-                    src={cat.image}
-                    alt={cat.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-light to-white">
-                    <span className="text-5xl font-extrabold text-brand-border">
-                      {cat.name.charAt(0)}
-                    </span>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-0 inset-x-0 p-5">
-                  <h3 className="text-white font-extrabold text-xl">
-                    {cat.name}
-                  </h3>
-                  <p className="text-white/80 text-sm mt-0.5 font-medium">
-                    Shop Now →
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-brand-gray text-sm">
-            No categories found.
-          </p>
-        )}
-      </section> */}
-      {/* Featured Products */}
       <section className="py-10 bg-brand-light">
         <div className="w-full px-16">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-xs font-bold text-primary uppercase tracking-widest">
-                Handpicked
-              </p>
-              <h2 className="text-2xl font-extrabold text-brand-dark mt-0.5">
+              <h2 className="text-xl font-extrabold text-brand-dark uppercase tracking-widest mb-10">
                 New Arrivals
               </h2>
             </div>
@@ -446,55 +351,37 @@ const HomePage = () => {
               ))}
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-              {featuredProducts.map((product, i) => {
-                const discounted = product.discount
-                  ? product.price - (product.price * product.discount) / 100
-                  : product.price;
-                return (
-                  <Link
-                    to={`/products/${product.id}`}
-                    key={product.id}
-                    className="group bg-white overflow-hidden hover:shadow-md transition-shadow duration-300"
-                    style={{ animationDelay: `${i * 0.05}s` }}
-                  >
-                    <div className="relative overflow-hidden aspect-[3/4] bg-brand-light">
-                      <img
-                        src={
-                          product.image
-                            ? `${BACKEND_URL}${product.image}`
-                            : "/placeholder.png"
-                        }
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      {product.discount > 0 && (
-                        <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-sm">
-                          {product.discount}% OFF
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-[11px] font-bold text-brand-dark uppercase tracking-wide">
-                        Brand
-                      </p>
-                      <p className="text-sm text-brand-gray line-clamp-2 mt-0.5">
-                        {product.name}
-                      </p>
-                      <div className="flex items-baseline gap-2 mt-1.5">
-                        <span className="text-sm font-bold text-brand-dark">
-                          {formatPrice(discounted)}
-                        </span>
-                        {product.discount > 0 && (
-                          <span className="text-xs text-brand-gray line-through">
-                            {formatPrice(product.price)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-8">
+              {featuredProducts.map((product) => (
+                <Link
+                  to={`/products/${product.id}`}
+                  className="group flex flex-col h-full bg-white"
+                >
+                  {/* IMAGE */}
+                  <div className="aspect-[3/3] w-full overflow-hidden bg-[#f5f5f6]">
+                    <img
+                      src={
+                        product.image
+                          ? `${BACKEND_URL}${product.image}`
+                          : "/placeholder.png"
+                      }
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+
+                  {/* CONTENT */}
+                  <div className="mt-3 px-1 h-[72px] flex flex-col justify-between m-2">
+                    <p className="text-[11px] font-extrabold text-[#94969f] uppercase tracking-[1px]">
+                      {product.subCategory?.category?.name || "Category"}
+                    </p>
+
+                    <h3 className="text-[13.5px] font-semibold text-[#282c3f] leading-snug line-clamp-2 min-h-[34px]">
+                      {product.name}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
             </div>
           ) : (
             <p className="text-center text-brand-gray text-sm">

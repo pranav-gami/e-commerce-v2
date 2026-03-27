@@ -58,6 +58,9 @@ const CheckoutAddressPage = () => {
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    document.title = "ADDRESS";
+  }, []);
   const subtotal = getCartTotal();
   const savings = cartItems.reduce(
     (acc, item) =>

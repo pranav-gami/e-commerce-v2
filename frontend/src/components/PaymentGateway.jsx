@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import api from "../utils/api";
@@ -23,7 +23,9 @@ const PaymentGateway = ({
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(price);
-
+  useEffect(() => {
+    document.title = "PAYMENT";
+  }, []);
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setIsProcessing(true);

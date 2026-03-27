@@ -11,49 +11,6 @@ const fmt = (price) =>
     maximumFractionDigits: 0,
   }).format(price);
 
-const STATIC_REVIEWS = [
-  {
-    id: 1,
-    name: "Priya Sharma",
-    avatar: "PS",
-    rating: 5,
-    date: "March 12, 2026",
-    title: "Absolutely love this product!",
-    body: "The quality exceeded my expectations. Packaging was secure and delivery was fast. Will definitely order again from this store.",
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Rohan Mehta",
-    avatar: "RM",
-    rating: 4,
-    date: "February 28, 2026",
-    title: "Great value for money",
-    body: "Solid product, works exactly as described. Minor quibble with the packaging but the item itself is perfect.",
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Anjali Patel",
-    avatar: "AP",
-    rating: 5,
-    date: "February 15, 2026",
-    title: "Exceeded all my expectations",
-    body: "I was a bit skeptical ordering online but this completely changed my mind. Premium quality, fast shipping, and great customer support.",
-    verified: false,
-  },
-  {
-    id: 4,
-    name: "Vikram Singh",
-    avatar: "VS",
-    rating: 4,
-    date: "January 30, 2026",
-    title: "Highly recommend!",
-    body: "Used it for a month now and it's holding up great. Looks even better in person than the photos suggest.",
-    verified: true,
-  },
-];
-
 const TABS = ["Description", "Reviews", "Terms & Conditions", "Shipping Info"];
 
 const StarIcon = ({ filled, half }) => (
@@ -111,8 +68,8 @@ const ProductDetailPage = () => {
   const [addingCart, setAddingCart] = useState(false);
   const [cartMsg, setCartMsg] = useState("");
   const [imgError, setImgError] = useState(false);
+  const [review, setReview] = useState({});
   const imgRef = useRef(null);
-
   const cartItem = cartItems?.find(
     (c) => c.id === product?.id || c.productId === product?.id,
   );
@@ -132,6 +89,12 @@ const ProductDetailPage = () => {
         setLoading(true);
         const res = await api.get(`/products/${id}`);
         const p = res.data.data;
+        setReview({
+          rating: p.averageRating,
+          count: p.reviewCount,
+          reviews: p.reviews,
+        });
+
         const imgs = [];
         if (p.image) imgs.push(`${BACKEND_URL}${p.image}`);
         if (Array.isArray(p.images)) {
@@ -157,6 +120,14 @@ const ProductDetailPage = () => {
     };
     load();
   }, [id]);
+
+  useEffect(() => {
+    if (product?.name) {
+      document.title = `${product.name} | YourStoreName`;
+    } else {
+      document.title = "Product | YourStoreName";
+    }
+  }, [product]);
 
   const handleMouseMove = (e) => {
     if (!imgRef.current) return;
@@ -215,8 +186,8 @@ const ProductDetailPage = () => {
   if (!product) return null;
 
   const allImages = product._allImages;
-  const avgRating = 4.5;
-  const ratingCount = STATIC_REVIEWS.length;
+  const avgRating = review.rating;
+  const ratingCount = review.count;
 
   return (
     <div className="bg-white min-h-screen">
@@ -722,30 +693,41 @@ const ProductDetailPage = () => {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  {STATIC_REVIEWS.map((r) => (
+                  {review.reviews?.map((r) => (
                     <div
                       key={r.id}
                       className="border border-brand-border rounded p-5"
                     >
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0">
-                          {r.avatar}
+                          {r.user?.name
+                            ? r.user.name
+                                .split(" ")
+                                .map((n) => n[0].toUpperCase())
+                                .join("")
+                            : "?"}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-bold text-brand-dark">
-                              {r.name}
+                              {r.user.name}
                             </span>
-                            {r.verified && (
-                              <span className="text-[10px] text-green-600 font-semibold bg-green-50 px-1.5 py-0.5 rounded-full">
-                                ✓ Verified
-                              </span>
-                            )}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             <Stars rating={r.rating} />
                             <span className="text-xs text-brand-gray">
-                              {r.date}
+                              {r.createdAt
+                                ? new Date(r.createdAt).toLocaleString(
+                                    "en-IN",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )
+                                : ""}
                             </span>
                           </div>
                         </div>

@@ -25,6 +25,10 @@ const CartPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    document.title = "SHOPPING BAG";
+  }, []);
+
+  useEffect(() => {
     if (cartItems.length === 0) return;
     const loadRelated = async () => {
       try {

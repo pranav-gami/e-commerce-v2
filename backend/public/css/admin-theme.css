@@ -4,7 +4,7 @@
    ============================================================ */
 
 /* ── Google Fonts Import ── */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 
 :root {
   --shopin-primary: #e94560;
@@ -55,9 +55,25 @@ body,
 input,
 select,
 textarea,
-h1, h2, h3, h4, h5, h6,
-p, span, div, td, th, li, a {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+td,
+th,
+li,
+a {
+  font-family:
+    "Plus Jakarta Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
 }
 
 /* Readable body text */
@@ -94,7 +110,7 @@ body {
 }
 
 .shopin-logo-shop {
-  font-family: 'Outfit', sans-serif !important;
+  font-family: "Outfit", sans-serif !important;
   font-size: 1.6rem !important;
   font-weight: 800 !important;
   color: var(--shopin-dark) !important;
@@ -102,7 +118,7 @@ body {
 }
 
 .shopin-logo-in {
-  font-family: 'Outfit', sans-serif !important;
+  font-family: "Outfit", sans-serif !important;
   font-size: 1.1rem !important;
   font-weight: 700 !important;
   color: var(--shopin-primary) !important;
@@ -146,7 +162,11 @@ body {
 }
 
 .menu-item .menu-link.active {
-  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--shopin-primary) 0%,
+    #c73652 100%
+  ) !important;
   color: #ffffff !important;
   box-shadow: 0 4px 16px rgba(233, 69, 96, 0.35) !important;
   font-weight: 600 !important;
@@ -283,13 +303,21 @@ body {
 
 .card.bg-primary,
 .bg-primary {
-  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--shopin-primary) 0%,
+    #c73652 100%
+  ) !important;
   border: none !important;
 }
 
 .card.bg-info,
 .bg-info {
-  background: linear-gradient(135deg, var(--shopin-dark-hover) 0%, #0a2a50 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--shopin-dark-hover) 0%,
+    #0a2a50 100%
+  ) !important;
   border: none !important;
 }
 
@@ -362,7 +390,11 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--shopin-primary) 0%,
+    #c73652 100%
+  ) !important;
   border: none !important;
   color: #ffffff !important;
   border-radius: 50px !important;
@@ -519,7 +551,11 @@ body {
 
 .pagination .page-item.active .page-link,
 .page-item.active .page-link {
-  background: linear-gradient(135deg, var(--shopin-primary) 0%, #c73652 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--shopin-primary) 0%,
+    #c73652 100%
+  ) !important;
   border-color: var(--shopin-primary) !important;
   color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3) !important;
@@ -600,7 +636,11 @@ a:hover {
 }
 
 .progress-bar {
-  background: linear-gradient(90deg, var(--shopin-primary) 0%, #c73652 100%) !important;
+  background: linear-gradient(
+    90deg,
+    var(--shopin-primary) 0%,
+    #c73652 100%
+  ) !important;
   border-radius: 50px !important;
 }
 
@@ -729,11 +769,21 @@ a:hover {
 ═══════════════════════════════════════ */
 
 /* Preserve Metronic ps-* utilities — never let global padding override these */
-.ps-10 { padding-left: 2.5rem !important; }
-.ps-11 { padding-left: 2.75rem !important; }
-.ps-12 { padding-left: 3rem !important; }
-.ps-13 { padding-left: 3.25rem !important; }
-.ps-14 { padding-left: 3.5rem !important; }
+.ps-10 {
+  padding-left: 2.5rem !important;
+}
+.ps-11 {
+  padding-left: 2.75rem !important;
+}
+.ps-12 {
+  padding-left: 3rem !important;
+}
+.ps-13 {
+  padding-left: 3.25rem !important;
+}
+.ps-14 {
+  padding-left: 3.5rem !important;
+}
 
 /* The SVG icon span — position it inside the input */
 span.svg-icon.position-absolute {

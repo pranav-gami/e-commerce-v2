@@ -2,7 +2,7 @@ import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../utils/api";
 
 const WishlistPage = () => {
@@ -12,6 +12,10 @@ const WishlistPage = () => {
   const navigate = useNavigate();
   const [addingId, setAddingId] = useState(null);
   const [movedId, setMovedId] = useState(null);
+
+  useEffect(() => {
+    document.title = "Wishlist";
+  }, []);
 
   const formatPrice = (price) =>
     new Intl.NumberFormat("en-IN", {

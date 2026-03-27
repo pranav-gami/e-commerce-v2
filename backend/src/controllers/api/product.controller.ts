@@ -4,12 +4,31 @@ import * as productService from "../../services/admin/product.service";
 
 export const getAllProducts = catchAsyncHandler(
   async (req: Request, res: Response) => {
-    const filters = {
-      categoryId: req.query.categoryId
-        ? Number(req.query.categoryId)
-        : undefined,
-      subCategoryId: req.query.subCategoryId
-        ? Number(req.query.subCategoryId)
+    // Support multiple categoryId values: ?categoryId=1&categoryId=2
+    const rawCategoryId = req.query.categoryId;
+    const categoryIds = rawCategoryId
+      ? (Array.isArray(rawCategoryId) ? rawCategoryId : [rawCategoryId])
+          .flatMap((v) => String(v).split(","))
+          .map((v) => Number(v.trim()))
+          .filter((n) => !isNaN(n) && n > 0)
+      : undefined;
+
+    // Support multiple subCategoryId values: ?subCategoryId=1&subCategoryId=2
+    const rawSubCategoryId = req.query.subCategoryId;
+    const subCategoryIds = rawSubCategoryId
+      ? (Array.isArray(rawSubCategoryId)
+          ? rawSubCategoryId
+          : [rawSubCategoryId]
+        )
+          .flatMap((v) => String(v).split(","))
+          .map((v) => Number(v.trim()))
+          .filter((n) => !isNaN(n) && n > 0)
+      : undefined;
+
+    const filters: any = {
+      categoryId: categoryIds?.length ? categoryIds.join(",") : undefined,
+      subCategoryId: subCategoryIds?.length
+        ? subCategoryIds.join(",")
         : undefined,
       search: req.query.search ? String(req.query.search) : undefined,
       isFeatured: req.query.isFeatured === "true" ? true : undefined,

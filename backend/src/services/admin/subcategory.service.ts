@@ -44,13 +44,23 @@ export const createSubCategory = async (data: {
   });
 };
 
-// get all categories filter by categoryId
-export const getAllSubCategories = async (categoryId?: number) => {
+// get all subcategories, optionally filtered by one or multiple categoryIds
+export const getAllSubCategories = async (
+  categoryId?: number,
+  categoryIds?: number[],
+) => {
   if (categoryId && isNaN(categoryId))
     throw new ApiError(400, "Invalid categoryId");
 
+  let where = {};
+  if (categoryIds && categoryIds.length > 1) {
+    where = { categoryId: { in: categoryIds } };
+  } else if (categoryId) {
+    where = { categoryId };
+  }
+
   return prisma.subCategory.findMany({
-    where: categoryId ? { categoryId } : {},
+    where,
     include: {
       category: { select: { id: true, name: true, slug: true, image: true } },
     },

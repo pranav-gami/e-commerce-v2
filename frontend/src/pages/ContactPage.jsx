@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trackFormSubmit } from "../utils/analytics";
 
 const ContactPage = () => {
+  useEffect(() => {
+    document.title = "Help Center";
+  }, []);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",

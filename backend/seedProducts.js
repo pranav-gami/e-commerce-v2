@@ -12,12 +12,11 @@ const prisma = new PrismaClient();
 
 // ─── ✅ Update these with real IDs once you have them ─────────────────────────
 // For now using placeholder IDs — script will create fake users/orders if needed
-const USER_IDS = [12, 13, 14, 15, 16];
-const ORDER_IDS = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-  23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
-  42, 43, 44, 45, 46, 47, 48, 49, 50,
-];
+const users = await prisma.user.findMany({ select: { id: true } });
+const orders = await prisma.order.findMany({ select: { id: true } });
+
+const USER_IDS = users.map((u) => u.id);
+const ORDER_IDS = orders.map((o) => o.id);
 
 function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -172,7 +171,7 @@ async function main() {
         });
         subCategoryCache.set(subKey, subCategory);
       }
-
+      const slug = slugify(name);
       // 3. Upsert Product
       const product = await prisma.product.upsert({
         where: { slug }, // ← requires a @unique slug field on Product model

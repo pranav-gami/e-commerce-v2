@@ -157,6 +157,10 @@ const OrdersPage = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  useEffect(() => {
+    document.title = "My Orders";
+  }, []);
+
   const fetchOrders = async (p = page, status = activeStatus) => {
     try {
       setLoading(true);

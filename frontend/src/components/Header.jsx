@@ -105,7 +105,7 @@ const Header = () => {
         : "border-transparent text-[#282c3f] hover:text-[#ff3f6c] hover:border-[#ff3f6c]"
     }`;
   return (
-    <header className="sticky top-0 z-[999] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.12)] h-20 w-full">
+    <header className="sticky top-0 z-[999] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.12)] h-16 w-full">
       <div className="w-full h-full flex items-center px-8">
         <Link to="/" className="flex-shrink-0 flex items-center">
           <img

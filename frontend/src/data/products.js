@@ -485,8 +485,14 @@ const mapProduct = (product) => ({
 
 export const fetchProducts = async (params = {}) => {
   const query = new URLSearchParams();
-  if (params.categoryId) query.set("categoryId", params.categoryId);
-  if (params.subCategoryId) query.set("subCategoryId", params.subCategoryId);
+  // Support multiple categoryIds (comma-separated string or single value)
+  if (params.categoryId) {
+    String(params.categoryId).split(",").forEach((id) => id.trim() && query.append("categoryId", id.trim()));
+  }
+  // Support multiple subCategoryIds
+  if (params.subCategoryId) {
+    String(params.subCategoryId).split(",").forEach((id) => id.trim() && query.append("subCategoryId", id.trim()));
+  }
   if (params.search) query.set("search", params.search);
   if (params.isFeatured) query.set("isFeatured", "true");
   if (params.page) query.set("page", params.page);

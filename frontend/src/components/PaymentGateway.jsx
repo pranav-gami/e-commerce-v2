@@ -42,7 +42,7 @@ const PaymentGateway = ({
         amount,
         currency,
         order_id: razorpayOrderId,
-        name: "Shop.in",
+        name: "Myntra",
 
         handler: async (response) => {
           try {

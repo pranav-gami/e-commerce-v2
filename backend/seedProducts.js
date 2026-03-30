@@ -12,11 +12,14 @@ const prisma = new PrismaClient();
 
 // ─── ✅ Update these with real IDs once you have them ─────────────────────────
 // For now using placeholder IDs — script will create fake users/orders if needed
-const users = await prisma.user.findMany({ select: { id: true } });
-const orders = await prisma.order.findMany({ select: { id: true } });
+// const users = await prisma.user.findMany({ select: { id: true } });
+// const orders = await prisma.order.findMany({ select: { id: true } });
 
-const USER_IDS = users.map((u) => u.id);
-const ORDER_IDS = orders.map((o) => o.id);
+// const USER_IDS = users.map((u) => u.id);
+// const ORDER_IDS = orders.map((o) => o.id);
+
+const USER_IDS = [4];
+const ORDER_IDS = [1, 2, 3];
 
 function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -173,23 +176,20 @@ async function main() {
       }
       const slug = slugify(name);
       // 3. Upsert Product
-      const product = await prisma.product.upsert({
-        where: { slug }, // ← requires a @unique slug field on Product model
-        update: {}, // ← don't overwrite existing data
-        create: {
-          name: name.substring(0, 500),
-          slug,
-          description: description || null,
-          price,
-          discount,
-          stock: 50,
-          image: image || "https://placehold.co/300x300?text=No+Image",
-          images: image ? [image] : [],
-          isFeatured: false,
-          status: "ACTIVE",
-          subCategoryId: subCategory.id,
-        },
-      });
+     const product = await prisma.product.create({
+  data: {
+    name: name.substring(0, 500),
+    description: description || null,
+    price,
+    discount,
+    stock: 50,
+    image: image || "https://placehold.co/300x300?text=No+Image",
+    images: image ? [image] : [],
+    isFeatured: false,
+    status: "ACTIVE",
+    subCategoryId: subCategory.id,
+  },
+});
 
       productId = product.id;
       productsCreated++;
@@ -198,6 +198,8 @@ async function main() {
     } catch (err) {
       productErrors++;
       console.error(`❌  Product row ${i + 2}: ${err.message.split("\n")[0]}`);
+        console.error(err); // 🔥 full error
+
       continue; // skip reviews if product failed
     }
 

@@ -2,18 +2,15 @@
   <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
     <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
       <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
-          Dashboard
-        </h1>
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Dashboard</h1>
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-          <li class="breadcrumb-item text-muted">
-            <a href="/admin" class="text-muted text-hover-primary">Home</a>
-          </li>
-          <li class="breadcrumb-item">
-            <span class="bullet bg-gray-400 w-5px h-2px"></span>
-          </li>
+          <li class="breadcrumb-item text-muted"><a href="/admin" class="text-muted text-hover-primary">Home</a></li>
+          <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
           <li class="breadcrumb-item text-muted">Dashboard</li>
         </ul>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted fs-7">Last updated: <strong class="text-dark" id="dash-time"></strong></span>
       </div>
     </div>
   </div>
@@ -21,125 +18,146 @@
   <div id="kt_app_content" class="app-content flex-column-fluid">
     <div id="kt_app_content_container" class="app-container container-xxl">
 
-<!-- ── Row 1: All 5 Stats in one row ──────────────────── -->
-<div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+      <!-- Stat Cards Row -->
+      <div class="row g-5 mb-6">
 
-  <!-- Total Users -->
-  <div class="col">
-    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
-      <div class="card-header pt-5">
-        <div class="card-title d-flex flex-column">
-          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-            <%= stats.totalUsers %>
-          </span>
-          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Users</span>
+        <!-- Total Users -->
+        <div class="col-sm-6 col-xl-4">
+          <div class="card dash-stat-card h-100">
+            <div class="card-body p-6">
+              <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="dash-icon dash-icon-primary">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path opacity="0.3" d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z" fill="currentColor"/>
+                    <path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="badge badge-light-success fs-8 fw-semibold">Active</span>
+              </div>
+              <div class="dash-value"><%= stats.totalUsers %></div>
+              <div class="dash-label">Total Users</div>
+              <div class="dash-footer"><a href="/admin/users" class="dash-link">View all users →</a></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="card-body d-flex align-items-end pt-0">
-        <div class="d-flex align-items-center flex-column mt-3 w-100">
-          <a href="/admin/users" class="btn btn-primary btn-sm w-100">View Users</a>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- New Users This Month -->
-  <div class="col">
-    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
-      <div class="card-header pt-5">
-        <div class="card-title d-flex flex-column">
-          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-            <%= stats.newUsersThisMonth %>
-          </span>
-          <span class="text-gray-400 pt-1 fw-semibold fs-6">New Users This Month</span>
+        <!-- New Users This Month -->
+        <div class="col-sm-6 col-xl-4">
+          <div class="card dash-stat-card h-100">
+            <div class="card-body p-6">
+              <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="dash-icon dash-icon-info">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path opacity="0.3" d="M2 4V16C2 16.6 2.4 17 3 17H13L16.6 20.6C17.1 21.1 18 20.8 18 20V17H21C21.6 17 22 16.6 22 16V4C22 3.4 21.6 3 21 3H3C2.4 3 2 3.4 2 4Z" fill="currentColor"/>
+                    <path d="M18 9H6C5.4 9 5 8.6 5 8C5 7.4 5.4 7 6 7H18C18.6 7 19 7.4 19 8C19 8.6 18.6 9 18 9ZM16 12C16 11.4 15.6 11 15 11H6C5.4 11 5 11.4 5 12C5 12.6 5.4 13 6 13H15C15.6 13 16 12.6 16 12Z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="badge badge-light-info fs-8 fw-semibold">This Month</span>
+              </div>
+              <div class="dash-value"><%= stats.newUsersThisMonth %></div>
+              <div class="dash-label">New Registrations</div>
+              <div class="dash-footer"><span class="text-muted fs-8">Joined in current month</span></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="card-body d-flex align-items-end pt-0">
-        <div class="d-flex align-items-center flex-column mt-3 w-100">
-          <span class="badge badge-light-success fs-6 w-100 text-center py-3">This Month</span>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Total Accounts -->
-  <div class="col">
-    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
-      <div class="card-header pt-5">
-        <div class="card-title d-flex flex-column">
-          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-            <%= stats.totalAccounts %>
-          </span>
-          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Accounts</span>
+        <!-- Total Categories -->
+        <div class="col-sm-6 col-xl-4">
+          <div class="card dash-stat-card h-100">
+            <div class="card-body p-6">
+              <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="dash-icon dash-icon-warning">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path opacity="0.3" d="M19 22H5C4.4 22 4 21.6 4 21V3C4 2.4 4.4 2 5 2H14L20 8V21C20 21.6 19.6 22 19 22Z" fill="currentColor"/>
+                    <path d="M15 8H20L14 2V7C14 7.6 14.4 8 15 8Z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="badge badge-light-warning fs-8 fw-semibold"><%= stats.totalSubCategories %> subs</span>
+              </div>
+              <div class="dash-value"><%= stats.totalCategories %></div>
+              <div class="dash-label">Total Categories</div>
+              <div class="dash-footer"><a href="/admin/categories" class="dash-link">Manage categories →</a></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="card-body d-flex align-items-end pt-0">
-        <div class="d-flex align-items-center flex-column mt-3 w-100">
-          <span class="badge badge-light-info fs-6 w-100 text-center py-3">All Roles</span>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Total Categories -->
-  <div class="col">
-    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
-      <div class="card-header pt-5">
-        <div class="card-title d-flex flex-column">
-          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-            <%= stats.totalCategories %>
-          </span>
-          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Categories</span>
+        <!-- Sub Categories -->
+        <div class="col-sm-6 col-xl-4">
+          <div class="card dash-stat-card h-100">
+            <div class="card-body p-6">
+              <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="dash-icon dash-icon-danger">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path opacity="0.3" d="M21.25 18.525L13.05 21.825C12.35 22.125 11.65 22.125 10.95 21.825L2.75 18.525C1.75 18.125 1.75 16.725 2.75 16.325L4.04999 15.825L10.25 18.325C11.35 18.825 12.65 18.825 13.75 18.325L19.95 15.825L21.25 16.325C22.25 16.725 22.25 18.125 21.25 18.525Z" fill="currentColor"/>
+                    <path d="M13.05 16.425L21.25 13.125C22.25 12.725 22.25 11.325 21.25 10.925L13.05 7.62502C12.35 7.32502 11.65 7.32502 10.95 7.62502L2.75 10.925C1.75 11.325 1.75 12.725 2.75 13.125L10.95 16.425C11.65 16.725 12.45 16.725 13.05 16.425Z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="badge badge-light-danger fs-8 fw-semibold">Sub-cats</span>
+              </div>
+              <div class="dash-value"><%= stats.totalSubCategories %></div>
+              <div class="dash-label">Sub Categories</div>
+              <div class="dash-footer"><a href="/admin/subcategories" class="dash-link">View sub categories →</a></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="card-body d-flex align-items-end pt-0">
-        <div class="d-flex align-items-center flex-column mt-3 w-100">
-          <a href="/admin/categories" class="btn btn-light-primary btn-sm w-100">View Categories</a>
+
+        <!-- Total Accounts -->
+        <div class="col-sm-6 col-xl-4">
+          <div class="card dash-stat-card h-100">
+            <div class="card-body p-6">
+              <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="dash-icon dash-icon-success">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path opacity="0.3" d="M20 3H4C3.4 3 3 3.4 3 4V19C3 19.6 3.4 20 4 20H20C20.6 20 21 19.6 21 19V4C21 3.4 20.6 3 20 3ZM14 17H6V16H14V17ZM18 13H6V12H18V13ZM18 9H6V8H18V9Z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="badge badge-light-success fs-8 fw-semibold">All Roles</span>
+              </div>
+              <div class="dash-value"><%= stats.totalAccounts %></div>
+              <div class="dash-label">Total Accounts</div>
+              <div class="dash-footer"><span class="text-muted fs-8">Admins + Users</span></div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Total SubCategories -->
-  <div class="col">
-    <div class="card card-flush h-md-50 mb-5 mb-xl-10">
-      <div class="card-header pt-5">
-        <div class="card-title d-flex flex-column">
-          <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-            <%= stats.totalSubCategories %>
-          </span>
-          <span class="text-gray-400 pt-1 fw-semibold fs-6">Total Sub Categories</span>
+        <!-- Quick Actions -->
+        <div class="col-sm-6 col-xl-4">
+          <div class="card dash-stat-card dash-gradient h-100">
+            <div class="card-body p-6 d-flex flex-column justify-content-between">
+              <div>
+                <div class="text-white fw-bold fs-5 mb-1">Quick Actions</div>
+                <div class="text-white opacity-75 fs-8 mb-4">Manage your store</div>
+              </div>
+              <div class="d-flex flex-column gap-2">
+                <a href="/admin/products/add" class="btn btn-sm btn-white text-dark fw-semibold w-100">+ Add Product</a>
+                <a href="/admin/categories" class="btn btn-sm btn-white text-dark fw-semibold w-100">+ Add Category</a>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
-      <div class="card-body d-flex align-items-end pt-0">
-        <div class="d-flex align-items-center flex-column mt-3 w-100">
-          <a href="/admin/subcategories" class="btn btn-light-info btn-sm w-100">View Sub Categories</a>
-        </div>
-      </div>
-    </div>
-  </div>
 
-</div>
+      <!-- Tables Row -->
+      <div class="row g-5">
 
-
-      <!-- ── Row 3: Recent Categories Table ─────────────────── -->
-      <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+        <!-- Recent Categories -->
         <div class="col-xl-6">
           <div class="card card-flush h-xl-100">
-            <div class="card-header pt-5">
+            <div class="card-header pt-5 border-0">
               <h3 class="card-title fw-bold text-dark">Recent Categories</h3>
               <div class="card-toolbar">
-                <a href="/admin/categories" class="btn btn-sm btn-light">View All</a>
+                <a href="/admin/categories" class="btn btn-sm btn-light-primary">View All</a>
               </div>
             </div>
             <div class="card-body py-3">
               <div class="table-responsive">
-                <table class="table table-row-dashed align-middle gs-0 gy-4">
+                <table class="table table-row-dashed align-middle gs-0 gy-3">
                   <thead>
-                    <tr class="fw-bold text-muted fs-7 text-uppercase">
-                      <th>Image</th>
+                    <tr class="fw-bold text-muted fs-8 text-uppercase">
+                      <th class="ps-2">Image</th>
                       <th>Name</th>
-                      <th>Sub Categories</th>
+                      <th class="text-center">Subs</th>
                       <th>Created</th>
                     </tr>
                   </thead>
@@ -147,33 +165,24 @@
                     <% if (stats.recentCategories && stats.recentCategories.length > 0) { %>
                       <% stats.recentCategories.forEach(cat => { %>
                         <tr>
-                          <td>
+                          <td class="ps-2">
                             <% if (cat.image) { %>
-                              <img src="<%= cat.image %>" alt="<%= cat.name %>"
-                                style="width:40px;height:40px;object-fit:cover;" class="rounded" />
+                              <img src="<%= cat.image %>" alt="<%= cat.name %>" class="dash-thumb rounded" />
                             <% } else { %>
                               <div class="symbol symbol-40px">
-                                <div class="symbol-label bg-light-primary text-primary fw-bold fs-5">
+                                <div class="symbol-label bg-light-primary text-primary fw-bold fs-6">
                                   <%= cat.name.charAt(0).toUpperCase() %>
                                 </div>
                               </div>
                             <% } %>
                           </td>
                           <td class="fw-semibold text-dark"><%= cat.name %></td>
-                          <td>
-                            <span class="badge badge-light-primary">
-                              <%= cat.subCategories?.length || 0 %> subs
-                            </span>
-                          </td>
-                          <td class="text-muted fs-7">
-                            <%= new Date(cat.createdAt).toLocaleDateString() %>
-                          </td>
+                          <td class="text-center"><span class="badge badge-light-primary"><%= cat.subCategories?.length || 0 %></span></td>
+                          <td class="text-muted fs-8"><%= new Date(cat.createdAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) %></td>
                         </tr>
                       <% }) %>
                     <% } else { %>
-                      <tr>
-                        <td colspan="4" class="text-center text-muted py-5">No categories yet</td>
-                      </tr>
+                      <tr><td colspan="4" class="text-center text-muted py-8">No categories yet</td></tr>
                     <% } %>
                   </tbody>
                 </table>
@@ -182,55 +191,47 @@
           </div>
         </div>
 
-        <!-- ── Recent Users Table ───────────────────────────── -->
+        <!-- Recent Users -->
         <div class="col-xl-6">
           <div class="card card-flush h-xl-100">
-            <div class="card-header pt-5">
+            <div class="card-header pt-5 border-0">
               <h3 class="card-title fw-bold text-dark">Recent Users</h3>
               <div class="card-toolbar">
-                <a href="/admin/users" class="btn btn-sm btn-light">View All</a>
+                <a href="/admin/users" class="btn btn-sm btn-light-primary">View All</a>
               </div>
             </div>
             <div class="card-body py-3">
               <div class="table-responsive">
-                <table class="table table-row-dashed align-middle gs-0 gy-4">
+                <table class="table table-row-dashed align-middle gs-0 gy-3">
                   <thead>
-                    <tr class="fw-bold text-muted fs-7 text-uppercase">
-                      <th>Name</th>
+                    <tr class="fw-bold text-muted fs-8 text-uppercase">
+                      <th class="ps-2">User</th>
                       <th>Email</th>
-                      <th>Role</th>
                       <th>Joined</th>
                     </tr>
                   </thead>
-                 <tbody>
-  <% if (stats.recentUsers && stats.recentUsers.length > 0) { %>
-    <% stats.recentUsers.filter(user => user.role !== 'ADMIN').forEach(user => { %>
-      <tr>
-        <td>
-          <div class="d-flex align-items-center">
-            <div class="symbol symbol-40px me-3">
-              <div class="symbol-label bg-light-primary text-primary fw-bold fs-5">
-                <%= user.name ? user.name.charAt(0).toUpperCase() : '?' %>
-              </div>
-            </div>
-            <span class="fw-semibold text-dark"><%= user.name || '-' %></span>
-          </div>
-        </td>
-        <td class="text-muted fs-7"><%= user.email %></td>
-        <td>
-          <span class="badge badge-light-primary">User</span>
-        </td>
-        <td class="text-muted fs-7">
-          <%= new Date(user.createdAt).toLocaleDateString() %>
-        </td>
-      </tr>
-    <% }) %>
-  <% } else { %>
-    <tr>
-      <td colspan="4" class="text-center text-muted py-5">No users yet</td>
-    </tr>
-  <% } %>
-</tbody>
+                  <tbody>
+                    <% if (stats.recentUsers && stats.recentUsers.length > 0) { %>
+                      <% stats.recentUsers.filter(u => u.role !== 'ADMIN').forEach(user => { %>
+                        <tr>
+                          <td class="ps-2">
+                            <div class="d-flex align-items-center">
+                              <div class="symbol symbol-35px me-3">
+                                <div class="symbol-label bg-light-primary text-primary fw-bold fs-7">
+                                  <%= user.name ? user.name.charAt(0).toUpperCase() : '?' %>
+                                </div>
+                              </div>
+                              <a href="/admin/users/<%= user.id %>" class="fw-semibold text-dark text-hover-primary"><%= user.name || 'N/A' %></a>
+                            </div>
+                          </td>
+                          <td class="text-muted fs-8"><%= user.email %></td>
+                          <td class="text-muted fs-8"><%= new Date(user.createdAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) %></td>
+                        </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr><td colspan="3" class="text-center text-muted py-8">No users yet</td></tr>
+                    <% } %>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -238,7 +239,29 @@
         </div>
 
       </div>
-
     </div>
   </div>
 </div>
+
+<style>
+.dash-stat-card { border-radius: 16px !important; border: 1px solid #eef0f4 !important; transition: transform 0.2s, box-shadow 0.2s !important; }
+.dash-stat-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.10) !important; }
+.dash-gradient { background: linear-gradient(135deg, #e94560 0%, #c73652 100%) !important; border: none !important; }
+.dash-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.dash-icon-primary { background: rgba(233,69,96,0.10); color: #e94560; }
+.dash-icon-info    { background: rgba(15,52,96,0.10);  color: #0f3460; }
+.dash-icon-warning { background: rgba(255,168,0,0.12); color: #d4900a; }
+.dash-icon-danger  { background: rgba(231,76,60,0.10); color: #e74c3c; }
+.dash-icon-success { background: rgba(26,158,110,0.10); color: #1a9e6e; }
+.dash-value { font-size: 2.2rem; font-weight: 800; color: #1a1a2e; line-height: 1.1; letter-spacing: -1px; }
+.dash-label { font-size: 0.78rem; font-weight: 700; color: #8a95a8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+.dash-footer { border-top: 1px solid #f0f2f5; padding-top: 0.65rem; margin-top: 0.75rem; }
+.dash-link { font-size: 0.82rem; font-weight: 600; color: #e94560; text-decoration: none; }
+.dash-link:hover { color: #c73652; }
+.dash-thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; }
+</style>
+
+<script>
+const el = document.getElementById('dash-time');
+if (el) { const n = new Date(); el.textContent = n.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}); }
+</script>

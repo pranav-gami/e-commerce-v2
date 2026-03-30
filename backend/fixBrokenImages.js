@@ -207,11 +207,11 @@ async function main() {
       console.log(`✅ Fixed product ${product.id}`);
 
       // Wait 1 second between requests to avoid Bing rate limiting
-      await sleep(1000);
+      // await sleep(1000);
     } catch (err) {
       errors++;
       console.error(`❌ Failed product ${product.id}: ${err.message}`);
-      await sleep(2000); // wait longer after errors
+      // await sleep(2000); // wait longer after errors
     }
   }
 

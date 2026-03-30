@@ -359,23 +359,79 @@ body {
 
 /* DataTables search input */
 .dataTables_filter input {
-  font-size: 0.9rem !important;
-  padding: 0.45rem 0.9rem !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: unset !important;
+  font-size: 0.875rem !important;
+  padding: 0.4rem 0.85rem !important;
   border-radius: 8px !important;
   border: 1px solid #e2e8f0 !important;
+  background-color: #f8f9fb !important;
+  color: #3d4a5c !important;
+  line-height: 1.5 !important;
+  display: inline-block !important;
 }
 
 .dataTables_filter input:focus {
   border-color: var(--shopin-primary) !important;
   box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1) !important;
+  outline: none !important;
 }
 
-/* DataTables length + info */
+/* DataTables length select — fix height:60px from custom.css */
+.dataTables_length select,
+div.dataTables_wrapper .dataTables_length select {
+  width: auto !important;
+  height: auto !important;
+  min-height: unset !important;
+  padding: 0.35rem 1.75rem 0.35rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #3d4a5c !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background-color: #f8f9fb !important;
+  line-height: 1.5 !important;
+  display: inline-block !important;
+  cursor: pointer !important;
+}
+
+.dataTables_length select:focus {
+  border-color: var(--shopin-primary) !important;
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1) !important;
+  outline: none !important;
+}
+
+/* DataTables length + info labels */
 .dataTables_length label,
 .dataTables_info,
 .dataTables_filter label {
   font-size: 0.875rem !important;
   color: var(--sidebar-text) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Table images — fix size across all pages */
+.table td img {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
+  display: block !important;
+}
+
+/* Symbol avatars inside tables */
+.table .symbol-label {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
 }
 
 /* ═══════════════════════════════════════

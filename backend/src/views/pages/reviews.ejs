@@ -1,0 +1,126 @@
+<div class="d-flex flex-column flex-column-fluid">
+  <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Reviews</h1>
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+          <li class="breadcrumb-item text-muted"><a href="/admin" class="text-muted text-hover-primary">Home</a></li>
+          <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
+          <li class="breadcrumb-item text-muted">Reviews</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="kt_app_content" class="app-content flex-column-fluid">
+    <div id="kt_app_content_container" class="app-container container-xxl">
+
+      <!-- Filters Card -->
+      <div class="card mb-5">
+        <div class="card-body py-4">
+          <div class="d-flex flex-wrap gap-3 align-items-center">
+            <!-- Search -->
+            <div class="d-flex align-items-center position-relative">
+              <span class="svg-icon svg-icon-1 position-absolute ms-4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="currentColor"/>
+                  <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="currentColor"/>
+                </svg>
+              </span>
+              <input type="text" id="review-search" class="form-control form-control-solid w-220px ps-12" placeholder="Search by product or user" />
+            </div>
+
+            <!-- Rating filter -->
+            <select id="review-filter-rating" class="form-select form-select-solid w-140px">
+              <option value="">All Ratings</option>
+              <option value="5">⭐⭐⭐⭐⭐ 5 Star</option>
+              <option value="4">⭐⭐⭐⭐ 4 Star</option>
+              <option value="3">⭐⭐⭐ 3 Star</option>
+              <option value="2">⭐⭐ 2 Star</option>
+              <option value="1">⭐ 1 Star</option>
+            </select>
+
+            <!-- Status filter -->
+            <select id="review-filter-status" class="form-select form-select-solid w-140px">
+              <option value="">All Status</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="DELETED">Deleted</option>
+            </select>
+
+            <button id="review-filter-btn" class="btn btn-primary btn-sm">Apply Filters</button>
+            <button id="review-reset-btn" class="btn btn-light btn-sm">Reset</button>
+
+            <div class="ms-auto">
+              <span class="text-muted fs-8" id="review-count-label">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Table Card -->
+      <div class="card">
+        <div class="card-body py-4">
+          <div id="reviews-loading" class="text-center py-10">
+            <div class="spinner-border text-primary" style="width:2.5rem;height:2.5rem;" role="status"></div>
+            <div class="text-muted fs-7 mt-3">Loading reviews...</div>
+          </div>
+
+          <div id="reviews-table-wrap" style="display:none;">
+            <div class="table-responsive">
+              <table class="table align-middle table-row-dashed fs-6 gy-4" id="reviews-table">
+                <thead>
+                  <tr class="fw-bold text-muted fs-7 text-uppercase bg-light">
+                    <th class="ps-4 rounded-start">Product</th>
+                    <th>User</th>
+                    <th>Rating</th>
+                    <th>Review</th>
+                    <th>Verified</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th class="text-end pe-4 rounded-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="reviews-tbody" class="text-gray-600 fw-semibold"></tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex align-items-center justify-content-between mt-4 flex-wrap gap-2">
+              <div class="text-muted fs-8" id="review-pagination-info"></div>
+              <div class="d-flex gap-2" id="review-pagination-btns"></div>
+            </div>
+          </div>
+
+          <div id="reviews-empty" class="text-center py-12" style="display:none;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="mb-3 opacity-30">
+              <path opacity="0.3" d="M2 4V16C2 16.6 2.4 17 3 17H13L16.6 20.6C17.1 21.1 18 20.8 18 20V17H21C21.6 17 22 16.6 22 16V4C22 3.4 21.6 3 21 3H3C2.4 3 2 3.4 2 4Z" fill="#aaa"/>
+            </svg>
+            <div class="text-muted fs-6 fw-semibold">No reviews found</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal fade" id="deleteReviewModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Review</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted fs-6 mb-0">Are you sure you want to remove this review? This action will soft-delete it.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" id="confirm-delete-review">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/reviews.js"></script>

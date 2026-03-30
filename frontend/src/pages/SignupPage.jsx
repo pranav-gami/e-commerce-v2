@@ -6,9 +6,17 @@ import { signupStep1Schema, validate } from "../utils/validate";
 import LocationDropdowns, {
   validatePhone,
 } from "../components/LocationDropdowns";
+import { useDispatch } from "react-redux";
+import {
+  register,
+  sendSignupOtp,
+  verifySignupOtp,
+} from "../redux/slices/authSlice";
+import { useAppDispatch } from "../redux/hooks";
 
 const SignupPage = () => {
-  const { register, sendSignupOtp, verifySignupOtp } = useAuth();
+  // const { register, sendSignupOtp, verifySignupOtp } = useAuth();
+  const dispatch = useAppDispatch();
   const { fetchCart } = useCart();
   const navigate = useNavigate();
 
@@ -111,7 +119,7 @@ const SignupPage = () => {
     try {
       setLoading(true);
       setServerError("");
-      await sendSignupOtp(form1.email);
+      await dispatch(sendSignupOtp(form1.email));
       setStep1Data(form1);
       setTimer(600);
       setTimerActive(true);
@@ -139,7 +147,7 @@ const SignupPage = () => {
       setLoading(true);
       setOtpError("");
       setServerError("");
-      await verifySignupOtp(step1Data.email, otpValue);
+      await dispatch(verifySignupOtp(step1Data.email, otpValue));
       setSuccessMessage("Email verified! Complete your address.");
       setTimerActive(false);
       setStep(3);
@@ -187,16 +195,18 @@ const SignupPage = () => {
       setLoading(true);
       setServerError("");
       const fullPhone = `${locationIds.phoneCode}${locationIds.phone}`;
-      await register(
-        step1Data.name,
-        step1Data.email,
-        step1Data.password,
-        fullPhone,
-        address,
-        locationIds.countryId,
-        locationIds.stateId,
-        locationIds.cityId,
-        locationIds.postalCode,
+      await dispatch(
+        register(
+          step1Data.name,
+          step1Data.email,
+          step1Data.password,
+          fullPhone,
+          address,
+          locationIds.countryId,
+          locationIds.stateId,
+          locationIds.cityId,
+          locationIds.postalCode,
+        ),
       );
       setSuccessMessage("🎉 Account created successfully! Please login.");
       setTimeout(() => navigate("/login"), 2000);

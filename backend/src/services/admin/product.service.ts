@@ -1,7 +1,7 @@
+import { productQueue } from "../../config/queue";
 import { PrismaClient, ProductStatus } from "@prisma/client";
 import ApiError from "../../utils/ApiError";
 import { deleteFile, toPublicUrl } from "./category.service";
-
 const prisma = new PrismaClient();
 
 const productInclude = {
@@ -48,7 +48,7 @@ export const createProduct = async (data: {
       `Product "${data.name}" already exists in this sub-category`,
     );
 
-  return prisma.product.create({
+  const product = await prisma.product.create({
     data: {
       name: data.name,
       description: data.description,
@@ -63,6 +63,10 @@ export const createProduct = async (data: {
     },
     include: productInclude,
   });
+
+  await productQueue.add("sync", { action: "upsert", productId: product.id });
+
+  return product;
 };
 
 // ── get all products (with pagination) ───────────────────
@@ -123,9 +127,9 @@ export const getAllProducts = async (filters?: {
     prisma.product.findMany({
       where,
       include: {
-        ...productInclude, // your existing includes (like subCategory)
+        ...productInclude,
         reviews: {
-          select: { rating: true }, // only need rating to calculate avg
+          select: { rating: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -164,11 +168,10 @@ export const getAllProducts = async (filters?: {
 
 // ── get one product ───────────────────────────────────────
 export const getProductById = async (id: number) => {
-  // Fetch product with related fields
   const product = await prisma.product.findUnique({
     where: { id },
     include: {
-      ...productInclude, // existing includes like category, images, etc.
+      ...productInclude,
       reviews: {
         orderBy: { createdAt: "desc" },
         select: {
@@ -188,7 +191,6 @@ export const getProductById = async (id: number) => {
 
   if (!product) throw new ApiError(404, "Product not found");
 
-  // Compute average rating
   const ratingAggregate = await prisma.review.aggregate({
     where: { productId: id },
     _avg: { rating: true },
@@ -205,6 +207,7 @@ export const getProductById = async (id: number) => {
     averageRating: avgRating,
   };
 };
+
 // ── update product ────────────────────────────────────────
 export const updateProduct = async (
   id: number,
@@ -276,11 +279,15 @@ export const updateProduct = async (
 
   updateData.updatedAt = new Date();
 
-  return prisma.product.update({
+  const updated = await prisma.product.update({
     where: { id },
     data: updateData,
     include: productInclude,
   });
+
+  await productQueue.add("sync", { action: "upsert", productId: updated.id });
+
+  return updated;
 };
 
 // ── delete product ────────────────────────────────────────
@@ -291,6 +298,8 @@ export const deleteProduct = async (id: number) => {
   if (product.image) deleteFile(product.image);
   if (product.images?.length) product.images.forEach((img) => deleteFile(img));
 
+  await productQueue.add("sync", { action: "delete", productId: id });
+
   return prisma.product.delete({ where: { id } });
 };
 
@@ -299,11 +308,15 @@ export const toggleFeatured = async (id: number) => {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) throw new ApiError(404, "Product not found");
 
-  return prisma.product.update({
+  const updated = await prisma.product.update({
     where: { id },
     data: { isFeatured: !product.isFeatured, updatedAt: new Date() },
     include: productInclude,
   });
+
+  await productQueue.add("sync", { action: "upsert", productId: updated.id });
+
+  return updated;
 };
 
 // ── update status ─────────────────────────────────────────
@@ -314,11 +327,15 @@ export const updateProductStatus = async (
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) throw new ApiError(404, "Product not found");
 
-  return prisma.product.update({
+  const updated = await prisma.product.update({
     where: { id },
     data: { status, updatedAt: new Date() },
     include: productInclude,
   });
+
+  await productQueue.add("sync", { action: "upsert", productId: updated.id });
+
+  return updated;
 };
 
 // ── bulk delete ───────────────────────────────────────────
@@ -335,6 +352,12 @@ export const bulkDeleteProducts = async (ids: number[]) => {
     if (p.image) deleteFile(p.image);
     if (p.images?.length) p.images.forEach((img) => deleteFile(img));
   });
+
+  await Promise.all(
+    ids.map((id) =>
+      productQueue.add("sync", { action: "delete", productId: id }),
+    ),
+  );
 
   return prisma.product.deleteMany({ where: { id: { in: ids } } });
 };

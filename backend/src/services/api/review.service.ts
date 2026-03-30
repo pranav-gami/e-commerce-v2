@@ -169,12 +169,15 @@ export const getUserReviews = async (
         body: true,
         verified: true,
         createdAt: true,
+
+        productId: true, // 🔥 ADD THIS
+        orderId: true, // 🔥 ADD THIS
+
         product: {
           select: { id: true, name: true, image: true },
         },
       },
     }),
-
     prisma.review.count({
       where: { userId, status: ReviewStatus.PUBLISHED },
     }),
@@ -208,4 +211,41 @@ export const deleteReview = async (reviewId: number, userId: number) => {
     where: { id: reviewId },
     data: { status: ReviewStatus.DELETED },
   });
+};
+
+export const updateReview = async (
+  reviewId: number,
+  userId: number,
+  rating?: number,
+  title?: string,
+  body?: string,
+) => {
+  const review = await prisma.review.findUnique({
+    where: { id: reviewId },
+  });
+
+  if (!review || review.status === ReviewStatus.DELETED)
+    throw new Error("NOT_FOUND");
+  if (review.userId !== userId) throw new Error("FORBIDDEN");
+
+  const updated = await prisma.review.update({
+    where: { id: reviewId },
+    data: {
+      rating,
+      title,
+      body,
+    },
+    select: {
+      id: true,
+      rating: true,
+      title: true,
+      body: true,
+      verified: true,
+      createdAt: true,
+      user: { select: { id: true, name: true } },
+      product: { select: { id: true, name: true } },
+    },
+  });
+
+  return updated;
 };

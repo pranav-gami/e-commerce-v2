@@ -129,3 +129,42 @@ export const deleteReview = async (req: AuthRequest, res: Response) => {
       .json({ message: "Internal server error.", error: error.message });
   }
 };
+
+export const updateReview = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const reviewId = Number(req.params.id);
+    const { rating, title, body } = req.body;
+
+    if (rating && (rating < 1 || rating > 5)) {
+      res.status(400).json({ message: "Rating must be between 1 and 5." });
+      return;
+    }
+
+    const updatedReview = await reviewService.updateReview(
+      reviewId,
+      userId,
+      rating ? Number(rating) : undefined,
+      title,
+      body
+    );
+
+    res
+      .status(200)
+      .json({ message: "Review updated successfully.", review: updatedReview });
+  } catch (error: any) {
+    if (error.message === "NOT_FOUND") {
+      res.status(404).json({ message: "Review not found." });
+      return;
+    }
+    if (error.message === "FORBIDDEN") {
+      res
+        .status(403)
+        .json({ message: "You are not allowed to update this review." });
+      return;
+    }
+    res
+      .status(500)
+      .json({ message: "Internal server error.", error: error.message });
+  }
+};

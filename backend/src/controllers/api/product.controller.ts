@@ -1,3 +1,7 @@
+import {
+  autocompleteProducts,
+  searchProducts,
+} from "../../services/searchService";
 import { Request, Response } from "express";
 import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 import * as productService from "../../services/admin/product.service";
@@ -45,5 +49,52 @@ export const getProductById = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const product = await productService.getProductById(Number(req.params.id));
     return sendResponse(res, 200, "Product fetched successfully", product);
+  },
+);
+
+// Add this new handler
+export const searchProductsHandler = catchAsyncHandler(
+  async (req: Request, res: Response) => {
+    const {
+      q,
+      category,
+      subCategory,
+      priceMin,
+      priceMax,
+      page,
+      limit,
+      sortBy,
+    } = req.query;
+
+    const results = await searchProducts({
+      query: q ? String(q) : undefined,
+      category: category ? String(category) : undefined,
+      subCategory: subCategory ? String(subCategory) : undefined,
+      priceMin: priceMin ? parseFloat(String(priceMin)) : undefined,
+      priceMax: priceMax ? parseFloat(String(priceMax)) : undefined,
+      page: page ? parseInt(String(page)) : 1,
+      limit: limit ? parseInt(String(limit)) : 40,
+      sortBy: sortBy ? String(sortBy) : undefined,
+    });
+
+    return sendResponse(
+      res,
+      200,
+      "Search results fetched successfully",
+      results,
+    );
+  },
+);
+
+export const autocompleteHandler = catchAsyncHandler(
+  async (req: Request, res: Response) => {
+    const q = req.query.q ? String(req.query.q) : "";
+
+    if (!q || q.trim().length < 2) {
+      return sendResponse(res, 200, "Suggestions", { suggestions: [] });
+    }
+
+    const suggestions = await autocompleteProducts(q.trim());
+    return sendResponse(res, 200, "Suggestions", { suggestions });
   },
 );

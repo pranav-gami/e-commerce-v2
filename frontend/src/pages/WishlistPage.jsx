@@ -4,11 +4,15 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../utils/api";
+import { useAppSelector } from "../redux/hooks";
+import { selectUser } from "../redux/slices/authSlice";
 
 const WishlistPage = () => {
   const { wishlistItems, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = useAppSelector(selectUser);
+
   const navigate = useNavigate();
   const [addingId, setAddingId] = useState(null);
   const [movedId, setMovedId] = useState(null);

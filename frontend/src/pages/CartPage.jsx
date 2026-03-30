@@ -6,6 +6,8 @@ import { useAuth } from "../context/AuthContext";
 import PaymentGateway from "../components/PaymentGateway";
 import MoveToWishlistToast from "../components/MoveToWishlistToast";
 import api, { BACKEND_URL } from "../utils/api";
+import { useAppSelector } from "../redux/hooks";
+import { selectUser } from "../redux/slices/authSlice";
 
 const CartPage = () => {
   const {
@@ -17,7 +19,9 @@ const CartPage = () => {
     clearCart,
   } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = useAppSelector(selectUser);
+
   const [showPayment, setShowPayment] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [addingId, setAddingId] = useState(null);

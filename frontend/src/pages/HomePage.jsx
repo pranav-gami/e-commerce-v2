@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import api, { BACKEND_URL } from "../utils/api";
+import { useAppSelector } from "../redux/hooks";
+import { selectUser } from "../redux/slices/authSlice";
 
 const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -15,7 +17,8 @@ const HomePage = () => {
   const [addingId, setAddingId] = useState(null);
 
   const { addToCart } = useCart();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const navigate = useNavigate();
 
   useEffect(() => {

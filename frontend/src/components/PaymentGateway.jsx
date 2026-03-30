@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import api from "../utils/api";
+import { fetchCart, selectCartItems } from "../redux/slices/cartSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 
 const PaymentGateway = ({
   onClose,
@@ -15,14 +17,20 @@ const PaymentGateway = ({
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const navigate = useNavigate();
-  const { cartItems, fetchCart } = useCart();
-
+  const dispatch = useAppDispatch();
+  // const { cartItems, fetchCart } = useCart();
+  const cartItems = useAppSelector(selectCartItems);
   const formatPrice = (price) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(price);
+
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
+
   useEffect(() => {
     document.title = "PAYMENT";
   }, []);
@@ -55,7 +63,7 @@ const PaymentGateway = ({
             });
 
             if (verifyRes.data.data.verified) {
-              await fetchCart();
+              await dispatch(fetchCart());
               setIsProcessing(false);
               setStatusMessage("");
               onClose();

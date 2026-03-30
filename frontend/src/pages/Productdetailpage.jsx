@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import api, { BACKEND_URL } from "../utils/api";
+import { selectUser } from "../redux/slices/authSlice";
+import { useAppSelector } from "../redux/hooks";
 
 const fmt = (price) =>
   new Intl.NumberFormat("en-IN", {
@@ -55,7 +57,8 @@ const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, updateQuantity, cartItems } = useCart();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = useAppSelector(selectUser);
 
   const [product, setProduct] = useState(null);
   const [similar, setSimilar] = useState([]);

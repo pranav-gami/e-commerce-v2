@@ -2,7 +2,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { BACKEND_URL } from "../utils/api";
-
+import {
+  createReview,
+  getUserReviews,
+  updateReview,
+} from "../context/ReviewContex";
+import { useDispatch } from "react-redux";
+import { cancelOrder } from "../redux/slices/authSlice";
+import { useAppDispatch } from "../redux/hooks";
 const LIMIT = 5;
 
 const STATUS_TABS = [
@@ -144,9 +151,30 @@ const Pagination = ({ pagination, page, onPage }) => {
   );
 };
 
-const OrdersPage = () => {
-  const { getOrders, cancelOrder } = useAuth();
+const StarRating = ({ value = 0, onChange }) => {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          onClick={() => onChange(star)}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill={star <= value ? "#facc15" : "none"}
+          stroke="#facc15"
+          className="w-5 h-5 cursor-pointer"
+        >
+          <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z" />
+        </svg>
+      ))}
+    </div>
+  );
+};
 
+const OrdersPage = () => {
+  // const { getOrders, cancelOrder } = useAuth();
+  const dispatch = useAppDispatch;
+  const [editingReview, setEditingReview] = useState(null);
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
@@ -156,20 +184,80 @@ const OrdersPage = () => {
   const [confirmCancelId, setConfirmCancelId] = useState(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
+  const [reviewData, setReviewData] = useState({});
+  const [submittingReview, setSubmittingReview] = useState(null);
+  const [userReviews, setUserReviews] = useState([]);
   useEffect(() => {
     document.title = "My Orders";
   }, []);
+
+  const handleReviewChange = (productId, field, value) => {
+    setReviewData((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [field]: value,
+      },
+    }));
+  };
+  useEffect(() => {
+    const loadReviews = async () => {
+      const reviews = await getUserReviews();
+      setUserReviews(reviews);
+      console.log(reviews);
+    };
+
+    loadReviews();
+  }, []);
+
+  const findReview = (productId, orderId) => {
+    return userReviews.find(
+      (r) =>
+        Number(r.productId) === Number(productId) &&
+        Number(r.orderId) === Number(orderId),
+    );
+  };
+
+  const submitReview = async (productId, orderId) => {
+    try {
+      setSubmittingReview(productId);
+
+      const data = reviewData[productId];
+      const existing = findReview(productId, orderId);
+
+      const payload = {
+        productId: String(productId),
+        orderId: String(orderId),
+        rating: String(data?.rating || existing?.rating || 0),
+        title: data?.title || existing?.title || "",
+        body: data?.body || existing?.body || "",
+      };
+
+      if (existing) {
+        await updateReview(existing.id, payload);
+        setSuccessMessage("Review updated");
+      } else {
+        await createReview(payload);
+        setSuccessMessage("Review submitted");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed");
+    } finally {
+      setSubmittingReview(null);
+    }
+  };
 
   const fetchOrders = async (p = page, status = activeStatus) => {
     try {
       setLoading(true);
       setError("");
-      const data = await getOrders({
-        page: p,
-        limit: LIMIT,
-        status: status || undefined,
-      });
+      const data = await dispatch(
+        getOrders({
+          page: p,
+          limit: LIMIT,
+          status: status || undefined,
+        }),
+      );
       setOrders(data.orders || []);
       setPagination(data.pagination || null);
     } catch (err) {
@@ -201,7 +289,7 @@ const OrdersPage = () => {
       setCancellingId(orderId);
       setConfirmCancelId(null);
       setError("");
-      await cancelOrder(orderId);
+      await dispatch(cancelOrder(orderId));
       setSuccessMessage(
         "Cancellation requested. Refund will be processed shortly.",
       );
@@ -449,38 +537,192 @@ const OrdersPage = () => {
 
                     {/* Order items */}
                     <div className="divide-y divide-brand-border">
-                      {order.items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-4 px-5 py-4"
-                        >
-                          <div className="w-16 h-16 flex-shrink-0 bg-brand-light rounded overflow-hidden">
-                            <img
-                              src={
-                                item.product.image
-                                  ? `${BACKEND_URL}${item.product.image}`
-                                  : "/placeholder.png"
-                              }
-                              alt={item.product.name}
-                              className="w-full h-full object-cover"
-                            />
+                      {order.items.map((item) => {
+                        const existingReview = findReview(
+                          item.product.id,
+                          order.id,
+                        );
+
+                        return (
+                          <div key={item.id} className="px-5 py-4">
+                            {/* Product Row */}
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 flex-shrink-0 bg-brand-light rounded overflow-hidden">
+                                <img
+                                  src={
+                                    item.product.image
+                                      ? `${BACKEND_URL}${item.product.image}`
+                                      : "/placeholder.png"
+                                  }
+                                  alt={item.product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-bold text-brand-dark truncate">
+                                  {item.product.name}
+                                </h4>
+                                <p className="text-xs text-brand-gray mt-0.5">
+                                  Qty: {item.quantity}
+                                </p>
+                                <p className="text-xs font-semibold text-brand-muted mt-0.5">
+                                  {formatPrice(item.price)} each
+                                </p>
+                              </div>
+
+                              <p className="text-sm font-extrabold text-brand-dark flex-shrink-0">
+                                {formatPrice(item.price * item.quantity)}
+                              </p>
+                            </div>
+
+                            {/* Review Row */}
+                            {order.status === "DELIVERED" && (
+                              <div className="mt-4 border border-brand-border rounded-md p-4 bg-gray-50">
+                                {!existingReview ||
+                                editingReview === item.product.id ? (
+                                  <>
+                                    {/* EDIT / CREATE MODE */}
+
+                                    <p className="text-xs font-bold text-brand-dark mb-2">
+                                      {existingReview
+                                        ? "Edit Review"
+                                        : "Rate & Review"}
+                                    </p>
+
+                                    <StarRating
+                                      value={
+                                        reviewData[item.product.id]?.rating ??
+                                        existingReview?.rating ??
+                                        0
+                                      }
+                                      onChange={(val) =>
+                                        handleReviewChange(
+                                          item.product.id,
+                                          "rating",
+                                          val,
+                                        )
+                                      }
+                                    />
+
+                                    <input
+                                      type="text"
+                                      placeholder="Title"
+                                      className="mt-3 w-full border border-brand-border px-3 py-2 text-xs rounded"
+                                      value={
+                                        reviewData[item.product.id]?.title ??
+                                        existingReview?.title ??
+                                        ""
+                                      }
+                                      onChange={(e) =>
+                                        handleReviewChange(
+                                          item.product.id,
+                                          "title",
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+
+                                    <textarea
+                                      placeholder="Write your review..."
+                                      className="mt-2 w-full border border-brand-border px-3 py-2 text-xs rounded"
+                                      rows={3}
+                                      value={
+                                        reviewData[item.product.id]?.body ??
+                                        existingReview?.body ??
+                                        ""
+                                      }
+                                      onChange={(e) =>
+                                        handleReviewChange(
+                                          item.product.id,
+                                          "body",
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+
+                                    <div className="flex justify-end gap-2 mt-3">
+                                      {existingReview && (
+                                        <button
+                                          onClick={() => setEditingReview(null)}
+                                          className="text-xs px-3 py-1 border rounded"
+                                        >
+                                          Cancel
+                                        </button>
+                                      )}
+
+                                      <button
+                                        onClick={() =>
+                                          submitReview(
+                                            item.product.id,
+                                            order.id,
+                                          )
+                                        }
+                                        disabled={
+                                          submittingReview === item.product.id
+                                        }
+                                        className="bg-primary text-white px-4 py-1.5 text-xs font-semibold rounded"
+                                      >
+                                        {submittingReview === item.product.id
+                                          ? existingReview
+                                            ? "Updating..."
+                                            : "Submitting..."
+                                          : existingReview
+                                            ? "Update Review"
+                                            : "Submit Review"}
+                                      </button>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    {/* VIEW MODE */}
+
+                                    <div className="flex justify-between items-start">
+                                      <div>
+                                        <StarRating
+                                          value={existingReview.rating}
+                                          onChange={() => {}}
+                                        />
+
+                                        <p className="text-sm font-bold mt-2">
+                                          {existingReview.title}
+                                        </p>
+
+                                        <p className="text-xs text-brand-gray mt-1">
+                                          {existingReview.body}
+                                        </p>
+                                      </div>
+
+                                      {/* ✏️ Pencil button */}
+                                      <button
+                                        onClick={() =>
+                                          setEditingReview(item.product.id)
+                                        }
+                                        className="text-gray-500 hover:text-primary transition"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="w-4 h-4"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M11 5h2m-1-1v2m-7.5 9.5L4 20l4.5-1.5L19 8.5 15.5 5 4.5 16z"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-brand-dark truncate">
-                              {item.product.name}
-                            </h4>
-                            <p className="text-xs text-brand-gray mt-0.5">
-                              Qty: {item.quantity}
-                            </p>
-                            <p className="text-xs font-semibold text-brand-muted mt-0.5">
-                              {formatPrice(item.price)} each
-                            </p>
-                          </div>
-                          <p className="text-sm font-extrabold text-brand-dark flex-shrink-0">
-                            {formatPrice(item.price * item.quantity)}
-                          </p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     {/* Refund bar */}

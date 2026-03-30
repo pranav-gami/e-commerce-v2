@@ -3,9 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { loginSchema, validate } from "../utils/validate";
+import { login } from "../redux/slices/authSlice";
+import { useAppDispatch } from "../redux/hooks";
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  // const { login } = useAuth();
+  const dispatch = useAppDispatch();
   const { fetchCart } = useCart();
   const navigate = useNavigate();
 
@@ -34,7 +37,7 @@ const LoginPage = () => {
     }
     try {
       setLoading(true);
-      await login(form.email, form.password);
+      await dispatch(login(form.email, form.password));
       await fetchCart();
       navigate("/");
     } catch (err) {

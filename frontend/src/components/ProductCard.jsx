@@ -1,9 +1,13 @@
 import { useState, useMemo } from "react";
-import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useNavigate } from "react-router-dom";
-
+import { selectUser } from "../redux/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  selectCartItems,
+  addToCart,
+  updateQuantity,
+} from "../redux/slices/cartSlice";
 const formatPrice = (price) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -14,8 +18,20 @@ const formatPrice = (price) =>
     .replace("₹", "Rs. ");
 
 const ProductCard = ({ product }) => {
-  const { addToCart, updateQuantity, cartItems } = useCart();
-  const { user } = useAuth();
+  // const { addToCart, updateQuantity, cartItems } = useCart();
+  // const { user } = useAuth();
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector(selectCartItems);
+
+  const handleAddToCart = (product) => {
+    dispatch(addToCart(product));
+  };
+
+  const handleUpdateQuantity = (cartItemId, quantity) => {
+    dispatch(updateQuantity({ cartItemId, quantity }));
+  };
+  const user = useAppSelector(selectUser);
+
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
 
@@ -24,10 +40,7 @@ const ProductCard = ({ product }) => {
   const [error, setError] = useState("");
 
   const cartItem = useMemo(
-    () =>
-      cartItems?.find(
-        (item) => item.id === product.id || item.productId === product.id,
-      ),
+    () => cartItems?.find((item) => item.productId === product.id),
     [cartItems, product.id],
   );
 

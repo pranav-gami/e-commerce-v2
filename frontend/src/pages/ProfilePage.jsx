@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import LocationDropdowns from "../components/LocationDropdowns";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { selectUser, updateProfile } from "../redux/slices/authSlice";
+import { useDispatch } from "react-redux";
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
+  // const { updateProfile } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,15 +75,17 @@ const ProfilePage = () => {
       setServerError("");
       setLocationErrors({});
       const fullPhone = `${locationIds.phoneCode}${locationIds.phone}`;
-      await updateProfile({
-        name: form.name,
-        phone: fullPhone,
-        address: form.address,
-        countryId: locationIds.countryId,
-        stateId: locationIds.stateId,
-        cityId: locationIds.cityId,
-        postalCode: locationIds.postalCode,
-      });
+      await dispatch(
+        updateProfile({
+          name: form.name,
+          phone: fullPhone,
+          address: form.address,
+          countryId: locationIds.countryId,
+          stateId: locationIds.stateId,
+          cityId: locationIds.cityId,
+          postalCode: locationIds.postalCode,
+        }),
+      );
       setSuccessMessage("Profile updated successfully!");
       setIsEditing(false);
       setTimeout(() => setSuccessMessage(""), 3000);

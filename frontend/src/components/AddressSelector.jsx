@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
 import LocationDropdowns, { validatePhone } from "./LocationDropdowns";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
+import {
+  getCheckoutAddresses,
+  addAddress,
+  deleteAddress,
+  setDefaultAddress,
+} from "../redux/slices/authSlice";
 
 const inputClass = (hasErr) =>
   `w-full border ${hasErr ? "border-red-400 bg-red-50" : "border-brand-border"} rounded px-4 py-3 text-sm text-brand-dark placeholder-brand-gray focus:outline-none focus:border-primary transition-colors`;
@@ -30,11 +36,15 @@ const emptyLocation = {
 };
 
 const AddressSelector = ({ onConfirm, onClose }) => {
-  const { getCheckoutAddresses, addAddress, deleteAddress, setDefaultAddress } =
-    useAuth();
+  const dispatch = useAppDispatch();
 
   const [addresses, setAddresses] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
+  const checkoutAddresses = useAppSelector(
+    (state) => state.auth.checkoutAddresses,
+  );
+  const [selectedId, setSelectedId] = useState(
+    checkoutAddresses.find((a) => a.isDefault)?.id || null,
+  );
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -51,7 +61,7 @@ const AddressSelector = ({ onConfirm, onClose }) => {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const data = await getCheckoutAddresses();
+      const data = await dispatch(getCheckoutAddresses());
       setAddresses(data.addresses || []);
       if (data.defaultAddressId) setSelectedId(data.defaultAddressId);
       else if (data.addresses?.length > 0) setSelectedId(data.addresses[0].id);
@@ -101,17 +111,19 @@ const AddressSelector = ({ onConfirm, onClose }) => {
       setSubmitting(true);
       setServerError("");
       const fullPhone = `${locationIds.phoneCode}${locationIds.phone}`;
-      const result = await addAddress({
-        label: form.label || undefined,
-        fullName: form.fullName,
-        phone: fullPhone,
-        address: form.address,
-        postalCode: locationIds.postalCode,
-        countryId: locationIds.countryId,
-        stateId: locationIds.stateId,
-        cityId: locationIds.cityId,
-        isDefault: form.isDefault,
-      });
+      const result = await dispatch(
+        addAddress({
+          label: form.label || undefined,
+          fullName: form.fullName,
+          phone: fullPhone,
+          address: form.address,
+          postalCode: locationIds.postalCode,
+          countryId: locationIds.countryId,
+          stateId: locationIds.stateId,
+          cityId: locationIds.cityId,
+          isDefault: form.isDefault,
+        }),
+      );
       const newAddr = result.address;
       await fetchAddresses();
       setSelectedId(newAddr.id);
@@ -129,7 +141,7 @@ const AddressSelector = ({ onConfirm, onClose }) => {
   const handleDelete = async (e, id) => {
     e.stopPropagation();
     try {
-      await deleteAddress(id);
+      await dispatch(deleteAddress(id));
       await fetchAddresses();
       if (selectedId === id) setSelectedId(null);
     } catch (err) {
@@ -140,7 +152,7 @@ const AddressSelector = ({ onConfirm, onClose }) => {
   const handleSetDefault = async (e, id) => {
     e.stopPropagation();
     try {
-      await setDefaultAddress(id);
+      await dispatch(setDefaultAddress(id));
       await fetchAddresses();
       setSelectedId(id);
     } catch (err) {
@@ -212,7 +224,7 @@ const AddressSelector = ({ onConfirm, onClose }) => {
               {/* Saved Addresses */}
               {addresses.length > 0 && (
                 <div className="space-y-3 mb-4">
-                  {addresses.map((addr) => (
+                  {checkoutAddresses.map((addr) => (
                     <div
                       key={addr.id}
                       onClick={() => setSelectedId(addr.id)}

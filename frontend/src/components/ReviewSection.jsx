@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
+import { useAppSelector } from "../redux/hooks";
+import { selectUser } from "../redux/slices/authSlice";
 
 // ─── Star primitives ─────────────────────────────────────────────────────────
 
@@ -360,7 +362,8 @@ const ReviewCard = ({ review, currentUserId, onDelete }) => {
  */
 const ReviewSection = ({ productId }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = useAppSelector(selectUser);
 
   const [data, setData] = useState(null); // { reviews, pagination, summary }
   const [loading, setLoading] = useState(true);

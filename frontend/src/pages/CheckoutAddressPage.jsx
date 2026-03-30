@@ -6,6 +6,13 @@ import LocationDropdowns, {
   validatePhone,
 } from "../components/LocationDropdowns";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import {
+  addAddress,
+  deleteAddress,
+  getCheckoutAddresses,
+  setDefaultAddress,
+  updateAddress,
+} from "../redux/slices/authSlice";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -35,13 +42,15 @@ const emptyLoc = {
 
 const CheckoutAddressPage = () => {
   const navigate = useNavigate();
-  const {
-    getCheckoutAddresses,
-    addAddress,
-    updateAddress,
-    deleteAddress,
-    setDefaultAddress,
-  } = useAuth();
+  // const {
+  //   getCheckoutAddresses,
+  //   addAddress,
+  //   updateAddress,
+  //   deleteAddress,
+  //   setDefaultAddress,
+  // } = useAuth();
+  const dispatch = useAppDispatch();
+
   const { cartItems, getCartTotal } = useCart();
 
   const [addresses, setAddresses] = useState([]);
@@ -80,7 +89,7 @@ const CheckoutAddressPage = () => {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const data = await getCheckoutAddresses();
+      const data = await dispatch(getCheckoutAddresses());
       setAddresses(data.addresses || []);
       if (data.defaultAddressId) setSelectedId(data.defaultAddressId);
       else if (data.addresses?.length > 0) setSelectedId(data.addresses[0].id);
@@ -181,11 +190,11 @@ const CheckoutAddressPage = () => {
       };
 
       if (mode === "add") {
-        const res = await addAddress(payload);
+        const res = await dispatch(addAddress(payload));
         await fetchAddresses();
         setSelectedId(res.address.id);
       } else {
-        await updateAddress(editingId, payload);
+        await dispatch(updateAddress(editingId, payload));
         await fetchAddresses();
         setSelectedId(editingId);
       }
@@ -199,7 +208,7 @@ const CheckoutAddressPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await deleteAddress(id);
+      await dispatch(deleteAddress(id));
       await fetchAddresses();
       if (selectedId === id) setSelectedId(null);
     } catch (err) {
@@ -209,7 +218,7 @@ const CheckoutAddressPage = () => {
 
   const handleSetDefault = async (id) => {
     try {
-      await setDefaultAddress(id);
+      await dispatch(setDefaultAddress(id));
       await fetchAddresses();
       setSelectedId(id);
     } catch (err) {

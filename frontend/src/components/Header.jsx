@@ -6,9 +6,15 @@ import { useAuth } from "../context/AuthContext";
 import { BACKEND_URL } from "../utils/api";
 import api from "../utils/api";
 import { useWishlist } from "../context/WishlistContext";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
+import { selectUser, logout } from "../redux/slices/authSlice";
+import {
+  selectCartItemCount,
+  selectCartItems,
+} from "../redux/slices/cartSlice";
 
 const Header = () => {
-  const { getCartItemCount } = useCart();
+  // const { getCartItemCount } = useCart();
   const {
     searchQuery,
     setSearchQuery,
@@ -18,11 +24,14 @@ const Header = () => {
     hideSuggestions,
     clearSearch,
   } = useSearch();
-  const { user, logout } = useAuth();
+  // const { user, logout } = useAuth();
+
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
   const navigate = useNavigate();
   const { wishlistCount } = useWishlist();
   const location = useLocation();
-  const cartCount = getCartItemCount();
+  const cartCount = useAppSelector(selectCartItemCount);
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [navCategories, setNavCategories] = useState([]);
@@ -74,7 +83,7 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    await logout();
+    await dispatch(logout());
     setUserMenuOpen(false);
     navigate("/");
   };
@@ -212,7 +221,9 @@ const Header = () => {
                           <img
                             src={
                               product.image
-                                ? `${BACKEND_URL}${product.image}`
+                                ? product.image.startsWith("http")
+                                  ? product.image
+                                  : `${BACKEND_URL}${product.image}`
                                 : "/placeholder.png"
                             }
                             alt={product.name}
@@ -224,9 +235,11 @@ const Header = () => {
                             {product.name}
                           </p>
                           <p className="text-[11px] text-[#94969f] mt-0.5 m-0">
-                            {product.subCategory?.name ||
-                              product.category?.name ||
-                              ""}
+                            {typeof product.subCategory === "string"
+                              ? product.subCategory
+                              : product.subCategory?.name ||
+                                product.category?.name ||
+                                ""}
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">

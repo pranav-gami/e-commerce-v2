@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api, { BACKEND_URL } from "../../utils/api";
 
-// ── Thunk ─────────────────────────────────────────────────────────────────────
 export const fetchSuggestions = createAsyncThunk(
   "search/fetchSuggestions",
   async (query, { rejectWithValue }) => {
@@ -10,6 +9,7 @@ export const fetchSuggestions = createAsyncThunk(
       const res = await api.get(
         `/products/autocomplete?q=${encodeURIComponent(query.trim())}`,
       );
+
       const raw = res.data.data?.suggestions || [];
       return raw.map((p) => ({
         ...p,
@@ -25,7 +25,6 @@ export const fetchSuggestions = createAsyncThunk(
   },
 );
 
-// ── Slice ─────────────────────────────────────────────────────────────────────
 const initialState = {
   searchQuery: "",
   suggestions: [],
@@ -74,7 +73,6 @@ const searchSlice = createSlice({
 export const { setSearchQuery, hideSuggestions, clearSearch } =
   searchSlice.actions;
 
-// ── Selectors ─────────────────────────────────────────────────────────────────
 export const selectSearchQuery = (state) => state.search.searchQuery;
 export const selectSuggestions = (state) => state.search.suggestions;
 export const selectIsLoadingSuggestions = (state) =>

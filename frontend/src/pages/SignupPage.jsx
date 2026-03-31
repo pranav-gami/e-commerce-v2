@@ -1,12 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext";
 import { signupStep1Schema, validate } from "../utils/validate";
 import LocationDropdowns, {
   validatePhone,
 } from "../components/LocationDropdowns";
-import { useDispatch } from "react-redux";
 import {
   register,
   sendSignupOtp,
@@ -15,9 +12,7 @@ import {
 import { useAppDispatch } from "../redux/hooks";
 
 const SignupPage = () => {
-  // const { register, sendSignupOtp, verifySignupOtp } = useAuth();
   const dispatch = useAppDispatch();
-  const { fetchCart } = useCart();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -109,6 +104,7 @@ const SignupPage = () => {
     setErrors1((prev) => ({ ...prev, [e.target.name]: "" }));
   };
 
+  // Step 1 — send OTP (sendSignupOtp is a plain helper, no dispatch)
   const handleStep1 = async (e) => {
     e.preventDefault();
     const errs = validate(signupStep1Schema, form1);
@@ -119,7 +115,7 @@ const SignupPage = () => {
     try {
       setLoading(true);
       setServerError("");
-      await dispatch(sendSignupOtp(form1.email));
+      await sendSignupOtp(form1.email);
       setStep1Data(form1);
       setTimer(600);
       setTimerActive(true);
@@ -132,6 +128,7 @@ const SignupPage = () => {
     }
   };
 
+  // Step 2 — verify OTP (verifySignupOtp is a plain helper, no dispatch)
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     const otpValue = otp.join("");
@@ -147,7 +144,7 @@ const SignupPage = () => {
       setLoading(true);
       setOtpError("");
       setServerError("");
-      await dispatch(verifySignupOtp(step1Data.email, otpValue));
+      await verifySignupOtp(step1Data.email, otpValue);
       setSuccessMessage("Email verified! Complete your address.");
       setTimerActive(false);
       setStep(3);
@@ -158,6 +155,7 @@ const SignupPage = () => {
     }
   };
 
+  // Resend OTP (plain helper, no dispatch)
   const handleResendOtp = async () => {
     try {
       setResendLoading(true);
@@ -174,6 +172,7 @@ const SignupPage = () => {
     }
   };
 
+  // Step 3 — register (thunk, expects a single object)
   const handleStep3 = async (e) => {
     e.preventDefault();
     const errs = {};
@@ -196,22 +195,26 @@ const SignupPage = () => {
       setServerError("");
       const fullPhone = `${locationIds.phoneCode}${locationIds.phone}`;
       await dispatch(
-        register(
-          step1Data.name,
-          step1Data.email,
-          step1Data.password,
-          fullPhone,
+        register({
+          name: step1Data.name,
+          email: step1Data.email,
+          password: step1Data.password,
+          phone: fullPhone,
           address,
-          locationIds.countryId,
-          locationIds.stateId,
-          locationIds.cityId,
-          locationIds.postalCode,
-        ),
-      );
+          countryId: locationIds.countryId,
+          stateId: locationIds.stateId,
+          cityId: locationIds.cityId,
+          postalCode: locationIds.postalCode,
+        }),
+      ).unwrap();
       setSuccessMessage("🎉 Account created successfully! Please login.");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      setServerError(err.response?.data?.message || "Registration failed.");
+      setServerError(
+        typeof err === "string"
+          ? err
+          : err?.response?.data?.message || "Registration failed.",
+      );
     } finally {
       setLoading(false);
     }
@@ -257,7 +260,6 @@ const SignupPage = () => {
         <div className="bg-white border border-brand-border rounded shadow-sm overflow-hidden">
           <div className="h-1 bg-primary w-full" />
           <div className="p-8">
-            {/* Header */}
             <div className="text-center mb-6">
               <Link to="/">
                 <span className="text-3xl font-extrabold text-primary">
@@ -540,14 +542,12 @@ const SignupPage = () => {
                   />
                   <FieldError msg={addressError} />
                 </div>
-
                 <LocationDropdowns
                   value={locationIds}
                   onChange={setLocationIds}
                   errors={locationErrors}
                   showPhone={true}
                 />
-
                 <div className="flex gap-3">
                   <button
                     type="button"

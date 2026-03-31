@@ -1,5 +1,8 @@
 import nodemailer from "nodemailer";
 
+import puppeteer from "puppeteer";
+import { generateInvoiceHTML } from "./invoiceHTML";
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -16,7 +19,7 @@ export const sendOtpEmail = async (
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: "Your OTP for Password Reset — Shop.in",
+    subject: "Your OTP for Password Reset — Myntra",
     html: `
       <!DOCTYPE html>
       <html>
@@ -30,7 +33,7 @@ export const sendOtpEmail = async (
             <!-- Header -->
             <div style="background:linear-gradient(135deg,#1a1a2e 0%,#0f1a3e 100%);padding:32px 40px;text-align:center;">
               <h1 style="margin:0;font-size:28px;font-weight:800;color:#000080;letter-spacing:-0.5px;">
-                Shop<span style="color:#e94560;">.in</span>
+                <span style="color:#e94560;">Myntra</span>
               </h1>
             </div>
 
@@ -56,7 +59,7 @@ export const sendOtpEmail = async (
               <!-- Warning -->
               <div style="background:#fff3cd;border-radius:8px;padding:14px 16px;margin:0 0 24px;">
                 <p style="margin:0;font-size:13px;color:#856404;">
-                  ⚠️ Never share this OTP with anyone. Shop.in will never ask for your OTP.
+                  ⚠️ Never share this OTP with anyone. Myntra will never ask for your OTP.
                 </p>
               </div>
 
@@ -68,7 +71,7 @@ export const sendOtpEmail = async (
             <!-- Footer -->
             <div style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
               <p style="margin:0;font-size:12px;color:#adb5bd;">
-                © 2026 Shop.in — All rights reserved
+                © 2026 Myntra — All rights reserved
               </p>
             </div>
 
@@ -81,12 +84,12 @@ export const sendOtpEmail = async (
   await transporter.sendMail(mailOptions);
 };
 
-// ─────────────────────────────────────────
 // ORDER CONFIRMED EMAIL WITH INVOICE
-// ─────────────────────────────────────────
+
 interface OrderItem {
   name: string;
   quantity: number;
+  discount: number;
   price: number;
 }
 
@@ -98,7 +101,28 @@ interface SendOrderConfirmationProps {
   total: number;
   paymentId: string;
   createdAt: Date;
+  fullOrder: any;
 }
+
+//invoice(PDF)
+
+const generateInvoicePDF = async (order: any): Promise<Buffer> => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  const html = generateInvoiceHTML(order);
+
+  await page.setContent(html, { waitUntil: "domcontentloaded" });
+
+  const pdfUint8 = await page.pdf({
+    format: "A4",
+    printBackground: true,
+  });
+
+  await browser.close();
+
+  return Buffer.from(pdfUint8);
+};
 
 export const sendOrderConfirmationEmail = async ({
   to,
@@ -108,140 +132,173 @@ export const sendOrderConfirmationEmail = async ({
   total,
   paymentId,
   createdAt,
+  fullOrder,
 }: SendOrderConfirmationProps) => {
+  // ✅ Generate PDF buffer
+  const pdfBuffer = await generateInvoicePDF(fullOrder);
   const itemsHTML = items
     .map(
       (item) => `
       <tr>
-        <td style="padding:10px;border-bottom:1px solid #eee;color:#333;">${item.name}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;color:#333;">${item.quantity}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;color:#333;">₹${item.price.toFixed(2)}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;color:#333;">₹${(item.price * item.quantity).toFixed(2)}</td>
+        <td>${item.name}</td>
+        <td align="center">${item.quantity}</td>
+        <td align="right">₹${item.price.toFixed(2)}</td>
+        <td align="right">${item.discount}%</td>
+        <td align="right">₹${((item.price - (item.price * (item.discount || 0)) / 100) * item.quantity).toFixed(2)}</td>
       </tr>`,
     )
     .join("");
 
-  const mailOptions = {
+  const html = `
+<html>
+<head>
+<meta charset="UTF-8" />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+  }
+
+  .email-container {
+    max-width: 600px;
+    margin: auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .header {
+    background-color: #f9f9f9;
+    color: #c73652; /* primary brand color */
+    padding: 20px;
+    text-align: center;
+  }
+
+  .header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .content h2 {
+    color: #c73652; /* section headings */
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .order-summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  .order-summary th {
+    background-color: #fcd6dd; /* softer pink background for contrast */
+    color: #c73652; /* make header text match brand */
+    text-align: left;
+    padding: 8px;
+    font-weight: bold;
+  }
+
+  .order-summary td {
+    padding: 8px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .total {
+    text-align: right;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 10px;
+    color: #c73652;
+  }
+
+  .footer {
+    background-color: #f9f9f9;
+    color: #555555;
+    padding: 15px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  a {
+    color: #c73652;
+    text-decoration: underline;
+  }
+
+  /* Optional: highlight Thank You text */
+  .thank-you {
+    color: #c73652;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Thank You For Your Order!</h1>
+    </div>
+    <div class="content">
+      <p>Hi ${customerName},</p>
+      <p>Your order has been successfully placed.</p>
+
+      <p><b>Order ID:</b> ${orderId}</p>
+      <p><b>Payment ID:</b> ${paymentId}</p>
+      <p><b>Date:</b> ${new Date(createdAt).toLocaleDateString("en-IN")}</p>
+
+      <h2>Order Summary</h2>
+      <table class="order-summary">
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Discount</th>
+          <th>Discounted Price</th>
+        </tr>
+        ${itemsHTML}
+      </table>
+
+      <p class="total">Total: ₹${total.toFixed(2)}</p>
+
+      <p>📎 Invoice PDF is attached.</p>
+    </div>
+    <div class="footer">
+      Any address information, legal, terms etc. <br/>
+      <a href="#" style="color:black;text-decoration:underline;">Email Preferences</a> | 
+      <a href="#" style="color:black;text-decoration:underline;">Unsubscribe</a> | 
+      <a href="#" style="color:black;text-decoration:underline;">View Online</a>
+    </div>
+  </div>
+</body>
+</html>
+`;
+  await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to,
-    subject: `✅ Order Confirmed #${orderId} — Shop.in`,
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin:0;padding:0;background:#f5f5f7;font-family:'Outfit',Arial,sans-serif;">
-        <div style="max-width:580px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+    subject: `Order Confirmed #${orderId}`,
+    html,
+    attachments: [
+      {
+        filename: `invoice-${orderId}.pdf`,
+        content: pdfBuffer,
+        contentType: "application/pdf",
+      },
+    ],
+  });
 
-          <!-- Header -->
-          <div style="background:linear-gradient(135deg,#1a1a2e 0%,#0f1a3e 100%);padding:32px 40px;text-align:center;">
-            <h1 style="margin:0 0 6px;font-size:28px;font-weight:800;color:#000080;letter-spacing:-0.5px;">
-              Shop<span style="color:#e94560;">.in</span>
-            </h1>
-            <p style="margin:0;color:#a0aec0;font-size:14px;">Order Confirmation & Invoice</p>
-          </div>
-
-          <!-- Success Banner -->
-          <div style="background:#f0fdf4;border-bottom:2px solid #22c55e;padding:20px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:700;color:#15803d;">✅ Your order is confirmed!</p>
-            <p style="margin:6px 0 0;color:#4ade80;font-size:14px;">We're getting it ready for you.</p>
-          </div>
-
-          <!-- Body -->
-          <div style="padding:36px 40px;">
-            <p style="margin:0 0 6px;font-size:16px;color:#1a1a2e;">
-              Hi <strong>${customerName}</strong> 👋
-            </p>
-            <p style="margin:0 0 28px;color:#6c757d;font-size:14px;line-height:1.7;">
-              Thank you for your purchase! Here's your order summary and invoice.
-            </p>
-
-            <!-- Order Info Box -->
-            <div style="background:#f8f9fa;border-radius:12px;padding:20px 24px;margin:0 0 28px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding:6px 0;color:#6c757d;font-size:14px;">📦 Order ID</td>
-                  <td style="padding:6px 0;text-align:right;font-weight:700;color:#1a1a2e;font-size:14px;">#${orderId}</td>
-                </tr>
-                <tr>
-                  <td style="padding:6px 0;color:#6c757d;font-size:14px;">💳 Payment ID</td>
-                  <td style="padding:6px 0;text-align:right;color:#1a1a2e;font-size:13px;">${paymentId}</td>
-                </tr>
-                <tr>
-                  <td style="padding:6px 0;color:#6c757d;font-size:14px;">📅 Date</td>
-                  <td style="padding:6px 0;text-align:right;color:#1a1a2e;font-size:14px;">
-                    ${new Date(createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:6px 0;color:#6c757d;font-size:14px;">📊 Status</td>
-                  <td style="padding:6px 0;text-align:right;">
-                    <span style="background:#22c55e;color:#fff;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
-                      CONFIRMED
-                    </span>
-                  </td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- Invoice Table -->
-            <h3 style="margin:0 0 14px;font-size:16px;font-weight:700;color:#1a1a2e;border-bottom:2px solid #e94560;padding-bottom:8px;">
-              🧾 Invoice
-            </h3>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-              <thead>
-                <tr style="background:#f8f9fa;">
-                  <th style="padding:10px;text-align:left;font-size:13px;color:#6c757d;font-weight:600;">Product</th>
-                  <th style="padding:10px;text-align:center;font-size:13px;color:#6c757d;font-weight:600;">Qty</th>
-                  <th style="padding:10px;text-align:right;font-size:13px;color:#6c757d;font-weight:600;">Price</th>
-                  <th style="padding:10px;text-align:right;font-size:13px;color:#6c757d;font-weight:600;">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHTML}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="3" style="padding:16px 10px;text-align:right;font-weight:700;font-size:15px;color:#1a1a2e;">
-                    Total Amount:
-                  </td>
-                  <td style="padding:16px 10px;text-align:right;font-weight:800;font-size:18px;color:#e94560;">
-                    ₹${total.toFixed(2)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-
-            <!-- Note -->
-            <div style="background:#fef2f4;border-radius:8px;padding:14px 16px;margin:24px 0 0;">
-              <p style="margin:0;font-size:13px;color:#e94560;">
-                📬 For any issues with your order, reply to this email or contact support.
-              </p>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#adb5bd;">
-              © 2026 Shop.in — All rights reserved
-            </p>
-          </div>
-
-        </div>
-      </body>
-    </html>
-    `,
-  };
-
-  await transporter.sendMail(mailOptions);
-  console.log(`📧 Order confirmation email sent to ${to}`);
+  console.log("✅ Email sent with PDF attachment");
 };
 
-// ─────────────────────────────────────────
 // PAYMENT FAILED EMAIL
-// ─────────────────────────────────────────
+
 export const sendPaymentFailedEmail = async ({
   to,
   customerName,
@@ -254,7 +311,7 @@ export const sendPaymentFailedEmail = async ({
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: `❌ Payment Failed - Order #${orderId} — Shop.in`,
+    subject: `❌ Payment Failed - Order #${orderId} — Myntra`,
     html: `
     <!DOCTYPE html>
     <html>
@@ -268,7 +325,7 @@ export const sendPaymentFailedEmail = async ({
           <!-- Header -->
           <div style="background:linear-gradient(135deg,#1a1a2e 0%,#0f1a3e 100%);padding:32px 40px;text-align:center;">
             <h1 style="margin:0;font-size:28px;font-weight:800;color:#000080;letter-spacing:-0.5px;">
-              Shop<span style="color:#e94560;">.in</span>
+              <span style="color:#e94560;">Myntra</span>
             </h1>
           </div>
 
@@ -322,7 +379,7 @@ export const sendPaymentFailedEmail = async ({
           <!-- Footer -->
           <div style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
             <p style="margin:0;font-size:12px;color:#adb5bd;">
-              © 2026 Shop.in — All rights reserved
+              © 2026 Myntra — All rights reserved
             </p>
           </div>
 
@@ -336,9 +393,8 @@ export const sendPaymentFailedEmail = async ({
   console.log(`📧 Payment failed email sent to ${to}`);
 };
 
-// ─────────────────────────────────────────
 // ORDER CANCELLED EMAIL (No refund)
-// ─────────────────────────────────────────
+
 export const sendOrderCancelledEmail = async ({
   to,
   customerName,
@@ -351,7 +407,7 @@ export const sendOrderCancelledEmail = async ({
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: `❌ Order Cancelled #${orderId} — Shop.in`,
+    subject: `❌ Order Cancelled #${orderId} — Myntra`,
     html: `
     <!DOCTYPE html>
     <html>
@@ -361,7 +417,7 @@ export const sendOrderCancelledEmail = async ({
           <!-- Header -->
           <div style="background:linear-gradient(135deg,#1a1a2e 0%,#0f1a3e 100%);padding:32px 40px;text-align:center;">
             <h1 style="margin:0;font-size:28px;font-weight:800;color:#fff;">
-              Shop<span style="color:#e94560;">.in</span>
+              <span style="color:#e94560;">Myntra</span>
             </h1>
           </div>
 
@@ -401,7 +457,7 @@ export const sendOrderCancelledEmail = async ({
 
           <!-- Footer -->
           <div style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#adb5bd;">© 2026 Shop.in — All rights reserved</p>
+            <p style="margin:0;font-size:12px;color:#adb5bd;">© 2026 Myntra — All rights reserved</p>
           </div>
 
         </div>
@@ -413,10 +469,8 @@ export const sendOrderCancelledEmail = async ({
   await transporter.sendMail(mailOptions);
   console.log(`📧 Order cancelled email sent to ${to}`);
 };
-
-// ─────────────────────────────────────────
 // ORDER CANCELLED + REFUND EMAIL
-// ─────────────────────────────────────────
+
 export const sendOrderCancelledRefundEmail = async ({
   to,
   customerName,
@@ -431,7 +485,7 @@ export const sendOrderCancelledRefundEmail = async ({
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to,
-    subject: ` Order Cancelled & Refund Initiated #${orderId} — Shop.in`,
+    subject: ` Order Cancelled & Refund Initiated #${orderId} — Myntra`,
     html: `
     <!DOCTYPE html>
     <html>
@@ -441,7 +495,7 @@ export const sendOrderCancelledRefundEmail = async ({
           <!-- Header -->
           <div style="background:linear-gradient(135deg,#1a1a2e 0%,#0f1a3e 100%);padding:32px 40px;text-align:center;">
             <h1 style="margin:0;font-size:28px;font-weight:800;color:#fff;">
-              Shop<span style="color:#e94560;">.in</span>
+              <span style="color:#e94560;">Myntra</span>
             </h1>
           </div>
 
@@ -492,7 +546,7 @@ export const sendOrderCancelledRefundEmail = async ({
 
           <!-- Footer -->
           <div style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#adb5bd;">© 2026 Shop.in — All rights reserved</p>
+            <p style="margin:0;font-size:12px;color:#adb5bd;">© 2026 Myntra — All rights reserved</p>
           </div>
 
         </div>

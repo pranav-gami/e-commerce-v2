@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { BACKEND_URL } from "../utils/api";
 import {
   createReview,
   getUserReviews,
   updateReview,
-} from "../context/ReviewContex";
-import { useDispatch } from "react-redux";
-import { cancelOrder } from "../redux/slices/authSlice";
-import { useAppDispatch } from "../redux/hooks";
+} from "../redux/services/reviewService";
+import { getOrders, cancelOrder } from "../redux/slices/authSlice";
+
 const LIMIT = 5;
 
 const STATUS_TABS = [
@@ -172,8 +170,6 @@ const StarRating = ({ value = 0, onChange }) => {
 };
 
 const OrdersPage = () => {
-  // const { getOrders, cancelOrder } = useAuth();
-  const dispatch = useAppDispatch;
   const [editingReview, setEditingReview] = useState(null);
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -187,6 +183,7 @@ const OrdersPage = () => {
   const [reviewData, setReviewData] = useState({});
   const [submittingReview, setSubmittingReview] = useState(null);
   const [userReviews, setUserReviews] = useState([]);
+
   useEffect(() => {
     document.title = "My Orders";
   }, []);
@@ -194,19 +191,15 @@ const OrdersPage = () => {
   const handleReviewChange = (productId, field, value) => {
     setReviewData((prev) => ({
       ...prev,
-      [productId]: {
-        ...prev[productId],
-        [field]: value,
-      },
+      [productId]: { ...prev[productId], [field]: value },
     }));
   };
+
   useEffect(() => {
     const loadReviews = async () => {
       const reviews = await getUserReviews();
       setUserReviews(reviews);
-      console.log(reviews);
     };
-
     loadReviews();
   }, []);
 
@@ -221,10 +214,8 @@ const OrdersPage = () => {
   const submitReview = async (productId, orderId) => {
     try {
       setSubmittingReview(productId);
-
       const data = reviewData[productId];
       const existing = findReview(productId, orderId);
-
       const payload = {
         productId: String(productId),
         orderId: String(orderId),
@@ -232,7 +223,6 @@ const OrdersPage = () => {
         title: data?.title || existing?.title || "",
         body: data?.body || existing?.body || "",
       };
-
       if (existing) {
         await updateReview(existing.id, payload);
         setSuccessMessage("Review updated");
@@ -251,13 +241,11 @@ const OrdersPage = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await dispatch(
-        getOrders({
-          page: p,
-          limit: LIMIT,
-          status: status || undefined,
-        }),
-      );
+      const data = await getOrders({
+        page: p,
+        limit: LIMIT,
+        status: status || undefined,
+      });
       setOrders(data.orders || []);
       setPagination(data.pagination || null);
     } catch (err) {
@@ -289,7 +277,7 @@ const OrdersPage = () => {
       setCancellingId(orderId);
       setConfirmCancelId(null);
       setError("");
-      await dispatch(cancelOrder(orderId));
+      await cancelOrder(orderId);
       setSuccessMessage(
         "Cancellation requested. Refund will be processed shortly.",
       );
@@ -542,10 +530,8 @@ const OrdersPage = () => {
                           item.product.id,
                           order.id,
                         );
-
                         return (
                           <div key={item.id} className="px-5 py-4">
-                            {/* Product Row */}
                             <div className="flex items-center gap-4">
                               <div className="w-16 h-16 flex-shrink-0 bg-brand-light rounded overflow-hidden">
                                 <img
@@ -558,7 +544,6 @@ const OrdersPage = () => {
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-
                               <div className="flex-1 min-w-0">
                                 <h4 className="text-sm font-bold text-brand-dark truncate">
                                   {item.product.name}
@@ -570,7 +555,6 @@ const OrdersPage = () => {
                                   {formatPrice(item.price)} each
                                 </p>
                               </div>
-
                               <p className="text-sm font-extrabold text-brand-dark flex-shrink-0">
                                 {formatPrice(item.price * item.quantity)}
                               </p>
@@ -582,14 +566,11 @@ const OrdersPage = () => {
                                 {!existingReview ||
                                 editingReview === item.product.id ? (
                                   <>
-                                    {/* EDIT / CREATE MODE */}
-
                                     <p className="text-xs font-bold text-brand-dark mb-2">
                                       {existingReview
                                         ? "Edit Review"
                                         : "Rate & Review"}
                                     </p>
-
                                     <StarRating
                                       value={
                                         reviewData[item.product.id]?.rating ??
@@ -604,7 +585,6 @@ const OrdersPage = () => {
                                         )
                                       }
                                     />
-
                                     <input
                                       type="text"
                                       placeholder="Title"
@@ -622,7 +602,6 @@ const OrdersPage = () => {
                                         )
                                       }
                                     />
-
                                     <textarea
                                       placeholder="Write your review..."
                                       className="mt-2 w-full border border-brand-border px-3 py-2 text-xs rounded"
@@ -640,7 +619,6 @@ const OrdersPage = () => {
                                         )
                                       }
                                     />
-
                                     <div className="flex justify-end gap-2 mt-3">
                                       {existingReview && (
                                         <button
@@ -650,7 +628,6 @@ const OrdersPage = () => {
                                           Cancel
                                         </button>
                                       )}
-
                                       <button
                                         onClick={() =>
                                           submitReview(
@@ -674,49 +651,41 @@ const OrdersPage = () => {
                                     </div>
                                   </>
                                 ) : (
-                                  <>
-                                    {/* VIEW MODE */}
-
-                                    <div className="flex justify-between items-start">
-                                      <div>
-                                        <StarRating
-                                          value={existingReview.rating}
-                                          onChange={() => {}}
-                                        />
-
-                                        <p className="text-sm font-bold mt-2">
-                                          {existingReview.title}
-                                        </p>
-
-                                        <p className="text-xs text-brand-gray mt-1">
-                                          {existingReview.body}
-                                        </p>
-                                      </div>
-
-                                      {/* ✏️ Pencil button */}
-                                      <button
-                                        onClick={() =>
-                                          setEditingReview(item.product.id)
-                                        }
-                                        className="text-gray-500 hover:text-primary transition"
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="w-4 h-4"
-                                          fill="none"
-                                          viewBox="0 0 24 24"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M11 5h2m-1-1v2m-7.5 9.5L4 20l4.5-1.5L19 8.5 15.5 5 4.5 16z"
-                                          />
-                                        </svg>
-                                      </button>
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <StarRating
+                                        value={existingReview.rating}
+                                        onChange={() => {}}
+                                      />
+                                      <p className="text-sm font-bold mt-2">
+                                        {existingReview.title}
+                                      </p>
+                                      <p className="text-xs text-brand-gray mt-1">
+                                        {existingReview.body}
+                                      </p>
                                     </div>
-                                  </>
+                                    <button
+                                      onClick={() =>
+                                        setEditingReview(item.product.id)
+                                      }
+                                      className="text-gray-500 hover:text-primary transition"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          d="M11 5h2m-1-1v2m-7.5 9.5L4 20l4.5-1.5L19 8.5 15.5 5 4.5 16z"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             )}
@@ -778,7 +747,6 @@ const OrdersPage = () => {
               })}
             </div>
 
-            {/* Pagination */}
             <Pagination
               pagination={pagination}
               page={page}

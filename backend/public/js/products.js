@@ -12,7 +12,6 @@ $(document).ready(function () {
       headers: { Accept: "application/json" },
       xhrFields: { withCredentials: true },
       dataSrc: function (json) {
-        console.log("API response:", json);
         allProducts = json.data?.products || json.data || [];
         return allProducts;
       },

@@ -84,7 +84,7 @@ export const searchProducts = async ({
   const totalPages = Math.ceil(total / limit);
 
   return {
-    products: hits.map((h) => h._source),
+    products: hits.map((h: any) => h._source),
     total,
     pagination: {
       total,

@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
 import api, { BACKEND_URL } from "../utils/api";
 import { selectUser } from "../redux/slices/authSlice";
-import { useAppSelector } from "../redux/hooks";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
+import {
+  addToCart,
+  updateQuantity,
+  selectCartItems,
+} from "../redux/slices/cartSlice";
 
 const fmt = (price) =>
   new Intl.NumberFormat("en-IN", {
@@ -56,9 +59,10 @@ const Stars = ({ rating }) => {
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart, updateQuantity, cartItems } = useCart();
-  // const { user } = useAuth();
+  const dispatch = useAppDispatch();
+
   const user = useAppSelector(selectUser);
+  const cartItems = useAppSelector(selectCartItems);
 
   const [product, setProduct] = useState(null);
   const [similar, setSimilar] = useState([]);
@@ -73,6 +77,7 @@ const ProductDetailPage = () => {
   const [imgError, setImgError] = useState(false);
   const [review, setReview] = useState({});
   const imgRef = useRef(null);
+
   const cartItem = cartItems?.find(
     (c) => c.id === product?.id || c.productId === product?.id,
   );
@@ -85,6 +90,7 @@ const ProductDetailPage = () => {
   const inStock = product?.stock > 0;
   const lowStock = product?.stock > 0 && product.stock <= 5;
   const status = product?.status;
+
   useEffect(() => {
     window.scrollTo(0, 0);
     const load = async () => {
@@ -97,7 +103,6 @@ const ProductDetailPage = () => {
           count: p.reviewCount,
           reviews: p.reviews,
         });
-
         const imgs = [];
         if (p.image) imgs.push(`${BACKEND_URL}${p.image}`);
         if (Array.isArray(p.images)) {
@@ -145,11 +150,15 @@ const ProductDetailPage = () => {
     if (!inStock) return;
     try {
       setAddingCart(true);
-      await addToCart({ ...product, quantity: qty });
+      await dispatch(addToCart({ ...product, quantity: qty })).unwrap();
       setCartMsg("Added to cart!");
       setTimeout(() => setCartMsg(""), 2500);
     } catch (err) {
-      setCartMsg(err.response?.data?.message || "Failed to add");
+      setCartMsg(
+        typeof err === "string"
+          ? err
+          : err?.response?.data?.message || "Failed to add",
+      );
     } finally {
       setAddingCart(false);
     }
@@ -159,7 +168,7 @@ const ProductDetailPage = () => {
     if (!user) return navigate("/login");
     if (!inStock) return;
     try {
-      await addToCart({ ...product, quantity: qty });
+      await dispatch(addToCart({ ...product, quantity: qty })).unwrap();
       navigate("/cart");
     } catch {}
   };
@@ -167,12 +176,22 @@ const ProductDetailPage = () => {
   const handleCartInc = async () => {
     if (!user) return navigate("/login");
     if (cartQty >= product.stock) return;
-    await updateQuantity(cartItem.cartItemId, cartQty + 1);
+    dispatch(
+      updateQuantity({
+        cartItemId: cartItem.cartItemId,
+        quantity: cartQty + 1,
+      }),
+    );
   };
 
   const handleCartDec = async () => {
     if (!user) return navigate("/login");
-    await updateQuantity(cartItem.cartItemId, cartQty - 1);
+    dispatch(
+      updateQuantity({
+        cartItemId: cartItem.cartItemId,
+        quantity: cartQty - 1,
+      }),
+    );
   };
 
   if (loading) {
@@ -241,7 +260,6 @@ const ProductDetailPage = () => {
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Gallery */}
           <div className="lg:w-[520px] flex-shrink-0 flex gap-3">
-            {/* Thumbnails */}
             <div className="flex flex-col gap-2 w-16 flex-shrink-0">
               {allImages.map((img, i) => (
                 <button
@@ -264,7 +282,6 @@ const ProductDetailPage = () => {
               ))}
             </div>
 
-            {/* Main image */}
             <div
               className="flex-1 relative overflow-hidden rounded bg-brand-light"
               style={{ aspectRatio: "3/4" }}
@@ -319,7 +336,6 @@ const ProductDetailPage = () => {
 
           {/* Product Info */}
           <div className="flex-1 min-w-0">
-            {/* Tags */}
             <div className="flex items-center gap-2 flex-wrap mb-2">
               {product.subCategory?.category?.name && (
                 <span className="text-xs font-bold text-brand-gray uppercase tracking-wider">
@@ -342,7 +358,6 @@ const ProductDetailPage = () => {
               {product.name}
             </h1>
 
-            {/* Rating */}
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <div className="flex items-center gap-1.5 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">
                 <span>{avgRating}</span>
@@ -363,7 +378,6 @@ const ProductDetailPage = () => {
               </span>
             </div>
 
-            {/* Price */}
             <div className="mt-4 pb-4 border-b border-brand-border">
               <div className="flex items-baseline gap-3 flex-wrap">
                 <span className="text-2xl font-extrabold text-brand-dark">
@@ -387,7 +401,6 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            {/* Delivery */}
             <div className="py-4 border-b border-brand-border flex flex-col gap-3">
               {[
                 {
@@ -445,14 +458,12 @@ const ProductDetailPage = () => {
               ))}
             </div>
 
-            {/* Description short */}
             {product.description && (
               <p className="py-4 text-sm text-brand-muted leading-relaxed border-b border-brand-border">
                 {product.description}
               </p>
             )}
 
-            {/* Cart message */}
             {cartMsg && (
               <div
                 className={`mt-3 text-sm font-semibold px-4 py-2 rounded-sm ${cartMsg.includes("Failed") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}
@@ -461,7 +472,6 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            {/* CTA */}
             <div className="mt-5 flex gap-3 flex-wrap">
               {cartQty > 0 ? (
                 <div className="flex items-center border-2 border-primary rounded-sm overflow-hidden">
@@ -507,7 +517,6 @@ const ProductDetailPage = () => {
                   {addingCart ? "ADDING…" : "ADD TO BAG"}
                 </button>
               )}
-
               <button
                 onClick={handleBuyNow}
                 disabled={!inStock || status !== "ACTIVE"}
@@ -517,7 +526,6 @@ const ProductDetailPage = () => {
               </button>
             </div>
 
-            {/* Share */}
             <div className="mt-5 flex items-center gap-3 text-sm text-brand-gray">
               <span className="font-semibold">Share:</span>
               {["F", "T", "W"].map((s, i) => (
@@ -554,7 +562,6 @@ const ProductDetailPage = () => {
           </div>
 
           <div className="py-8">
-            {/* Description */}
             {tab === "Description" && (
               <div>
                 <div className="mb-6">
@@ -656,7 +663,6 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            {/* Reviews */}
             {tab === "Reviews" && (
               <div>
                 <div className="flex flex-col sm:flex-row gap-8 mb-8 p-6 bg-brand-light rounded">
@@ -747,7 +753,6 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            {/* Terms */}
             {tab === "Terms & Conditions" && (
               <div className="max-w-3xl">
                 <h2 className="text-lg font-extrabold text-brand-dark mb-1">
@@ -804,7 +809,6 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            {/* Shipping */}
             {tab === "Shipping Info" && (
               <div>
                 <h2 className="text-lg font-extrabold text-brand-dark mb-5">

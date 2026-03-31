@@ -1,18 +1,18 @@
-import { useWishlist } from "../context/WishlistContext";
-import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { BACKEND_URL } from "../utils/api";
-import { useAppSelector } from "../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  selectWishlistItems,
+  removeFromWishlist,
+  clearWishlist,
+} from "../redux/slices/wishlistSlice";
+import { addToCart } from "../redux/slices/cartSlice";
 import { selectUser } from "../redux/slices/authSlice";
 
 const WishlistPage = () => {
-  const { wishlistItems, removeFromWishlist, clearWishlist } = useWishlist();
-  const { addToCart } = useCart();
-  // const { user } = useAuth();
+  const dispatch = useAppDispatch();
+  const wishlistItems = useAppSelector(selectWishlistItems);
   const user = useAppSelector(selectUser);
-
   const navigate = useNavigate();
   const [addingId, setAddingId] = useState(null);
   const [movedId, setMovedId] = useState(null);
@@ -29,14 +29,14 @@ const WishlistPage = () => {
     }).format(price);
 
   const handleMoveToCart = async (e, product) => {
-    e.stopPropagation(); // ← prevents card click firing
+    e.stopPropagation();
     if (!user) return navigate("/login");
     try {
       setAddingId(product.id);
-      await addToCart(product);
+      await dispatch(addToCart(product)).unwrap();
       setMovedId(product.id);
       setTimeout(() => {
-        removeFromWishlist(product.id);
+        dispatch(removeFromWishlist(product.id));
         setMovedId(null);
       }, 800);
     } catch (err) {
@@ -45,9 +45,9 @@ const WishlistPage = () => {
       setAddingId(null);
     }
   };
+
   return (
     <div className="min-h-screen bg-brand-light">
-      {/* Banner */}
       <div className="bg-white border-b border-brand-border">
         <div className="max-w-screen-xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
@@ -61,7 +61,7 @@ const WishlistPage = () => {
           </div>
           {wishlistItems.length > 0 && (
             <button
-              onClick={clearWishlist}
+              onClick={() => dispatch(clearWishlist())}
               className="text-xs font-bold text-red-400 hover:text-red-600 transition-colors border border-red-200 px-3 py-1.5 rounded hover:bg-red-50"
             >
               CLEAR ALL
@@ -72,7 +72,6 @@ const WishlistPage = () => {
 
       <div className="max-w-screen-xl mx-auto px-4 py-8">
         {wishlistItems.length === 0 ? (
-          /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded shadow-sm">
             <div className="w-20 h-20 bg-primary-light rounded-full flex items-center justify-center mb-5">
               <svg
@@ -113,9 +112,8 @@ const WishlistPage = () => {
                   key={product.id}
                   className={`group bg-white border border-brand-border overflow-hidden hover:shadow-md transition-all duration-300 relative ${isMoved ? "opacity-50 scale-95" : ""}`}
                 >
-                  {/* Remove from wishlist */}
                   <button
-                    onClick={() => removeFromWishlist(product.id)}
+                    onClick={() => dispatch(removeFromWishlist(product.id))}
                     className="absolute top-2 right-2 z-10 w-7 h-7 bg-white rounded-full shadow flex items-center justify-center hover:bg-red-50 transition-colors"
                     title="Remove from wishlist"
                   >
@@ -131,7 +129,6 @@ const WishlistPage = () => {
                     </svg>
                   </button>
 
-                  {/* Image */}
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
@@ -165,7 +162,6 @@ const WishlistPage = () => {
                     )}
                   </div>
 
-                  {/* Info */}
                   <div className="p-3">
                     <p className="text-[11px] font-bold text-brand-dark uppercase tracking-wide truncate">
                       {product.subCategory?.category?.name || "Brand"}
@@ -184,7 +180,6 @@ const WishlistPage = () => {
                       )}
                     </div>
 
-                    {/* Move to bag button */}
                     <button
                       onClick={(e) => handleMoveToCart(e, product)}
                       disabled={

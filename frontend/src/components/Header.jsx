@@ -1,37 +1,33 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useCart } from "../context/CartContext";
-import { useSearch } from "../context/SearchContext";
-import { useAuth } from "../context/AuthContext";
-import { BACKEND_URL } from "../utils/api";
-import api from "../utils/api";
-import { useWishlist } from "../context/WishlistContext";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { selectUser, logout } from "../redux/slices/authSlice";
+import { selectCartItemCount } from "../redux/slices/cartSlice";
+import { selectWishlistCount } from "../redux/slices/wishlistSlice";
 import {
-  selectCartItemCount,
-  selectCartItems,
-} from "../redux/slices/cartSlice";
+  selectSearchQuery,
+  selectSuggestions,
+  selectIsLoadingSuggestions,
+  selectShowSuggestions,
+  hideSuggestions,
+  clearSearch,
+} from "../redux/slices/searchSlice";
+import { BACKEND_URL } from "../utils/api";
+import api from "../utils/api";
+import { useSearchDebounce } from "../redux/hooks/useSearchDebounce";
 
 const Header = () => {
-  // const { getCartItemCount } = useCart();
-  const {
-    searchQuery,
-    setSearchQuery,
-    suggestions,
-    isLoadingSuggestions,
-    showSuggestions,
-    hideSuggestions,
-    clearSearch,
-  } = useSearch();
-  // const { user, logout } = useAuth();
-
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
-  const navigate = useNavigate();
-  const { wishlistCount } = useWishlist();
-  const location = useLocation();
   const cartCount = useAppSelector(selectCartItemCount);
+  const wishlistCount = useAppSelector(selectWishlistCount);
+  const searchQuery = useAppSelector(selectSearchQuery);
+  const suggestions = useAppSelector(selectSuggestions);
+  const isLoadingSuggestions = useAppSelector(selectIsLoadingSuggestions);
+  const showSuggestions = useAppSelector(selectShowSuggestions);
+  const { handleQueryChange } = useSearchDebounce();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [navCategories, setNavCategories] = useState([]);
@@ -43,7 +39,7 @@ const Header = () => {
       try {
         const res = await api.get("/categories");
         const allCategories = res.data.data?.categories || [];
-        setNavCategories(allCategories.slice(0, 4)); // show only 4 in nav
+        setNavCategories(allCategories.slice(0, 4));
       } catch (err) {
         console.error("Failed to load nav categories", err);
       }
@@ -52,33 +48,33 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (!location.pathname.startsWith("/products")) clearSearch();
-  }, [location.pathname, clearSearch]);
+    if (!location.pathname.startsWith("/products")) dispatch(clearSearch());
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target))
         setUserMenuOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target))
-        hideSuggestions();
+        dispatch(hideSuggestions());
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [hideSuggestions]);
+  }, []);
 
-  const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const handleSearchChange = (e) => handleQueryChange(e.target.value);
 
   const handleSearchSubmit = (e) => {
     if (e?.preventDefault) e.preventDefault();
-    hideSuggestions();
+    dispatch(hideSuggestions());
     if (searchQuery.trim())
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
     else navigate("/products");
   };
 
   const handleSuggestionClick = (product) => {
-    hideSuggestions();
-    clearSearch();
+    dispatch(hideSuggestions());
+    dispatch(clearSearch());
     navigate(`/products/${product.id}`);
   };
 
@@ -88,13 +84,6 @@ const Header = () => {
     navigate("/");
   };
 
-  const handleContactUs = async () => {
-    navigate("/contact");
-  };
-
-  const handleWishlist = async () => {
-    navigate("/wishlist");
-  };
   const formatPrice = (price) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -113,6 +102,7 @@ const Header = () => {
         ? "border-[#ff3f6c] text-[#ff3f6c]"
         : "border-transparent text-[#282c3f] hover:text-[#ff3f6c] hover:border-[#ff3f6c]"
     }`;
+
   return (
     <header className="sticky top-0 z-[999] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.12)] h-16 w-full">
       <div className="w-full h-full flex items-center px-8">
@@ -120,7 +110,7 @@ const Header = () => {
           <img
             src="/logo.ico"
             alt="Logo"
-            className="h-14  w-auto object-contain px-8"
+            className="h-14 w-auto object-contain px-8"
           />
         </Link>
 
@@ -151,7 +141,7 @@ const Header = () => {
         <div ref={searchRef} className="relative mr-8" style={{ width: 600 }}>
           <form
             onSubmit={handleSearchSubmit}
-            className="flex items-center h-10  bg-white border border-[#d4d5d9] rounded overflow-hidden"
+            className="flex items-center h-10 bg-white border border-[#d4d5d9] rounded overflow-hidden"
           >
             <span className="pl-3 pr-1.5 flex items-center flex-shrink-0 text-[#94969f]">
               <svg
@@ -177,7 +167,7 @@ const Header = () => {
             {searchQuery && (
               <button
                 type="button"
-                onClick={clearSearch}
+                onClick={() => dispatch(clearSearch())}
                 className="flex-shrink-0 flex items-center justify-center px-2 h-full bg-transparent border-none cursor-pointer text-[#94969f] hover:text-[#282c3f]"
               >
                 <svg
@@ -351,10 +341,9 @@ const Header = () => {
                     </svg>
                     My Orders
                   </button>
-
                   <button
-                    onClick={handleWishlist}
-                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px]  text-left hover:bg-[#f5f5f6] transition-colors"
+                    onClick={() => navigate("/wishlist")}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px] text-left hover:bg-[#f5f5f6] transition-colors"
                   >
                     <svg
                       width="15"
@@ -365,16 +354,14 @@ const Header = () => {
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="group-hover:stroke-[#ff3f6c] transition-colors duration-150 block"
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
                     Wishlist
                   </button>
-
                   <button
-                    onClick={handleContactUs}
-                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px]  text-left hover:bg-[#f5f5f6] transition-colors"
+                    onClick={() => navigate("/contact")}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px] text-left hover:bg-[#f5f5f6] transition-colors"
                   >
                     <svg
                       width="15"
@@ -386,23 +373,10 @@ const Header = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      <path
-                        d="M22 16.92v3a2 2 0 0 1-2.18 2 
-    19.79 19.79 0 0 1-8.63-3.07 
-    19.5 19.5 0 0 1-6-6 
-    19.79 19.79 0 0 1-3.07-8.67A2 
-    2 0 0 1 4.11 2h3a2 2 0 0 1 
-    2 1.72c.12.89.32 1.76.59 
-    2.59a2 2 0 0 1-.45 
-    2.11L8.09 9.91a16 
-    16 0 0 0 6 6l1.49-1.16a2 
-    2 0 0 1 2.11-.45c.83.27 
-    1.7.47 2.59.59A2 2 0 0 1 22 16.92z"
-                      />
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.89.32 1.76.59 2.59a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.49-1.16a2 2 0 0 1 2.11-.45c.83.27 1.7.47 2.59.59A2 2 0 0 1 22 16.92z" />
                     </svg>
                     Contact Us
                   </button>
-
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-[13px] text-[#ff3f6c] text-left hover:bg-[#fff0f3] transition-colors"
@@ -469,6 +443,7 @@ const Header = () => {
             </div>
           )}
 
+          {/* Wishlist */}
           <button
             onClick={() => navigate("/wishlist")}
             className="group flex flex-col items-center justify-center gap-[2px] w-[60px] h-14 bg-transparent border-none cursor-pointer p-0 relative"

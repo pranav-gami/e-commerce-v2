@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import {
+  forgotPassword,
+  verifyOtp,
+  updatePassword,
+} from "../redux/slices/authSlice";
 
 const ForgotPasswordPage = () => {
-  const { forgotPassword, verifyOtp, updatePassword } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -20,7 +23,6 @@ const ForgotPasswordPage = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
 
-  // Start countdown when step 2 is reached
   useEffect(() => {
     if (step === 2) {
       setTimer(60);
@@ -28,7 +30,6 @@ const ForgotPasswordPage = () => {
     }
   }, [step]);
 
-  // Countdown tick
   useEffect(() => {
     if (!timerActive) return;
     if (timer <= 0) {
@@ -41,7 +42,6 @@ const ForgotPasswordPage = () => {
     return () => clearInterval(interval);
   }, [timerActive, timer]);
 
-  // Format seconds → MM:SS
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -107,7 +107,6 @@ const ForgotPasswordPage = () => {
       setLoading(false);
     }
   };
-  // State & Refs
 
   const handleOtpChange = (value, index) => {
     if (!/^\d*$/.test(value)) return;
@@ -138,6 +137,7 @@ const ForgotPasswordPage = () => {
     setOtp(newOtp);
     otpRefs.current[Math.min(pasted.length, 5)].focus();
   };
+
   // Step 3 — Update Password
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
@@ -262,7 +262,7 @@ const ForgotPasswordPage = () => {
                 ))}
               </div>
 
-              {/* ⏱ Timer + Resend */}
+              {/* Timer + Resend */}
               <div className="otp-timer-row">
                 {timer > 0 ? (
                   <span
@@ -275,7 +275,6 @@ const ForgotPasswordPage = () => {
                     OTP expired
                   </span>
                 )}
-
                 <button
                   type="button"
                   className="otp-resend-btn"

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useCart } from "../context/CartContext";
 import api from "../utils/api";
 import { fetchCart, selectCartItems } from "../redux/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
@@ -18,8 +17,8 @@ const PaymentGateway = ({
   const [statusMessage, setStatusMessage] = useState("");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  // const { cartItems, fetchCart } = useCart();
   const cartItems = useAppSelector(selectCartItems);
+
   const formatPrice = (price) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -34,6 +33,7 @@ const PaymentGateway = ({
   useEffect(() => {
     document.title = "PAYMENT";
   }, []);
+
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -108,7 +108,6 @@ const PaymentGateway = ({
 
   return (
     <>
-      {/* Backdrop — only in modal mode */}
       {!isPage && (
         <div
           className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
@@ -116,7 +115,6 @@ const PaymentGateway = ({
         />
       )}
 
-      {/* Card — fixed center in modal mode, plain block in page mode */}
       <div
         className={
           isPage
@@ -124,7 +122,6 @@ const PaymentGateway = ({
             : "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded shadow-2xl overflow-hidden animate-fade-in"
         }
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-light">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
@@ -162,7 +159,6 @@ const PaymentGateway = ({
           </button>
         </div>
 
-        {/* Body */}
         <div className="p-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded mb-5 font-medium">
@@ -176,7 +172,6 @@ const PaymentGateway = ({
           )}
 
           <form onSubmit={handlePlaceOrder}>
-            {/* Order Summary */}
             <div className="bg-brand-light rounded border border-brand-border p-4 mb-5">
               <h3 className="text-xs font-extrabold text-brand-gray uppercase tracking-wider mb-3">
                 Order Summary
@@ -201,7 +196,6 @@ const PaymentGateway = ({
               </div>
             </div>
 
-            {/* Cart Items Preview */}
             {cartItems.length > 0 && (
               <div className="mb-5 space-y-2 max-h-36 overflow-y-auto">
                 {cartItems.map((item) => {
@@ -236,7 +230,6 @@ const PaymentGateway = ({
               </div>
             )}
 
-            {/* Razorpay Note */}
             <div className="flex items-center gap-2 text-xs text-brand-gray mb-5 bg-blue-50 border border-blue-100 px-3 py-2 rounded">
               <img
                 src="https://razorpay.com/favicon.ico"

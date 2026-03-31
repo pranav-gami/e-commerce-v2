@@ -1,57 +1,71 @@
 import { useState, useEffect } from "react";
-import { useCart } from "../context/CartContext";
+import { useDispatch, useSelector } from "react-redux";
 import PaymentGateway from "./PaymentGateway";
 import {
   trackViewCart,
   trackRemoveFromCart,
   trackBeginCheckout,
 } from "../utils/analytics";
+import {
+  fetchCart,
+  removeFromCart,
+  updateQuantity,
+  setCartOpen,
+  selectCartItems,
+  selectIsCartOpen,
+  selectCartTotal,
+} from "../redux/slices/cartSlice";
 
 const ShoppingCart = () => {
-  const {
-    cartItems,
-    removeFromCart,
-    updateQuantity,
-    getCartTotal,
-    isCartOpen,
-    setIsCartOpen,
-  } = useCart();
+  const dispatch = useDispatch();
+  const cartItems = useSelector(selectCartItems);
+  const isCartOpen = useSelector(selectIsCartOpen);
+  const cartTotal = useSelector(selectCartTotal);
 
   const [showPayment, setShowPayment] = useState(false);
 
-  // Track when cart is viewed
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
+
   useEffect(() => {
     if (isCartOpen && cartItems.length > 0) {
-      trackViewCart(cartItems, getCartTotal());
+      trackViewCart(cartItems, cartTotal);
     }
-  }, [isCartOpen, cartItems, getCartTotal]);
+  }, [isCartOpen, cartItems, cartTotal]);
 
-  const handleRemoveFromCart = (item) => {
-    removeFromCart(item.cartItemId); // 👈 cartItemId not item.id
+  const handleRemove = (cartItemId) => {
+    dispatch(removeFromCart(cartItemId));
+    trackRemoveFromCart(cartItemId);
   };
 
   const handleCheckout = () => {
-    trackBeginCheckout(cartItems, getCartTotal());
+    trackBeginCheckout(cartItems, cartTotal);
     setShowPayment(true);
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN", {
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(price);
-  };
 
   if (!isCartOpen) return null;
 
   return (
     <>
-      <div className="overlay" onClick={() => setIsCartOpen(false)}></div>
+      <div
+        className="overlay"
+        onClick={() => dispatch(setCartOpen(false))}
+      ></div>
       <div className="cart-drawer">
         <div className="cart-header">
           <h2>Shopping Cart</h2>
-          <button className="close-btn" onClick={() => setIsCartOpen(false)}>
+          <button
+            className="close-btn"
+            onClick={() => dispatch(setCartOpen(false))}
+          >
             <svg
               width="24"
               height="24"
@@ -86,13 +100,12 @@ const ShoppingCart = () => {
           ) : (
             <div className="cart-items">
               {cartItems.map((item) => (
-                <div key={item.id} className="cart-item">
+                <div key={item.cartItemId} className="cart-item">
                   <img
                     src={item.image}
                     alt={item.name}
                     className="cart-item-image"
                   />
-
                   <div className="cart-item-info">
                     <h4>{item.name}</h4>
                     <p className="cart-item-price">{formatPrice(item.price)}</p>
@@ -100,8 +113,13 @@ const ShoppingCart = () => {
                       <div className="quantity-controls">
                         <button
                           onClick={() =>
-                            updateQuantity(item.cartItemId, item.quantity - 1)
-                          } // 👈 cartItemId
+                            dispatch(
+                              updateQuantity({
+                                cartItemId: item.cartItemId,
+                                quantity: item.quantity - 1,
+                              }),
+                            )
+                          }
                           className="qty-btn"
                         >
                           -
@@ -109,15 +127,20 @@ const ShoppingCart = () => {
                         <span className="quantity">{item.quantity}</span>
                         <button
                           onClick={() =>
-                            updateQuantity(item.cartItemId, item.quantity + 1)
-                          } // 👈 cartItemId
+                            dispatch(
+                              updateQuantity({
+                                cartItemId: item.cartItemId,
+                                quantity: item.quantity + 1,
+                              }),
+                            )
+                          }
                           className="qty-btn"
                         >
                           +
                         </button>
                       </div>
                       <button
-                        onClick={() => handleRemoveFromCart(item)}
+                        onClick={() => handleRemove(item.cartItemId)}
                         className="remove-btn"
                       >
                         Remove
@@ -134,9 +157,7 @@ const ShoppingCart = () => {
           <div className="cart-footer">
             <div className="cart-total">
               <span>Subtotal:</span>
-              <span className="total-amount">
-                {formatPrice(getCartTotal())}
-              </span>
+              <span className="total-amount">{formatPrice(cartTotal)}</span>
             </div>
             <button className="btn btn-primary btn-lg" onClick={handleCheckout}>
               Proceed to Checkout
@@ -148,7 +169,7 @@ const ShoppingCart = () => {
       {showPayment && (
         <PaymentGateway
           onClose={() => setShowPayment(false)}
-          total={getCartTotal()}
+          total={cartTotal}
         />
       )}
     </>

@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
 import LocationDropdowns from "../components/LocationDropdowns";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectUser, updateProfile } from "../redux/slices/authSlice";
-import { useDispatch } from "react-redux";
 
 const ProfilePage = () => {
-  // const { updateProfile } = useAuth();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
 
@@ -175,7 +172,6 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Alerts */}
         {serverError && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded font-medium">
             {serverError}
@@ -218,7 +214,6 @@ const ProfilePage = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {/* Name */}
               <div>
                 <label className="block text-xs font-extrabold text-brand-gray uppercase tracking-wider mb-1.5">
                   Full Name
@@ -233,7 +228,6 @@ const ProfilePage = () => {
                 />
               </div>
 
-              {/* Address */}
               <div>
                 <label className="block text-xs font-extrabold text-brand-gray uppercase tracking-wider mb-1.5">
                   Street Address
@@ -248,7 +242,6 @@ const ProfilePage = () => {
                 />
               </div>
 
-              {/* Location dropdowns */}
               <LocationDropdowns
                 value={locationIds}
                 onChange={setLocationIds}
@@ -256,7 +249,6 @@ const ProfilePage = () => {
                 showPhone={true}
               />
 
-              {/* Buttons */}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"

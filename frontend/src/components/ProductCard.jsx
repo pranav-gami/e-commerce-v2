@@ -1,13 +1,17 @@
 import { useState, useMemo } from "react";
-import { useWishlist } from "../context/WishlistContext";
 import { useNavigate } from "react-router-dom";
-import { selectUser } from "../redux/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { selectUser } from "../redux/slices/authSlice";
 import {
   selectCartItems,
   addToCart,
   updateQuantity,
 } from "../redux/slices/cartSlice";
+import {
+  toggleWishlist,
+  selectIsInWishlist,
+} from "../redux/slices/wishlistSlice";
+
 const formatPrice = (price) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -18,25 +22,13 @@ const formatPrice = (price) =>
     .replace("₹", "Rs. ");
 
 const ProductCard = ({ product }) => {
-  // const { addToCart, updateQuantity, cartItems } = useCart();
-  // const { user } = useAuth();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector(selectCartItems);
-
-  const handleAddToCart = (product) => {
-    dispatch(addToCart(product));
-  };
-
-  const handleUpdateQuantity = (cartItemId, quantity) => {
-    dispatch(updateQuantity({ cartItemId, quantity }));
-  };
   const user = useAppSelector(selectUser);
-
-  const { toggleWishlist, isInWishlist } = useWishlist();
+  const inWishlist = useAppSelector(selectIsInWishlist(product.id));
   const navigate = useNavigate();
 
   const [wishlistMsg, setWishlistMsg] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState("");
 
   const cartItem = useMemo(
@@ -65,11 +57,19 @@ const ProductCard = ({ product }) => {
   const handleWishlist = (e) => {
     e.stopPropagation();
     if (!requireAuth()) return;
-
-    const added = toggleWishlist(product);
-    setWishlistMsg(added ? "Added to Wishlist!" : "Removed from Wishlist");
-
+    dispatch(toggleWishlist(product));
+    setWishlistMsg(inWishlist ? "Removed from Wishlist" : "Added to Wishlist!");
     setTimeout(() => setWishlistMsg(""), 2000);
+  };
+
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    dispatch(addToCart(product));
+  };
+
+  const handleUpdateQuantity = (e, cartItemId, qty) => {
+    e.stopPropagation();
+    dispatch(updateQuantity({ cartItemId, quantity: qty }));
   };
 
   return (
@@ -85,7 +85,6 @@ const ProductCard = ({ product }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* RATING (on image like Myntra) */}
         {product.reviewCount && (
           <div className="absolute bottom-2 left-2 bg-white px-2 py-[2px] flex items-center text-[11px] font-semibold rounded shadow-sm">
             <span className="flex items-center gap-[2px] text-[#282c3f]">
@@ -94,14 +93,11 @@ const ProductCard = ({ product }) => {
                 <polygon points="12 2 15 9 22 9 17 14 19 22 12 18 5 22 7 14 2 9 9 9" />
               </svg>
             </span>
-
             <span className="mx-1 text-[#94969f]">|</span>
-
             <span className="text-[#94969f]">{product.reviewCount}</span>
           </div>
         )}
 
-        {/* OUT OF STOCK */}
         {!inStock && <Overlay label="OUT OF STOCK" />}
         {!isActive && <Overlay label="Not available" />}
 
@@ -112,7 +108,7 @@ const ProductCard = ({ product }) => {
               onClick={handleWishlist}
               className={`w-full text-[12px] font-bold py-2 flex items-center justify-center gap-1.5 rounded
                 ${
-                  isInWishlist(product.id)
+                  inWishlist
                     ? "bg-gray-700 text-white"
                     : "border border-[#d4d5d9] text-[#282c3f] hover:border-gray-600"
                 }`}
@@ -121,14 +117,13 @@ const ProductCard = ({ product }) => {
                 width="14"
                 height="14"
                 viewBox="0 0 24 24"
-                fill={isInWishlist(product.id) ? "#ff3f6c" : "none"}
-                stroke={isInWishlist(product.id) ? "#ff3f6c" : "#282c3f"}
+                fill={inWishlist ? "#ff3f6c" : "none"}
+                stroke={inWishlist ? "#ff3f6c" : "#282c3f"}
                 strokeWidth="2"
               >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-
-              {isInWishlist(product.id) ? "WISHLISTED" : "WISHLIST"}
+              {inWishlist ? "WISHLISTED" : "WISHLIST"}
             </button>
           </div>
         </div>
@@ -136,31 +131,24 @@ const ProductCard = ({ product }) => {
 
       {/* INFO */}
       <div className="px-2 py-2">
-        {/* FIXED HEIGHT → no jump */}
         <div className="relative overflow-hidden">
-          {/* NORMAL */}
           <div className="transition-all duration-200 group-hover:opacity-0 group-hover:-translate-y-2">
             <p className="text-[16px] font-bold text-[#282c3f] truncate">
               {product.subCategory?.category?.name || "Brand"}
             </p>
-
             <p className="text-[14px] text-[#535766] truncate">
               {product.name}
             </p>
           </div>
-
-          {/* HOVER */}
           <div className="absolute inset-0 flex items-center opacity-0 translate-y-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
             <p className="text-[14px] text-[#535766]">Sizes: OneSize</p>
           </div>
         </div>
 
-        {/* PRICE (stable, no jump) */}
         <div className="flex items-center gap-2 mt-1 text-[14px]">
           <span className="font-bold text-[#282c3f]">
             {formatPrice(discountedPrice)}
           </span>
-
           {product.discount > 0 && (
             <>
               <span className="line-through text-[#94969f]">

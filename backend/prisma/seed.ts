@@ -1463,7 +1463,7 @@ async function seedHeroSlides(): Promise<void> {
 //  MAIN
 // ============================================================
 async function main(): Promise<void> {
-  console.log(" Starting Shop.in full seed...\n");
+  console.log(" Starting Myntra full seed...\n");
 
   await clearData();
   await seedCountries();

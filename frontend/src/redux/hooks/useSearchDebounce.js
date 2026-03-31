@@ -1,16 +1,14 @@
 import { useEffect, useRef } from "react";
-import { useAppDispatch } from "../redux/hooks";
-import { setSearchQuery, fetchSuggestions } from "../redux/slices/searchSlice";
+import { useAppDispatch } from "../hooks";
+import { setSearchQuery, fetchSuggestions } from "../slices/searchSlice";
 
-// Debounce time in milliseconds — change this to adjust suggestion delay
-const DEBOUNCE_MS = 300;
+const DEBOUNCE_MS = 1000;
 
 export const useSearchDebounce = () => {
   const dispatch = useAppDispatch();
   const timerRef = useRef(null);
 
   const handleQueryChange = (query) => {
-    // Update the query in store immediately (for the input value)
     dispatch(setSearchQuery(query));
 
     // Debounce the API call

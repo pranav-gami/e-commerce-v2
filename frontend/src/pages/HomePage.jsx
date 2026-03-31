@@ -1,10 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
 import api, { BACKEND_URL } from "../utils/api";
-import { useAppSelector } from "../redux/hooks";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
+import { addToCart } from "../redux/slices/cartSlice";
 
 const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -16,8 +15,7 @@ const HomePage = () => {
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [addingId, setAddingId] = useState(null);
 
-  const { addToCart } = useCart();
-  // const { user } = useAuth();
+  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const navigate = useNavigate();
 
@@ -56,7 +54,6 @@ const HomePage = () => {
         setCategoriesLoading(true);
         const res = await api.get("/categories");
         const allCategories = res.data.data?.categories || [];
-
         setCategories(
           allCategories.map((cat) => ({
             ...cat,
@@ -93,7 +90,7 @@ const HomePage = () => {
     if (!user) return navigate("/login");
     try {
       setAddingId(product.id);
-      await addToCart(product);
+      await dispatch(addToCart(product)).unwrap();
     } catch (err) {
       console.error(err);
     } finally {
@@ -174,49 +171,8 @@ const HomePage = () => {
                     e.target.style.display = "none";
                   }}
                 />
-                {/* <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent">
-                  <div className="max-w-screen-xl mx-auto px-8 h-full flex items-center">
-                    <div className="max-w-lg">
-                      <span className="text-xs font-bold text-primary uppercase tracking-widest">
-                        {slide.eyebrow}
-                      </span>
-                      <h1 className="text-4xl md:text-5xl font-extrabold text-white mt-2 leading-tight">
-                        {renderTitle(slide.title, slide.titleSpan)}
-                      </h1>
-                      <p className="text-white/80 mt-3 text-base">
-                        {slide.subtitle}
-                      </p>
-                      <div className="flex items-center gap-4 mt-6">
-                        <Link
-                          to="/products"
-                          className="bg-primary text-white px-7 py-3 text-sm font-bold tracking-wider hover:bg-primary-hover transition-colors rounded-sm flex items-center gap-2"
-                        >
-                          SHOP NOW
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                          >
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                          </svg>
-                        </Link>
-                        <Link
-                          to="/products"
-                          className="text-white text-sm font-semibold border-b border-white/50 hover:border-white transition-colors"
-                        >
-                          Explore All
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div> */}
               </div>
             ))}
-            {/* Indicators */}
             {heroSlides.length > 1 && (
               <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
                 {heroSlides.map((_, i) => (
@@ -231,30 +187,6 @@ const HomePage = () => {
           </>
         )}
       </section>
-
-      {/* Trust Bar */}
-      {/* <div className="bg-brand-light border-y border-brand-border">
-        <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-center gap-8 flex-wrap">
-          {trustItems.map((t, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 text-xs font-semibold text-brand-muted"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ff3f6c"
-                strokeWidth="2"
-              >
-                {t.icon}
-              </svg>
-              {t.text}
-            </div>
-          ))}
-        </div>
-      </div> */}
 
       <section className="py-8 w-full px-16">
         <h2 className="text-xl font-extrabold text-brand-dark uppercase tracking-widest mb-10">
@@ -297,10 +229,7 @@ const HomePage = () => {
                     </span>
                   </div>
                 )}
-
-                {/* Overlay */}
                 <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />
-
                 <div
                   className="absolute inset-x-2 bottom-2 flex flex-col justify-center px-3 py-2 rounded-sm text-center"
                   style={{
@@ -357,10 +286,10 @@ const HomePage = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-8">
               {featuredProducts.map((product) => (
                 <Link
+                  key={product.id}
                   to={`/products/${product.id}`}
                   className="group flex flex-col h-full bg-white"
                 >
-                  {/* IMAGE */}
                   <div className="aspect-[3/3] w-full overflow-hidden bg-[#f5f5f6]">
                     <img
                       src={
@@ -372,13 +301,10 @@ const HomePage = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-
-                  {/* CONTENT */}
                   <div className="mt-3 px-1 h-[72px] flex flex-col justify-between m-2">
                     <p className="text-[11px] font-extrabold text-[#94969f] uppercase tracking-[1px]">
                       {product.subCategory?.category?.name || "Category"}
                     </p>
-
                     <h3 className="text-[13.5px] font-semibold text-[#282c3f] leading-snug line-clamp-2 min-h-[34px]">
                       {product.name}
                     </h3>

@@ -1,33 +1,36 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
-import { useWishlist } from "../context/WishlistContext";
-import { useAuth } from "../context/AuthContext";
 import PaymentGateway from "../components/PaymentGateway";
 import MoveToWishlistToast from "../components/MoveToWishlistToast";
 import api, { BACKEND_URL } from "../utils/api";
-import { useAppSelector } from "../redux/hooks";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
+import {
+  selectCartItems,
+  selectCartTotal,
+  removeFromCart,
+  updateQuantity,
+  addToCart,
+  clearCart,
+} from "../redux/slices/cartSlice";
+import {
+  addToWishlist,
+  selectIsInWishlist,
+} from "../redux/slices/wishlistSlice";
 
 const CartPage = () => {
-  const {
-    cartItems,
-    removeFromCart,
-    updateQuantity,
-    getCartTotal,
-    addToCart,
-    clearCart,
-  } = useCart();
-  const { addToWishlist, isInWishlist } = useWishlist();
-  // const { user } = useAuth();
+  const dispatch = useAppDispatch();
+
+  const cartItems = useAppSelector(selectCartItems);
+  const subtotal = useAppSelector(selectCartTotal);
   const user = useAppSelector(selectUser);
 
   const [showPayment, setShowPayment] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [addingId, setAddingId] = useState(null);
-  const [wishlistToast, setWishlistToast] = useState(null); // item to show in toast
+  const [wishlistToast, setWishlistToast] = useState(null);
   const navigate = useNavigate();
-
+  const wishlistItems = useAppSelector((state) => state.wishlist.items);
   useEffect(() => {
     document.title = "SHOPPING BAG";
   }, []);
@@ -63,7 +66,7 @@ const CartPage = () => {
     e.stopPropagation();
     try {
       setAddingId(product.id);
-      await addToCart(product);
+      await dispatch(addToCart(product)).unwrap();
     } catch (err) {
       if (!localStorage.getItem("token")) navigate("/login");
     } finally {
@@ -71,28 +74,30 @@ const CartPage = () => {
     }
   };
 
-  // Called when user decreases quantity to 0 — show toast instead of silently removing
   const handleQuantityDecrease = async (item) => {
     if (item.quantity <= 1) {
-      // Show "Move to Wishlist" toast
       setWishlistToast(item);
-      // Actually remove from cart
-      await removeFromCart(item.cartItemId);
+      dispatch(removeFromCart(item.cartItemId));
     } else {
-      await updateQuantity(item.cartItemId, item.quantity - 1);
+      dispatch(
+        updateQuantity({
+          cartItemId: item.cartItemId,
+          quantity: item.quantity - 1,
+        }),
+      );
     }
   };
 
   const handleMoveToWishlist = () => {
     if (wishlistToast) {
-      addToWishlist(wishlistToast);
+      dispatch(addToWishlist(wishlistToast));
       setWishlistToast(null);
     }
   };
 
-  const handleDirectMoveToWishlist = async (item) => {
-    addToWishlist(item);
-    await removeFromCart(item.cartItemId);
+  const handleDirectMoveToWishlist = (item) => {
+    dispatch(addToWishlist(item));
+    dispatch(removeFromCart(item.cartItemId));
   };
 
   const formatPrice = (price) =>
@@ -102,7 +107,6 @@ const CartPage = () => {
       maximumFractionDigits: 0,
     }).format(price);
 
-  const subtotal = getCartTotal();
   const savings = cartItems.reduce(
     (acc, item) =>
       acc + ((item.price * (item.discount || 0)) / 100) * item.quantity,
@@ -113,10 +117,7 @@ const CartPage = () => {
     <div className="bg-brand-light min-h-screen">
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 ">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Empty left spacer */}
           <div className="w-28" />
-
-          {/* Steps — center */}
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
             <Link
               to="/cart"
@@ -131,8 +132,6 @@ const CartPage = () => {
             <span className="text-gray-300">──────</span>
             <span className="text-gray-400">PAYMENT</span>
           </div>
-
-          {/* Secure badge — right */}
           <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 w-28 justify-end">
             <svg
               width="14"
@@ -148,6 +147,7 @@ const CartPage = () => {
           </div>
         </div>
       </div>
+
       <div className="max-w-screen-xl mx-auto px-4 py-6">
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded shadow-sm">
@@ -189,7 +189,7 @@ const CartPage = () => {
                 <span className="text-center">Subtotal</span>
                 <span>
                   <button
-                    onClick={clearCart}
+                    onClick={() => dispatch(clearCart())}
                     className="text-red-400 hover:text-red-600 font-bold text-xs"
                   >
                     Remove All
@@ -201,8 +201,10 @@ const CartPage = () => {
                 {cartItems.map((item) => {
                   const discountedPrice =
                     item.price - (item.price * (item.discount || 0)) / 100;
-                  const alreadyWishlisted = isInWishlist(item.id);
-
+                  // const alreadyWishlisted = useAppSelector(selectIsInWishlist(item.id));
+                  const alreadyWishlisted = wishlistItems.some(
+                    (w) => w.id === item.id,
+                  );
                   return (
                     <div key={item.cartItemId} className="p-4">
                       <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
@@ -265,9 +267,11 @@ const CartPage = () => {
                             </span>
                             <button
                               onClick={() =>
-                                updateQuantity(
-                                  item.cartItemId,
-                                  item.quantity + 1,
+                                dispatch(
+                                  updateQuantity({
+                                    cartItemId: item.cartItemId,
+                                    quantity: item.quantity + 1,
+                                  }),
                                 )
                               }
                               disabled={item.quantity >= item.stock}
@@ -287,7 +291,9 @@ const CartPage = () => {
 
                         {/* Remove */}
                         <button
-                          onClick={() => removeFromCart(item.cartItemId)}
+                          onClick={() =>
+                            dispatch(removeFromCart(item.cartItemId))
+                          }
                           className="flex items-center gap-1 text-xs text-brand-gray hover:text-red-500 transition-colors font-semibold"
                         >
                           <svg
@@ -306,7 +312,7 @@ const CartPage = () => {
                         </button>
                       </div>
 
-                      {/* Move to Wishlist button (below each item) */}
+                      {/* Move to Wishlist */}
                       <div className="mt-2 ml-[92px]">
                         <button
                           onClick={() => handleDirectMoveToWishlist(item)}
@@ -399,12 +405,6 @@ const CartPage = () => {
                       <polyline points="12 5 19 12 12 19" />
                     </svg>
                   </button>
-                  {/* <Link
-                    to="/products"
-                    className="block text-center text-xs text-primary font-semibold mt-3 hover:underline"
-                  >
-                    Continue Shopping →
-                  </Link> */}
                 </div>
                 <div className="border-t border-brand-border p-4 flex flex-col gap-2">
                   {[
@@ -573,7 +573,6 @@ const CartPage = () => {
         />
       )}
 
-      {/* Move to Wishlist Toast */}
       {wishlistToast && (
         <MoveToWishlistToast
           item={wishlistToast}

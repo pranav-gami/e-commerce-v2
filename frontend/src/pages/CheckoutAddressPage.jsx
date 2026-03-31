@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext";
 import LocationDropdowns, {
   validatePhone,
 } from "../components/LocationDropdowns";
@@ -13,6 +11,8 @@ import {
   setDefaultAddress,
   updateAddress,
 } from "../redux/slices/authSlice";
+import { useAppSelector } from "../redux/hooks";
+import { selectCartItems, selectCartTotal } from "../redux/slices/cartSlice";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -42,16 +42,9 @@ const emptyLoc = {
 
 const CheckoutAddressPage = () => {
   const navigate = useNavigate();
-  // const {
-  //   getCheckoutAddresses,
-  //   addAddress,
-  //   updateAddress,
-  //   deleteAddress,
-  //   setDefaultAddress,
-  // } = useAuth();
-  const dispatch = useAppDispatch();
 
-  const { cartItems, getCartTotal } = useCart();
+  const cartItems = useAppSelector(selectCartItems);
+  const subtotal = useAppSelector(selectCartTotal);
 
   const [addresses, setAddresses] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -70,7 +63,7 @@ const CheckoutAddressPage = () => {
   useEffect(() => {
     document.title = "ADDRESS";
   }, []);
-  const subtotal = getCartTotal();
+
   const savings = cartItems.reduce(
     (acc, item) =>
       acc + ((item.price * (item.discount || 0)) / 100) * item.quantity,
@@ -89,7 +82,7 @@ const CheckoutAddressPage = () => {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const data = await dispatch(getCheckoutAddresses());
+      const data = await getCheckoutAddresses();
       setAddresses(data.addresses || []);
       if (data.defaultAddressId) setSelectedId(data.defaultAddressId);
       else if (data.addresses?.length > 0) setSelectedId(data.addresses[0].id);
@@ -190,11 +183,11 @@ const CheckoutAddressPage = () => {
       };
 
       if (mode === "add") {
-        const res = await dispatch(addAddress(payload));
+        const res = await addAddress(payload);
         await fetchAddresses();
         setSelectedId(res.address.id);
       } else {
-        await dispatch(updateAddress(editingId, payload));
+        await updateAddress(editingId, payload);
         await fetchAddresses();
         setSelectedId(editingId);
       }
@@ -208,7 +201,7 @@ const CheckoutAddressPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await dispatch(deleteAddress(id));
+      await deleteAddress(id);
       await fetchAddresses();
       if (selectedId === id) setSelectedId(null);
     } catch (err) {
@@ -218,7 +211,7 @@ const CheckoutAddressPage = () => {
 
   const handleSetDefault = async (id) => {
     try {
-      await dispatch(setDefaultAddress(id));
+      await setDefaultAddress(id);
       await fetchAddresses();
       setSelectedId(id);
     } catch (err) {
@@ -238,10 +231,7 @@ const CheckoutAddressPage = () => {
       {/* ── Top stepper bar ── */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Empty left spacer */}
           <div className="w-28" />
-
-          {/* Steps — center */}
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
             <Link
               to="/cart"
@@ -256,8 +246,6 @@ const CheckoutAddressPage = () => {
             <span className="text-gray-300">──────</span>
             <span className="text-gray-400">PAYMENT</span>
           </div>
-
-          {/* Secure badge — right */}
           <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 w-28 justify-end">
             <svg
               width="14"
@@ -273,11 +261,11 @@ const CheckoutAddressPage = () => {
           </div>
         </div>
       </div>
+
       {/* ── Main content ── */}
       <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6 items-start">
         {/* ── LEFT: Address list + form ── */}
         <div className="flex-1 min-w-0">
-          {/* Header row */}
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-lg font-extrabold text-gray-800">
               Select Delivery Address
@@ -370,7 +358,10 @@ const CheckoutAddressPage = () => {
                           placeholder="House/Flat, Street, Area, Landmark"
                           value={form.address}
                           onChange={(e) => {
-                            setForm((f) => ({ ...f, address: e.target.value }));
+                            setForm((f) => ({
+                              ...f,
+                              address: e.target.value,
+                            }));
                             setErrors((p) => ({ ...p, address: "" }));
                           }}
                           className={inputClass(errors.address)}
@@ -448,7 +439,6 @@ const CheckoutAddressPage = () => {
               {/* ── Saved addresses ── */}
               {addresses.length > 0 && (
                 <>
-                  {/* Default label above first address */}
                   {addresses.some((a) => a.isDefault) && (
                     <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-2">
                       Default Address

@@ -24,7 +24,6 @@ import ProductDetailPage from "./pages/Productdetailpage";
 import CheckoutAddressPage from "./pages/CheckoutAddressPage";
 import CheckoutPaymentPage from "./pages/CheckoutPaymentPage";
 import "./styles/global.css";
-import { CartProvider } from "./context/CartContext";
 
 // ── App initializer — runs once on mount ─────────────────────────────────────
 const AppInit = ({ children }) => {
@@ -32,12 +31,10 @@ const AppInit = ({ children }) => {
   const user = useSelector(selectUser);
 
   useEffect(() => {
-    // Fetch profile and cart on app start
     dispatch(fetchProfile());
     dispatch(fetchCart());
   }, [dispatch]);
 
-  // Load wishlist whenever user changes
   useEffect(() => {
     dispatch(loadWishlist(user));
   }, [dispatch, user]);

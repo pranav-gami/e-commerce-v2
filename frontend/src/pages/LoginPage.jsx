@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext";
 import { loginSchema, validate } from "../utils/validate";
 import { login } from "../redux/slices/authSlice";
+import { fetchCart } from "../redux/slices/cartSlice";
 import { useAppDispatch } from "../redux/hooks";
 
 const LoginPage = () => {
-  // const { login } = useAuth();
   const dispatch = useAppDispatch();
-  const { fetchCart } = useCart();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -37,12 +34,16 @@ const LoginPage = () => {
     }
     try {
       setLoading(true);
-      await dispatch(login(form.email, form.password));
-      await fetchCart();
+      await dispatch(
+        login({ email: form.email, password: form.password }),
+      ).unwrap();
+      await dispatch(fetchCart());
       navigate("/");
     } catch (err) {
       setServerError(
-        err.response?.data?.message || "Login failed. Please try again.",
+        typeof err === "string"
+          ? err
+          : err?.response?.data?.message || "Login failed. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -54,7 +55,6 @@ const LoginPage = () => {
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-white border border-brand-border rounded shadow-sm overflow-hidden">
-          {/* Left stripe accent */}
           <div className="h-1 bg-primary w-full" />
 
           <div className="p-8">

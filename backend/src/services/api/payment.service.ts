@@ -212,11 +212,13 @@ const handlePaymentSuccess = async (payment: any, entity: any) => {
       items: orderWithUser.items.map((i) => ({
         name: i.product.name,
         quantity: i.quantity,
+        discount: i.product.discount ?? 0,
         price: i.price,
       })),
       total: orderWithUser.total,
       paymentId: entity.id,
       createdAt: orderWithUser.createdAt,
+      fullOrder: { ...orderWithUser, paymentId: entity.id },
     });
   }
 };

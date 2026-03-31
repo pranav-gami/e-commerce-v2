@@ -1,17 +1,16 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { useAppSelector } from "../redux/hooks";
+import { selectCartTotal } from "../redux/slices/cartSlice";
 import PaymentGateway from "../components/PaymentGateway";
 
 const CheckoutPaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { getCartTotal } = useCart();
+  const total = useAppSelector(selectCartTotal);
 
   const addressId = location.state?.addressId;
-  const total = getCartTotal();
 
-  // If someone lands here without an addressId, send them back
   useEffect(() => {
     if (!addressId) {
       navigate("/checkout/address", { replace: true });
@@ -22,7 +21,6 @@ const CheckoutPaymentPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* Stepper bar */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -32,9 +30,13 @@ const CheckoutPaymentPage = () => {
           </Link>
 
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-            <Link to="/cart" className="text-gray-400 hover:text-gray-600 transition-colors">BAG</Link>
+            <Link to="/cart" className="text-gray-400 hover:text-gray-600 transition-colors">
+              BAG
+            </Link>
             <span className="text-gray-300">──────</span>
-            <Link to="/checkout/address" className="text-gray-400 hover:text-gray-600 transition-colors">ADDRESS</Link>
+            <Link to="/checkout/address" className="text-gray-400 hover:text-gray-600 transition-colors">
+              ADDRESS
+            </Link>
             <span className="text-gray-300">──────</span>
             <span className="text-primary border-b-2 border-primary pb-0.5">PAYMENT</span>
           </div>
@@ -48,7 +50,7 @@ const CheckoutPaymentPage = () => {
         </div>
       </div>
 
-      {/* Payment gateway rendered inline — no modal backdrop, no close button */}
+      {/* Payment gateway */}
       <div className="max-w-md mx-auto px-4 py-10">
         <PaymentGateway
           total={total}

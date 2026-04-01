@@ -3,7 +3,6 @@ import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 import prisma from "../../config/prisma";
 import { getCurrentAdmin } from "../../services/admin/admin.service";
 
-// ── GET /admin/payments — page ─────────────────────────────
 export const getPaymentsPage = catchAsyncHandler(
   async (req: any, res: Response) => {
     const admin = await getCurrentAdmin(req.user?.id!);
@@ -15,7 +14,6 @@ export const getPaymentsPage = catchAsyncHandler(
   },
 );
 
-// ── GET /admin/payments/list — JSON list ───────────────────
 export const getPaymentList = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const payments = await prisma.payment.findMany({

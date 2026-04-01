@@ -45,8 +45,11 @@ $(document).ready(function () {
         data: "id",
         title: "Order ID",
         orderable: true,
-        render: function (data) {
-          return `<span class="fw-bold text-gray-800" data-order="${parseInt(data)}">#${data}</span>`;
+        render: function (data, type) {
+          if (type === "sort" || type === "type") {
+            return parseInt(data);
+          }
+          return `<span class="fw-bold text-gray-800">#${data}</span>`;
         },
       },
       {

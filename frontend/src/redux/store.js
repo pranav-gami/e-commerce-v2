@@ -4,7 +4,7 @@ import cartReducer from "./slices/cartSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import inventoryReducer from "./slices/inventorySlice";
 import searchReducer from "./slices/searchSlice";
-
+import couponReducer from "./slices/couponSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -12,5 +12,6 @@ export const store = configureStore({
     wishlist: wishlistReducer,
     inventory: inventoryReducer,
     search: searchReducer,
+    coupon: couponReducer,
   },
 });

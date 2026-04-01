@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import { adminAddressService } from "../../services/admin/address.service";
-// ─────────────────────────────────────────────
-// GET /admin/addresses
-// ─────────────────────────────────────────────
+
 export const getAllAddresses = async (req: Request, res: Response) => {
   try {
     const userId = req.query.userId ? Number(req.query.userId) : undefined;
@@ -24,9 +22,6 @@ export const getAllAddresses = async (req: Request, res: Response) => {
   }
 };
 
-// ─────────────────────────────────────────────
-// GET /admin/users/:userId/addresses
-// ─────────────────────────────────────────────
 export const getAddressesByUser = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.params.userId);
@@ -39,9 +34,6 @@ export const getAddressesByUser = async (req: Request, res: Response) => {
   }
 };
 
-// ─────────────────────────────────────────────
-// PUT /admin/addresses/:id
-// ─────────────────────────────────────────────
 export const adminUpdateAddress = async (req: Request, res: Response) => {
   try {
     const addressId = Number(req.params.id);
@@ -81,9 +73,6 @@ export const adminUpdateAddress = async (req: Request, res: Response) => {
   }
 };
 
-// ─────────────────────────────────────────────
-// DELETE /admin/addresses/:id
-// ─────────────────────────────────────────────
 export const adminDeleteAddress = async (req: Request, res: Response) => {
   try {
     const addressId = Number(req.params.id);

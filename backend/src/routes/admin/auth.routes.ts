@@ -18,6 +18,9 @@ import {
   updateAdminProfileSchema,
 } from "../../validation/admin/admin.validation";
 
+// ✅ NEW: import analytics controller
+import * as analyticsController from "../../controllers/admin/analytics.controller";
+
 const router = Router();
 
 // ── Public Routes ─────────────────────────────────────────
@@ -29,6 +32,10 @@ router.use(protectCookie);
 
 // ── Dashboard ─────────────────────────────────────────────
 router.get("/", adminController.getDashboard);
+
+// ✅ NEW: Analytics routes
+router.get("/analytics", isAdmin, analyticsController.getAnalyticsPage);
+router.get("/analytics/data", isAdmin, analyticsController.getAnalyticsDataApi);
 
 // ── Logout ────────────────────────────────────────────────
 router.get("/logout", adminController.logout);
@@ -43,7 +50,7 @@ router.patch(
   "/users/:id",
   validate(updateUserSchema),
   adminController.updateUser,
-); // ✅ validated
+);
 
 // ── Admin Profile ─────────────────────────────────────────
 router.get("/profile", adminController.getProfile);
@@ -52,7 +59,7 @@ router.post(
   "/profile/edit",
   validate(updateAdminProfileSchema),
   adminController.postEditAdmin,
-); // ✅ validated
+);
 router.get("/profile/change-password", adminController.getChangePassword);
 router.post("/profile/change-password", adminController.postChangePassword);
 

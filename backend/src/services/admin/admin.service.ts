@@ -27,7 +27,7 @@ export const getCurrentAdmin = async (userId: number) => {
       role: true,
       phone: true,
       address: true,
-      postalCode: true, // ✅ plain string
+      postalCode: true,
       country: {
         select: {
           id: true,
@@ -47,6 +47,10 @@ export const getDashboardStats = async () => {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+  // Last 7 days for revenue chart
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
   const [
     totalUsers,
     newUsersThisMonth,
@@ -55,6 +59,14 @@ export const getDashboardStats = async () => {
     totalSubCategories,
     recentCategories,
     recentUsers,
+    // ✅ NEW analytics data
+    totalOrders,
+    cancelledOrders,
+    orderStatusCounts,
+    recentOrders,
+    successfulPayments,
+    allCategories,
+    totalProducts,
   ] = await Promise.all([
     prisma.user.count({ where: { role: "USER" } }),
     prisma.user.count({
@@ -79,9 +91,108 @@ export const getDashboardStats = async () => {
         createdAt: true,
       },
     }),
+    // ✅ NEW
+    prisma.order.count(),
+    prisma.order.count({ where: { status: "CANCELLED" } }),
+    prisma.order.groupBy({
+      by: ["status"],
+      _count: { status: true },
+    }),
+    prisma.order.findMany({
+      take: 6,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { name: true, email: true } },
+      },
+    }),
+    prisma.payment.findMany({
+      where: { status: "SUCCESS", createdAt: { gte: sevenDaysAgo } },
+      select: { amount: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.category.findMany({
+      include: {
+        subCategories: {
+          include: {
+            products: {
+              include: { orderItems: { select: { quantity: true } } },
+            },
+          },
+        },
+      },
+    }),
+    prisma.product.count(),
   ]);
 
+  // ── Total revenue from successful payments ────────────────
+  const totalRevenue = successfulPayments.reduce(
+    (sum, p) => sum + Number(p.amount),
+    0,
+  );
+
+  // ── Avg order value ───────────────────────────────────────
+  const avgOrderValue =
+    successfulPayments.length > 0
+      ? Math.round(totalRevenue / successfulPayments.length)
+      : 0;
+
+  // ── Order status map for doughnut ─────────────────────────
+  const statusMap: Record<string, number> = {
+    PENDING: 0,
+    CONFIRMED: 0,
+    SHIPPED: 0,
+    DELIVERED: 0,
+    CANCELLED: 0,
+  };
+  orderStatusCounts.forEach((s) => {
+    statusMap[s.status] = s._count.status;
+  });
+
+  // ── Revenue chart — last 7 days ───────────────────────────
+  const revenueLabels: string[] = [];
+  const revenueData: number[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    revenueLabels.push(d.toLocaleDateString("en-IN", { weekday: "short" }));
+    const dayTotal = successfulPayments
+      .filter((p) => {
+        const pd = new Date(p.createdAt);
+        return (
+          pd.getDate() === d.getDate() &&
+          pd.getMonth() === d.getMonth() &&
+          pd.getFullYear() === d.getFullYear()
+        );
+      })
+      .reduce((sum, p) => sum + Number(p.amount), 0);
+    revenueData.push(Math.round(dayTotal));
+  }
+
+  // ── Top categories by items sold ──────────────────────────
+  const topCategories = allCategories
+    .map((cat) => {
+      let sold = 0;
+      cat.subCategories.forEach((sub) =>
+        sub.products.forEach((prod) =>
+          prod.orderItems.forEach((item) => (sold += item.quantity)),
+        ),
+      );
+      return { name: cat.name, sold };
+    })
+    .sort((a, b) => b.sold - a.sold)
+    .slice(0, 5);
+
+  // ── Recent orders formatted ───────────────────────────────
+  const recentOrdersFormatted = recentOrders.map((o) => ({
+    id: o.id,
+    userName: o.user?.name || "Unknown",
+    status: o.status,
+    total: Number((o as any).total ?? (o as any).amount ?? 0),
+    createdAt: o.createdAt,
+  }));
+
   return {
+    // existing
     totalUsers,
     newUsersThisMonth,
     totalAccounts,
@@ -89,6 +200,16 @@ export const getDashboardStats = async () => {
     totalSubCategories,
     recentCategories,
     recentUsers,
+    // ✅ new analytics
+    totalOrders,
+    cancelledOrders,
+    totalRevenue: Math.round(totalRevenue),
+    avgOrderValue,
+    totalProducts,
+    orderStatus: statusMap,
+    revenueChart: { labels: revenueLabels, data: revenueData },
+    topCategories,
+    recentOrdersFormatted,
   };
 };
 
@@ -103,7 +224,7 @@ export const getUserById = async (id: number) => {
       address: true,
       role: true,
       createdAt: true,
-      postalCode: true, // ✅ plain string
+      postalCode: true,
       country: {
         select: {
           id: true,
@@ -129,7 +250,7 @@ export const updateAdminProfile = async (userId: number, data: any) => {
       name: data.name ?? user.name,
       phone: data.phone ?? user.phone,
       address: data.address ?? user.address,
-      postalCode: data.postalCode ?? user.postalCode, // ✅ string
+      postalCode: data.postalCode ?? user.postalCode,
       countryId: data.countryId ? Number(data.countryId) : user.countryId,
       stateId: data.stateId ? Number(data.stateId) : user.stateId,
       cityId: data.cityId ? Number(data.cityId) : user.cityId,
@@ -140,7 +261,7 @@ export const updateAdminProfile = async (userId: number, data: any) => {
       email: true,
       phone: true,
       address: true,
-      postalCode: true, // ✅ plain string
+      postalCode: true,
       country: {
         select: {
           id: true,
@@ -195,7 +316,7 @@ export const getUserList = async ({
         phone: true,
         address: true,
         createdAt: true,
-        postalCode: true, // ✅ plain string
+        postalCode: true,
         country: {
           select: { id: true, name: true, flag: true, phoneCode: true },
         },
@@ -219,7 +340,7 @@ export const updateUser = async (
     countryId: number;
     stateId: number;
     cityId: number;
-    postalCode: string; // ✅ string
+    postalCode: string;
   },
 ) => {
   if (!data.name) throw new ApiError(400, "Name is required");
@@ -236,7 +357,7 @@ export const updateUser = async (
       name: data.name,
       phone: data.phone,
       address: data.address,
-      postalCode: data.postalCode, // ✅ string
+      postalCode: data.postalCode,
       countryId: Number(data.countryId),
       stateId: Number(data.stateId),
       cityId: Number(data.cityId),

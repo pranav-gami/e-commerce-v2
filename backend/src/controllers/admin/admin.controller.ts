@@ -138,7 +138,6 @@ export const deleteUser = catchAsyncHandler(
 export const updateUser = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);
-    // ✅ postalCode is now a plain string
     const { name, phone, address, countryId, stateId, cityId, postalCode } =
       req.body;
     await adminService.updateUser(id, {
@@ -148,7 +147,7 @@ export const updateUser = catchAsyncHandler(
       countryId: Number(countryId),
       stateId: Number(stateId),
       cityId: Number(cityId),
-      postalCode, // ✅ string
+      postalCode, 
     });
     return sendResponse(res, 200, "User updated successfully", null);
   },

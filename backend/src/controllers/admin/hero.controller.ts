@@ -1,15 +1,12 @@
-// src/controllers/admin/hero.controller.ts
 import { Request, Response } from "express";
 import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 import * as heroService from "../../services/admin/hero.service";
 import ApiError from "../../utils/ApiError";
 
-// ── GET /admin/hero — all slides (admin page) ──────────────
 export const getHeroPage = catchAsyncHandler(
   async (req: any, res: Response) => {
     const [slides, admin] = await Promise.all([
       heroService.getAllSlides(),
-      // reuse your existing getCurrentAdmin
       (await import("../../services/admin/admin.service")).getCurrentAdmin(
         req.user?.id!,
       ),
@@ -23,7 +20,6 @@ export const getHeroPage = catchAsyncHandler(
   },
 );
 
-// ── GET /admin/hero/list — JSON for DataTable ──────────────
 export const getSlideList = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const slides = await heroService.getAllSlides();
@@ -31,7 +27,6 @@ export const getSlideList = catchAsyncHandler(
   },
 );
 
-// ── GET /api/hero — active slides for frontend ─────────────
 export const getActiveSlides = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const slides = await heroService.getActiveSlides();
@@ -39,7 +34,6 @@ export const getActiveSlides = catchAsyncHandler(
   },
 );
 
-// ── POST /admin/hero — create slide ───────────────────────
 export const createSlide = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const { eyebrow, title, titleSpan, subtitle, order, isActive } = req.body;
@@ -71,7 +65,6 @@ export const createSlide = catchAsyncHandler(
   },
 );
 
-// ── PUT /admin/hero/:id — update slide ────────────────────
 export const updateSlide = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);
@@ -86,7 +79,6 @@ export const updateSlide = catchAsyncHandler(
     if (isActive !== undefined)
       updateData.isActive = isActive === "true" || isActive === true;
 
-    // If new image uploaded
     if (req.file) {
       updateData.image = `/uploads/hero/${req.file.filename}`;
     }
@@ -96,7 +88,6 @@ export const updateSlide = catchAsyncHandler(
   },
 );
 
-// ── DELETE /admin/hero/:id — delete slide ─────────────────
 export const deleteSlide = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);
@@ -105,7 +96,6 @@ export const deleteSlide = catchAsyncHandler(
   },
 );
 
-// ── PATCH /admin/hero/:id/toggle — toggle active ──────────
 export const toggleSlide = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);
@@ -119,7 +109,6 @@ export const toggleSlide = catchAsyncHandler(
   },
 );
 
-// ── POST /admin/hero/reorder — reorder slides ─────────────
 export const reorderSlides = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const { items } = req.body;

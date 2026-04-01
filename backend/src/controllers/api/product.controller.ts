@@ -8,7 +8,7 @@ import * as productService from "../../services/admin/product.service";
 
 export const getAllProducts = catchAsyncHandler(
   async (req: Request, res: Response) => {
-    // Support multiple categoryId values: ?categoryId=1&categoryId=2
+    // Support multiple categoryId values: ?categoryId=1&categoryId=2 or ?categoryId=1,2
     const rawCategoryId = req.query.categoryId;
     const categoryIds = rawCategoryId
       ? (Array.isArray(rawCategoryId) ? rawCategoryId : [rawCategoryId])
@@ -17,7 +17,7 @@ export const getAllProducts = catchAsyncHandler(
           .filter((n) => !isNaN(n) && n > 0)
       : undefined;
 
-    // Support multiple subCategoryId values: ?subCategoryId=1&subCategoryId=2
+    // Support multiple subCategoryId values: ?subCategoryId=1&subCategoryId=2 or ?subCategoryId=1,2
     const rawSubCategoryId = req.query.subCategoryId;
     const subCategoryIds = rawSubCategoryId
       ? (Array.isArray(rawSubCategoryId)
@@ -38,6 +38,17 @@ export const getAllProducts = catchAsyncHandler(
       isFeatured: req.query.isFeatured === "true" ? true : undefined,
       page: req.query.page ? Number(req.query.page) : 1,
       limit: req.query.limit ? Number(req.query.limit) : 10,
+      sortBy: req.query.sortBy ? String(req.query.sortBy) : undefined,
+
+      // ── price filter ──────────────────────────────────────────────────────
+      priceMin: req.query.priceMin ? Number(req.query.priceMin) : undefined,
+      priceMax: req.query.priceMax ? Number(req.query.priceMax) : undefined,
+
+      // ── discount filters ──────────────────────────────────────────────────
+      minDiscount: req.query.minDiscount
+        ? Number(req.query.minDiscount)
+        : undefined,
+      discountOnly: req.query.discountOnly === "true" ? true : undefined,
     };
 
     const result = await productService.getAllProducts(filters);
@@ -52,7 +63,6 @@ export const getProductById = catchAsyncHandler(
   },
 );
 
-// Add this new handler
 export const searchProductsHandler = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const {

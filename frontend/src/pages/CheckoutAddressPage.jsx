@@ -13,7 +13,11 @@ import {
 } from "../redux/slices/authSlice";
 import { useAppSelector } from "../redux/hooks";
 import { selectCartItems, selectCartTotal } from "../redux/slices/cartSlice";
-
+import CouponBox from "../components/CouponBox";
+import {
+  selectAppliedCoupon,
+  selectCouponDiscount,
+} from "../redux/slices/couponSlice";
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 const inputClass = (hasErr) =>
@@ -59,7 +63,9 @@ const CheckoutAddressPage = () => {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
+  const appliedCoupon = useAppSelector(selectAppliedCoupon);
+  const couponDiscount = useAppSelector(selectCouponDiscount);
+  const finalTotal = Math.max(0, subtotal - couponDiscount);
   useEffect(() => {
     document.title = "ADDRESS";
   }, []);
@@ -626,6 +632,26 @@ const CheckoutAddressPage = () => {
                     <span>− {formatPrice(savings)}</span>
                   </div>
                 )}
+                {/* Coupon discount */}
+                {appliedCoupon && couponDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                      </svg>
+                      Coupon ({appliedCoupon.code})
+                    </span>
+                    <span>− {formatPrice(couponDiscount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-700">
                   <span>Platform Fee</span>
                   <span className="text-green-600 font-semibold">FREE</span>
@@ -636,8 +662,14 @@ const CheckoutAddressPage = () => {
             <div className="p-4 border-b border-gray-100">
               <div className="flex justify-between font-extrabold text-gray-800 text-base">
                 <span>Total Amount</span>
-                <span>{formatPrice(subtotal)}</span>
+                <span>{formatPrice(finalTotal)}</span>{" "}
               </div>
+              {(savings > 0 || couponDiscount > 0) && (
+                <p className="text-green-600 text-xs font-semibold bg-green-50 px-3 py-2 rounded-sm text-center">
+                  You will save {formatPrice(savings + couponDiscount)} on this
+                  order
+                </p>
+              )}
             </div>
 
             {/* Continue button */}

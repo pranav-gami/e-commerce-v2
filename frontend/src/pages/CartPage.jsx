@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PaymentGateway from "../components/PaymentGateway";
 import MoveToWishlistToast from "../components/MoveToWishlistToast";
+import CouponBox from "../components/CouponBox"; // ← NEW
 import api, { BACKEND_URL } from "../utils/api";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
@@ -14,9 +15,10 @@ import {
   clearCart,
 } from "../redux/slices/cartSlice";
 import {
-  addToWishlist,
-  selectIsInWishlist,
-} from "../redux/slices/wishlistSlice";
+  selectAppliedCoupon, // ← NEW
+  selectCouponDiscount, // ← NEW
+} from "../redux/slices/couponSlice"; // ← NEW
+import { addToWishlist } from "../redux/slices/wishlistSlice";
 
 const CartPage = () => {
   const dispatch = useAppDispatch();
@@ -25,12 +27,17 @@ const CartPage = () => {
   const subtotal = useAppSelector(selectCartTotal);
   const user = useAppSelector(selectUser);
 
+  // Coupon state
+  const appliedCoupon = useAppSelector(selectAppliedCoupon);
+  const couponDiscount = useAppSelector(selectCouponDiscount);
+
   const [showPayment, setShowPayment] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [addingId, setAddingId] = useState(null);
   const [wishlistToast, setWishlistToast] = useState(null);
   const navigate = useNavigate();
   const wishlistItems = useAppSelector((state) => state.wishlist.items);
+
   useEffect(() => {
     document.title = "SHOPPING BAG";
   }, []);
@@ -67,7 +74,7 @@ const CartPage = () => {
     try {
       setAddingId(product.id);
       await dispatch(addToCart(product)).unwrap();
-    } catch (err) {
+    } catch {
       if (!localStorage.getItem("token")) navigate("/login");
     } finally {
       setAddingId(null);
@@ -113,9 +120,13 @@ const CartPage = () => {
     0,
   );
 
+  // Total after product discounts AND coupon discount
+  const finalTotal = Math.max(0, subtotal - couponDiscount);
+
   return (
     <div className="bg-brand-light min-h-screen">
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 ">
+      {/* Top stepper bar */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="w-28" />
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
@@ -180,8 +191,9 @@ const CartPage = () => {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Cart Items */}
+            {/* ── Cart Items ── */}
             <div className="flex-1">
+              {/* Column headers */}
               <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-white rounded-t border border-brand-border text-xs font-extrabold text-brand-gray uppercase tracking-wider">
                 <span>Product</span>
                 <span className="text-center">Price</span>
@@ -201,7 +213,6 @@ const CartPage = () => {
                 {cartItems.map((item) => {
                   const discountedPrice =
                     item.price - (item.price * (item.discount || 0)) / 100;
-                  // const alreadyWishlisted = useAppSelector(selectIsInWishlist(item.id));
                   const alreadyWishlisted = wishlistItems.some(
                     (w) => w.id === item.id,
                   );
@@ -344,9 +355,14 @@ const CartPage = () => {
                   );
                 })}
               </div>
+
+              {/* ── Coupon Box (below cart items) ── */}
+              <div className="mt-4">
+                <CouponBox />
+              </div>
             </div>
 
-            {/* Summary */}
+            {/* ── Summary ── */}
             <div className="lg:w-80 flex-shrink-0">
               <div className="bg-white border border-brand-border rounded shadow-sm sticky top-20">
                 <div className="p-4 border-b border-brand-border">
@@ -359,28 +375,55 @@ const CartPage = () => {
                     <span>Price ({cartItems.length} items)</span>
                     <span>{formatPrice(subtotal + savings)}</span>
                   </div>
+
                   {savings > 0 && (
                     <div className="flex justify-between text-sm text-green-600 font-semibold">
-                      <span>Discount</span>
+                      <span>Product Discount</span>
                       <span>− {formatPrice(savings)}</span>
                     </div>
                   )}
+
+                  {/* Coupon discount row */}
+                  {appliedCoupon && couponDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600 font-semibold">
+                      <span className="flex items-center gap-1">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+                          <line x1="7" y1="7" x2="7.01" y2="7" />
+                        </svg>
+                        Coupon ({appliedCoupon.code})
+                      </span>
+                      <span>− {formatPrice(couponDiscount)}</span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between text-sm text-brand-dark">
                     <span>Delivery Charges</span>
                     <span className="text-green-600 font-semibold">FREE</span>
                   </div>
+
                   <div className="border-t border-brand-border pt-3">
                     <div className="flex justify-between font-extrabold text-brand-dark text-base">
                       <span>Total Amount</span>
-                      <span>{formatPrice(subtotal)}</span>
+                      <span>{formatPrice(finalTotal)}</span>
                     </div>
                   </div>
-                  {savings > 0 && (
+
+                  {(savings > 0 || couponDiscount > 0) && (
                     <p className="text-green-600 text-xs font-semibold bg-green-50 px-3 py-2 rounded-sm text-center">
-                      You will save {formatPrice(savings)} on this order
+                      You will save {formatPrice(savings + couponDiscount)} on
+                      this order
                     </p>
                   )}
                 </div>
+
                 <div className="p-4 pt-0">
                   <button
                     onClick={() => {
@@ -406,13 +449,12 @@ const CartPage = () => {
                     </svg>
                   </button>
                 </div>
+
                 <div className="border-t border-brand-border p-4 flex flex-col gap-2">
                   {[
                     {
                       icon: (
-                        <>
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        </>
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                       ),
                       text: "Safe & Secure Payments",
                     },
@@ -569,7 +611,7 @@ const CartPage = () => {
       {showPayment && (
         <PaymentGateway
           onClose={() => setShowPayment(false)}
-          total={subtotal}
+          total={finalTotal}
         />
       )}
 

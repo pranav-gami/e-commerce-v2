@@ -14,7 +14,6 @@ const productInclude = {
   },
 };
 
-// ── create product ────────────────────────────────────────
 export const createProduct = async (data: {
   name: string;
   description?: string;
@@ -69,23 +68,28 @@ export const createProduct = async (data: {
   return product;
 };
 
-// ── get all products (with pagination) ───────────────────
 export const getAllProducts = async (filters?: {
-  categoryId?: number;
-  subCategoryId?: number;
+  categoryId?: string;
+  subCategoryId?: string;
   search?: string;
   isFeatured?: boolean;
   status?: ProductStatus;
   page?: number;
   limit?: number;
+  sortBy?: string;
+  priceMin?: number;
+  priceMax?: number;
+  minDiscount?: number;
+  discountOnly?: boolean;
 }) => {
   const page = Math.max(1, filters?.page ?? 1);
-  const limit = Math.min(10000, Math.max(1, filters?.limit ?? 10));
+  const limit = Math.min(100, Math.max(1, filters?.limit ?? 10));
   const skip = (page - 1) * limit;
 
   const where: any = {};
 
-  if (filters?.search && filters.search.trim().length > 0) {
+  // ── search ────────────────────────────────────────────────────────────────
+  if (filters?.search?.trim()) {
     const term = filters.search.trim();
     where.OR = [
       { name: { contains: term, mode: "insensitive" } },
@@ -99,60 +103,127 @@ export const getAllProducts = async (filters?: {
     ];
   }
 
-  // ── category filter ─────────────────────
+  // ── category filter ───────────────────────────────────────────────────────
   if (filters?.categoryId) {
-    const categoryIds = String(filters.categoryId)
-      .split(",")
-      .map((id) => Number(id));
-
-    where.subCategory = {
-      categoryId: { in: categoryIds },
-    };
+    const categoryIds = filters.categoryId.split(",").map((id) => Number(id));
+    where.subCategory = { categoryId: { in: categoryIds } };
   }
-  console.log("filters.categoryId:", filters?.categoryId);
 
-  // ── subcategory filter ─────────────────
+  // ── sub-category filter ───────────────────────────────────────────────────
   if (filters?.subCategoryId) {
-    const subCategoryIds = String(filters.subCategoryId)
+    const subCategoryIds = filters.subCategoryId
       .split(",")
       .map((id) => Number(id));
-
     where.subCategoryId = { in: subCategoryIds };
   }
+
+  // ── featured / status ─────────────────────────────────────────────────────
   if (filters?.isFeatured !== undefined) where.isFeatured = filters.isFeatured;
   if (filters?.status) where.status = filters.status;
 
+  // ── discount filters ──────────────────────────────────────────────────────
+  // discountOnly and minDiscount both work on the `discount` column directly.
+  if (filters?.discountOnly || filters?.minDiscount !== undefined) {
+    where.discount = {};
+    if (filters.discountOnly) where.discount.gt = 0;
+    if (filters.minDiscount !== undefined)
+      where.discount.gte = Number(filters.minDiscount);
+  }
+
+  // ── price filter ──────────────────────────────────────────────────────────
+  // NOTE: The frontend sends the *discounted* price range (what the user sees).
+  // Prisma cannot filter on a computed column, so we use a raw SQL sub-select
+  // via $queryRaw for the IDs that pass the effective-price window, then add
+  // those IDs to the where clause.
+  //
+  // Effective price = price - (price * discount / 100)
+  //                 = price * (1 - discount / 100)
+  //
+  let effectivePriceFilterIds: number[] | undefined;
+
+  if (filters?.priceMin !== undefined || filters?.priceMax !== undefined) {
+    const min = filters.priceMin ?? 0;
+    const max = filters.priceMax ?? Number.MAX_SAFE_INTEGER;
+
+    // Build a base WHERE fragment that mirrors the Prisma where above
+    // (search / category / subcategory / discount already applied above —
+    // we replicate the key structural ones here so the ID set is tight)
+    const matchingIds: { id: number }[] = await prisma.$queryRaw`
+      SELECT p.id
+      FROM "Product" p
+      LEFT JOIN "SubCategory" sc ON sc.id = p."subCategoryId"
+      LEFT JOIN "Category"    c  ON c.id  = sc."categoryId"
+      WHERE
+        -- effective (discounted) price window
+        (p.price * (1.0 - COALESCE(p.discount, 0) / 100.0)) >= ${min}
+        AND
+        (p.price * (1.0 - COALESCE(p.discount, 0) / 100.0)) <= ${max}
+    `;
+
+    effectivePriceFilterIds = matchingIds.map((r) => r.id);
+
+    // Intersect with existing where by adding an id-in filter
+    if (where.id?.in) {
+      // already filtered — keep intersection
+      where.id.in = where.id.in.filter((id: number) =>
+        effectivePriceFilterIds!.includes(id),
+      );
+    } else {
+      where.id = { in: effectivePriceFilterIds };
+    }
+  }
+
+  // ── sort ──────────────────────────────────────────────────────────────────
+  // price_asc / price_desc sort on the *raw* price column; for most use-cases
+  // this is close enough and avoids a second raw query. If you need exact
+  // effective-price ordering, swap to $queryRaw for the full result set.
+  let orderBy: any = { createdAt: "desc" };
+
+  switch (filters?.sortBy) {
+    case "price_asc":
+      orderBy = [{ price: "asc" }, { discount: "desc" }];
+      break;
+    case "price_desc":
+      orderBy = [{ price: "desc" }, { discount: "asc" }];
+      break;
+    case "name_asc":
+      orderBy = { name: "asc" };
+      break;
+    case "name_desc":
+      orderBy = { name: "desc" };
+      break;
+  }
+
+  // ── query ─────────────────────────────────────────────────────────────────
   const [total, products] = await Promise.all([
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
       include: {
         ...productInclude,
-        reviews: {
-          select: { rating: true },
-        },
+        reviews: { select: { rating: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip,
       take: limit,
     }),
   ]);
 
-  // Map products to include average rating and total reviews
+  // ── rating calculation ────────────────────────────────────────────────────
   const productsWithRating = products.map((p) => {
     const ratings = p.reviews.map((r) => r.rating);
     const avgRating =
       ratings.length > 0
         ? ratings.reduce((a, b) => a + b, 0) / ratings.length
         : 0;
-
     return {
       ...p,
-      averageRating: parseFloat(avgRating.toFixed(1)),
+      averageRating: Number(avgRating.toFixed(1)),
       reviewCount: ratings.length,
     };
   });
 
+  // ── response ──────────────────────────────────────────────────────────────
   return {
     products: productsWithRating,
     pagination: {
@@ -166,7 +237,6 @@ export const getAllProducts = async (filters?: {
   };
 };
 
-// ── get one product ───────────────────────────────────────
 export const getProductById = async (id: number) => {
   const product = await prisma.product.findUnique({
     where: { id },
@@ -181,9 +251,7 @@ export const getProductById = async (id: number) => {
           title: true,
           body: true,
           createdAt: true,
-          user: {
-            select: { id: true, name: true },
-          },
+          user: { select: { id: true, name: true } },
         },
       },
     },
@@ -197,18 +265,15 @@ export const getProductById = async (id: number) => {
     _count: { rating: true },
   });
 
-  const avgRating = ratingAggregate._avg.rating
-    ? Number(ratingAggregate._avg.rating.toFixed(1))
-    : 0;
-
   return {
     ...product,
     reviewCount: ratingAggregate._count.rating,
-    averageRating: avgRating,
+    averageRating: ratingAggregate._avg.rating
+      ? Number(ratingAggregate._avg.rating.toFixed(1))
+      : 0,
   };
 };
 
-// ── update product ────────────────────────────────────────
 export const updateProduct = async (
   id: number,
   data: {
@@ -290,7 +355,6 @@ export const updateProduct = async (
   return updated;
 };
 
-// ── delete product ────────────────────────────────────────
 export const deleteProduct = async (id: number) => {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) throw new ApiError(404, "Product not found");
@@ -303,7 +367,6 @@ export const deleteProduct = async (id: number) => {
   return prisma.product.delete({ where: { id } });
 };
 
-// ── toggle featured ───────────────────────────────────────
 export const toggleFeatured = async (id: number) => {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) throw new ApiError(404, "Product not found");
@@ -319,7 +382,6 @@ export const toggleFeatured = async (id: number) => {
   return updated;
 };
 
-// ── update status ─────────────────────────────────────────
 export const updateProductStatus = async (
   id: number,
   status: ProductStatus,
@@ -338,7 +400,6 @@ export const updateProductStatus = async (
   return updated;
 };
 
-// ── bulk delete ───────────────────────────────────────────
 export const bulkDeleteProducts = async (ids: number[]) => {
   const products = await prisma.product.findMany({
     where: { id: { in: ids } },

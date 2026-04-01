@@ -1,48 +1,65 @@
-import { Request, Response } from "express";
-import { AuthRequest } from "../../middleware/auth.middleware";
-import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
+import { Response } from "express";
 import * as paymentService from "../../services/api/payment.service";
+import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
+import { AuthRequest } from "../../middleware/auth.middleware";
 import ApiError from "../../utils/ApiError";
-import prisma from "../../config/prisma";
 
-// Create Razorpay Order
+// POST /users/payment/create-order
+// Body: { addressId, couponCode? }
 export const createOrder = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
-    if (!req.user) throw new ApiError(401, "Not authenticated");
+    const userId = req.user!.id;
+    const { addressId, couponCode } = req.body;
 
-    const { addressId } = req.body;
-    if (!addressId) throw new ApiError(400, "addressId is required");
+    if (!addressId)
+      return sendResponse(res, 400, "addressId is required", null);
 
     const data = await paymentService.createRazorpayOrder(
-      req.user.id,
+      userId,
       Number(addressId),
+      couponCode || undefined,
     );
-    return sendResponse(res, 200, "Order created", data);
+
+    return sendResponse(res, 201, "Order created successfully", data);
   },
 );
 
-// Verify Payment — signature check only
+// POST /users/payment/verify
 export const verifyPayment = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
-    if (!req.user) throw new ApiError(401, "Not authenticated");
-    const data = await paymentService.verifyPayment(req.user.id, req.body);
-    return sendResponse(res, 200, "Payment verified", data);
+    const userId = req.user!.id;
+    const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } =
+      req.body;
+
+    if (
+      !orderId ||
+      !razorpayOrderId ||
+      !razorpayPaymentId ||
+      !razorpaySignature
+    ) {
+      throw new ApiError(400, "All payment fields are required");
+    }
+
+    const data = await paymentService.verifyPayment(userId, {
+      orderId: Number(orderId),
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+    });
+
+    return sendResponse(res, 200, "Payment verified successfully", data);
   },
 );
 
-// Razorpay Webhook
-export const razorpayWebhook = catchAsyncHandler(
-  async (req: Request, res: Response) => {
+// POST /users/payment/webhook/razorpay
+export const handleWebhook = catchAsyncHandler(
+  async (req: any, res: Response) => {
     const signature = req.headers["x-razorpay-signature"] as string;
-    if (!signature) throw new ApiError(400, "Missing webhook signature");
+    const body = req.body.toString();
 
-    const rawBody =
-      req.body instanceof Buffer
-        ? req.body.toString("utf8")
-        : JSON.stringify(req.body);
-
-    const data = await paymentService.handleWebhook(rawBody, signature);
-
-    return sendResponse(res, 200, "Webhook received", data);
+    const result = await paymentService.handleWebhook(body, signature);
+    return res.status(200).json(result);
   },
 );
+
+export default { createOrder, verifyPayment, handleWebhook };

@@ -15,7 +15,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// ─── API Handlers ─────────────────────────────────────────────────────────────
 
 export const createProducts = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
@@ -163,9 +162,6 @@ export const bulkDeleteProducts = catchAsyncHandler(
   },
 );
 
-// ─── View Handlers ────────────────────────────────────────────────────────────
-
-// GET /admin/products — list page or JSON for DataTable
 export const getProductsPage = async (req: AuthRequest, res: Response) => {
   try {
     if (req.headers.accept?.includes("application/json")) {
@@ -200,7 +196,6 @@ export const getProductsPage = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// GET /admin/products/add — add form page
 export const getAddProductPage = async (req: AuthRequest, res: Response) => {
   try {
     const [admin, subCategories] = await Promise.all([
@@ -226,12 +221,10 @@ export const getAddProductPage = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// GET /admin/products/:id/edit — edit form page
 export const getEditProductPage = async (req: AuthRequest, res: Response) => {
   try {
     const id = parseInt(req.params.id);
 
-    // ← was: return res.redirect("/admin/products")
     if (isNaN(id))
       return res.status(404).render("pages/404", { layout: false });
 

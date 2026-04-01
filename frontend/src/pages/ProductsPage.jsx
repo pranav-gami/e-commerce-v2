@@ -32,13 +32,25 @@ const Pagination = ({ pagination, page, onPage }) => {
         disabled={!hasPrevPage}
         className="w-9 h-9 flex items-center justify-center border border-[#d4d5d9] bg-white text-[#94969f] hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
       {pages.map((p, i) =>
         p === "..." ? (
-          <span key={`d${i}`} className="w-9 h-9 flex items-center justify-center text-[#94969f] text-sm">…</span>
+          <span
+            key={`d${i}`}
+            className="w-9 h-9 flex items-center justify-center text-[#94969f] text-sm"
+          >
+            …
+          </span>
         ) : (
           <button
             key={p}
@@ -58,7 +70,14 @@ const Pagination = ({ pagination, page, onPage }) => {
         disabled={!hasNextPage}
         className="w-9 h-9 flex items-center justify-center border border-[#d4d5d9] bg-white text-[#94969f] hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
@@ -87,10 +106,16 @@ const SortDropdown = ({ sortBy, setSortBy }) => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const currentLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Recommended";
+  const currentLabel =
+    SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Recommended";
 
   return (
-    <div ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <button
         className="flex items-center gap-2 border border-[#d4d5d9] px-4 py-2.5 text-[13px] font-semibold text-[#282c3f] bg-white hover:border-[#282c3f] transition-colors min-w-[200px] justify-between"
         onClick={() => setOpen((o) => !o)}
@@ -100,7 +125,12 @@ const SortDropdown = ({ sortBy, setSortBy }) => {
           {currentLabel}
         </span>
         <svg
-          width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#282c3f" strokeWidth="2.5"
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#282c3f"
+          strokeWidth="2.5"
           className={`transition-transform duration-200 flex-shrink-0 ${open ? "rotate-180" : ""}`}
         >
           <polyline points="6 9 12 15 18 9" />
@@ -111,7 +141,10 @@ const SortDropdown = ({ sortBy, setSortBy }) => {
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.value}
-              onClick={() => { setSortBy(opt.value); setOpen(false); }}
+              onClick={() => {
+                setSortBy(opt.value);
+                setOpen(false);
+              }}
               className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
                 sortBy === opt.value
                   ? "bg-[#fff0f3] text-primary font-semibold"
@@ -119,7 +152,9 @@ const SortDropdown = ({ sortBy, setSortBy }) => {
               }`}
             >
               {opt.label}
-              {sortBy === opt.value && <span className="float-right text-primary">✓</span>}
+              {sortBy === opt.value && (
+                <span className="float-right text-primary">✓</span>
+              )}
             </button>
           ))}
         </div>
@@ -140,9 +175,21 @@ const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white w-[480px] max-h-[70vh] flex flex-col shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#eaeaec]">
-          <h3 className="text-[15px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">{title}</h3>
-          <button onClick={onClose} className="text-[#94969f] hover:text-[#282c3f]">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <h3 className="text-[15px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">
+            {title}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-[#94969f] hover:text-[#282c3f]"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -150,7 +197,14 @@ const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
         </div>
         <div className="px-5 py-3 border-b border-[#eaeaec]">
           <div className="flex items-center gap-2 border border-[#d4d5d9] px-3 py-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#94969f"
+              strokeWidth="2"
+            >
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
@@ -167,7 +221,10 @@ const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
         <div className="overflow-y-auto flex-1 px-5 py-3">
           <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
             {filtered.map((item) => (
-              <label key={item.id} className="flex items-center gap-2.5 cursor-pointer group">
+              <label
+                key={item.id}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
                 <input
                   type="checkbox"
                   checked={selectedItems.includes(item.id)}
@@ -183,12 +240,16 @@ const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
               </label>
             ))}
             {filtered.length === 0 && (
-              <p className="col-span-2 text-[13px] text-[#94969f] text-center py-4">No results found</p>
+              <p className="col-span-2 text-[13px] text-[#94969f] text-center py-4">
+                No results found
+              </p>
             )}
           </div>
         </div>
         <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#eaeaec]">
-          <span className="text-[12px] text-[#94969f]">{selectedItems.length} selected</span>
+          <span className="text-[12px] text-[#94969f]">
+            {selectedItems.length} selected
+          </span>
           <button
             onClick={onClose}
             className="bg-primary text-white px-6 py-2 text-[13px] font-bold hover:bg-primary-hover transition-colors"
@@ -201,37 +262,56 @@ const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
   );
 };
 
-const PriceSlider = ({ priceRange, setPriceRange }) => {
+// ─── Price Slider ─────────────────────────────────────────────────────────────
+const PriceSlider = ({
+  priceRange,
+  setPriceRange,
+  catMinPrice,
+  catMaxPrice,
+}) => {
+  const effectiveMin = catMinPrice ?? 0;
+  const effectiveMax = catMaxPrice ?? 8000;
+  const step = effectiveMax <= 1000 ? 50 : effectiveMax <= 5000 ? 100 : 500;
+
   const value = [
-    priceRange.min ? Number(priceRange.min) : 0,
-    priceRange.max ? Number(priceRange.max) : 8000,
+    priceRange.min ? Number(priceRange.min) : effectiveMin,
+    priceRange.max ? Number(priceRange.max) : effectiveMax,
   ];
 
   return (
-    <Slider
-      sx={{
-        color: "#ff3f6c",
-        height: 4,
-        "& .MuiSlider-thumb": { height: 16, width: 16, backgroundColor: "#ff3f6c", border: "2px solid white" },
-        "& .MuiSlider-track": { border: "none" },
-        "& .MuiSlider-rail": { opacity: 0.3, backgroundColor: "#ccc" },
-      }}
-      value={value}
-      min={0}
-      max={8000}
-      step={100}
-      onChange={(e, newValue) => {
-        setPriceRange({
-          min: newValue[0] === 0 ? "" : String(newValue[0]),
-          max: newValue[1] === 8000 ? "" : String(newValue[1]),
-        });
-      }}
-      valueLabelDisplay="auto"
-    />
+    <>
+      <Slider
+        sx={{
+          color: "#ff3f6c",
+          height: 4,
+          "& .MuiSlider-thumb": {
+            height: 16,
+            width: 16,
+            backgroundColor: "#ff3f6c",
+            border: "2px solid white",
+          },
+          "& .MuiSlider-track": { border: "none" },
+          "& .MuiSlider-rail": { opacity: 0.3, backgroundColor: "#ccc" },
+        }}
+        value={value}
+        min={effectiveMin}
+        max={effectiveMax}
+        step={step}
+        onChange={(e, newValue) => {
+          setPriceRange({
+            min: newValue[0] === effectiveMin ? "" : String(newValue[0]),
+            max: newValue[1] === effectiveMax ? "" : String(newValue[1]),
+          });
+        }}
+        valueLabelDisplay="auto"
+      />
+      <div className="flex justify-between text-[11px] text-[#94969f] mt-1">
+        <span>₹{effectiveMin.toLocaleString("en-IN")}</span>
+        <span>₹{effectiveMax.toLocaleString("en-IN")}</span>
+      </div>
+    </>
   );
 };
-
-const DISCOUNT_OPTIONS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
 
 // ─── Scroll-to-Top Button ─────────────────────────────────────────────────────
 const ScrollToTopBtn = () => {
@@ -251,7 +331,14 @@ const ScrollToTopBtn = () => {
       className="fixed bottom-8 right-8 z-50 w-11 h-11 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary-hover transition-all hover:scale-110 active:scale-95"
       aria-label="Scroll to top"
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      >
         <polyline points="18 15 12 9 6 15" />
       </svg>
     </button>
@@ -259,7 +346,13 @@ const ScrollToTopBtn = () => {
 };
 
 // ─── Breadcrumb ───────────────────────────────────────────────────────────────
-const Breadcrumb = ({ categories, selectedCategory, selectedSubcategory, subcategories, searchQuery }) => {
+const Breadcrumb = ({
+  categories,
+  selectedCategory,
+  selectedSubcategory,
+  subcategories,
+  searchQuery,
+}) => {
   const cat = selectedCategory.length
     ? categories.find((c) => String(c.id) === String(selectedCategory[0]))
     : null;
@@ -268,20 +361,37 @@ const Breadcrumb = ({ categories, selectedCategory, selectedSubcategory, subcate
     : null;
 
   const sep = (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="2" className="flex-shrink-0">
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#94969f"
+      strokeWidth="2"
+      className="flex-shrink-0"
+    >
       <polyline points="9 18 15 12 9 6" />
     </svg>
   );
 
   return (
     <nav className="flex items-center gap-1.5 text-[13px] text-[#94969f] mb-4 flex-wrap">
-      <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+      <Link to="/" className="hover:text-primary transition-colors">
+        Home
+      </Link>
       {sep}
-      <Link to="/products" className="hover:text-primary transition-colors">Products</Link>
+      <Link to="/products" className="hover:text-primary transition-colors">
+        Products
+      </Link>
       {cat && (
         <>
           {sep}
-          <Link to={`/products?category=${cat.id}`} className="hover:text-primary transition-colors">{cat.name}</Link>
+          <Link
+            to={`/products?category=${cat.id}`}
+            className="hover:text-primary transition-colors"
+          >
+            {cat.name}
+          </Link>
         </>
       )}
       {sub && (
@@ -312,6 +422,11 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Filter bounds (derived from a broad category fetch, used only for slider UI)
+  const [catMinPrice, setCatMinPrice] = useState(null);
+  const [catMaxPrice, setCatMaxPrice] = useState(null);
+  const [availableDiscounts, setAvailableDiscounts] = useState([]);
+
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -334,29 +449,28 @@ const ProductsPage = () => {
   const [discountOnly, setDiscountOnly] = useState(false);
   const [minDiscount, setMinDiscount] = useState(null);
 
+  // Sync category from URL
   useEffect(() => {
     const cat = searchParams.get("category") || "";
     setSelectedCategory(cat ? [cat] : []);
     setPage(1);
   }, [searchParams]);
 
+  // Sync search query from URL on first load
   useEffect(() => {
     const urlSearch = searchParams.get("search");
     if (urlSearch) dispatch(setSearchQuery(urlSearch));
   }, []);
 
+  // Load categories
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await api.get("/categories");
-        setCategories(res.data.data?.categories || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    load();
+    api
+      .get("/categories")
+      .then((res) => setCategories(res.data.data?.categories || []))
+      .catch(console.error);
   }, []);
 
+  // Load subcategories when category changes
   useEffect(() => {
     if (!selectedCategory.length) {
       setSubcategories([]);
@@ -386,17 +500,29 @@ const ProductsPage = () => {
       .catch(console.error);
   }, [selectedCategory]);
 
+  // ── Core product fetch — ALL filtering/sorting/pagination done by backend ──
   const loadProducts = async (p = page) => {
     try {
       setLoading(true);
       setError(null);
+
       const result = await fetchProducts({
         page: p,
         limit: LIMIT,
-        categoryId: selectedCategory.length ? selectedCategory.join(",") : undefined,
-        subCategoryId: selectedSubcategory.length ? selectedSubcategory.join(",") : undefined,
+        categoryId: selectedCategory.length
+          ? selectedCategory.join(",")
+          : undefined,
+        subCategoryId: selectedSubcategory.length
+          ? selectedSubcategory.join(",")
+          : undefined,
         search: searchQuery.trim() || undefined,
+        priceMin: priceRange.min || undefined,
+        priceMax: priceRange.max || undefined,
+        minDiscount: minDiscount || undefined,
+        discountOnly: discountOnly || undefined,
+        sortBy: sortBy || undefined,
       });
+
       setProducts(result.products);
       setPagination(result.pagination);
       dispatch(initInventory(result.products));
@@ -407,10 +533,70 @@ const ProductsPage = () => {
     }
   };
 
+  // ── Load filter bounds (slider min/max + available discount tiers) ─────────
+  // Fires only when category/subcategory change, NOT on every filter change.
+  // Uses a wide fetch (no price/discount filter) to get the full range for
+  // the current category so the slider shows sensible bounds.
+  const loadFilterBounds = async () => {
+    try {
+      const result = await fetchProducts({
+        page: 1,
+        limit: 500,
+        categoryId: selectedCategory.length
+          ? selectedCategory.join(",")
+          : undefined,
+        subCategoryId: selectedSubcategory.length
+          ? selectedSubcategory.join(",")
+          : undefined,
+        // intentionally no price/discount filters here
+      });
+      const allProds = result.products;
+      if (!allProds.length) {
+        setCatMinPrice(null);
+        setCatMaxPrice(null);
+        setAvailableDiscounts([]);
+        return;
+      }
+      const prices = allProds.map(
+        (p) => p.price - (p.price * (p.discount || 0)) / 100,
+      );
+      setCatMinPrice(Math.floor(Math.min(...prices)));
+      setCatMaxPrice(Math.ceil(Math.max(...prices)));
+
+      // Reset slider when category changes
+      setPriceRange({ min: "", max: "" });
+      setMinDiscount(null);
+
+      const ALL_THRESHOLDS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
+      setAvailableDiscounts(
+        ALL_THRESHOLDS.filter((t) =>
+          allProds.some((p) => (p.discount || 0) >= t),
+        ),
+      );
+    } catch (_) {
+      // fail silently — keep old bounds
+    }
+  };
+
+  // Re-fetch when category or subcategory changes to update slider bounds
+  useEffect(() => {
+    loadFilterBounds();
+  }, [selectedCategory, selectedSubcategory]);
+
+  // Re-fetch products whenever any filter/sort/search/page-reset trigger changes
   useEffect(() => {
     setPage(1);
     loadProducts(1);
-  }, [selectedCategory, selectedSubcategory, searchQuery]);
+  }, [
+    selectedCategory,
+    selectedSubcategory,
+    searchQuery,
+    priceRange.min,
+    priceRange.max,
+    minDiscount,
+    discountOnly,
+    sortBy,
+  ]);
 
   const handlePage = (p) => {
     setPage(p);
@@ -418,27 +604,12 @@ const ProductsPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
-    if (discountOnly) result = result.filter((p) => p.discount > 0);
-    if (minDiscount !== null)
-      result = result.filter((p) => (p.discount || 0) >= minDiscount);
-    const minPrice = priceRange.min !== "" ? Number(priceRange.min) : 0;
-    const maxPrice = priceRange.max !== "" ? Number(priceRange.max) : Infinity;
-    result = result.filter((p) => {
-      const fp = p.price - (p.price * (p.discount || 0)) / 100;
-      return fp >= minPrice && fp <= maxPrice;
-    });
-    if (sortBy === "price_asc") result.sort((a, b) => a.price - b.price);
-    if (sortBy === "price_desc") result.sort((a, b) => b.price - a.price);
-    if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name));
-    if (sortBy === "name_desc") result.sort((a, b) => b.name.localeCompare(a.name));
-    return result;
-  }, [products, discountOnly, minDiscount, priceRange, sortBy]);
+  // No client-side filtering — backend handles everything
+  const displayProducts = products;
 
   useEffect(() => {
-    if (searchQuery.trim()) trackSearch(searchQuery, filteredProducts.length);
-  }, [searchQuery, filteredProducts.length]);
+    if (searchQuery.trim()) trackSearch(searchQuery, displayProducts.length);
+  }, [searchQuery, displayProducts.length]);
 
   const handleClearFilters = () => {
     setSelectedCategory([]);
@@ -466,7 +637,7 @@ const ProductsPage = () => {
     if (categoryName) {
       title = `${categoryName} | Buy ${categoryName} Online at Best Prices | Myntra`;
     } else if (searchQuery) {
-      title = `"${searchQuery}" |Buy ${searchQuery} Online at Best Prices | Myntra`;
+      title = `"${searchQuery}" | Buy ${searchQuery} Online at Best Prices | Myntra`;
     }
     document.title = title;
   }, [categoryName, searchQuery]);
@@ -492,8 +663,10 @@ const ProductsPage = () => {
 
   const FilterSection = ({ title, children }) => (
     <div className="border-b border-[#eaeaec]">
-      <div className="py-3.5" data-filter-title>
-        <span className="text-[13px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">{title}</span>
+      <div className="py-3.5">
+        <span className="text-[13px] font-extrabold text-[#282c3f] uppercase tracking-[0.8px]">
+          {title}
+        </span>
       </div>
       <div className="pb-4">{children}</div>
     </div>
@@ -502,7 +675,9 @@ const ProductsPage = () => {
   const SidebarContent = () => (
     <div>
       <div className="flex items-center justify-between py-3.5 border-b border-[#eaeaec]">
-        <h3 className="text-[15px] font-semibold text-[#282c3f] uppercase tracking-[0.8px]">Filters</h3>
+        <h3 className="text-[15px] font-semibold text-[#282c3f] uppercase tracking-[0.8px]">
+          Filters
+        </h3>
         {hasActiveFilters && (
           <button
             onClick={handleClearFilters}
@@ -517,11 +692,16 @@ const ProductsPage = () => {
       <FilterSection title="Category">
         <div className="space-y-2.5">
           {categories.slice(0, 8).map((cat) => (
-            <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
+            <label
+              key={cat.id}
+              className="flex items-center gap-2.5 cursor-pointer group"
+            >
               <input
                 type="checkbox"
                 checked={selectedCategory.includes(String(cat.id))}
-                onChange={() => toggleValue(String(cat.id), setSelectedCategory)}
+                onChange={() =>
+                  toggleValue(String(cat.id), setSelectedCategory)
+                }
               />
               <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
                 {cat.name}
@@ -547,11 +727,16 @@ const ProductsPage = () => {
         <FilterSection title="Subcategory">
           <div className="space-y-2.5">
             {subcategories.slice(0, 8).map((sub) => (
-              <label key={sub.id} className="flex items-center gap-2.5 cursor-pointer group">
+              <label
+                key={sub.id}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
                 <input
                   type="checkbox"
                   checked={selectedSubcategory.includes(String(sub.id))}
-                  onChange={() => toggleValue(String(sub.id), setSelectedSubcategory)}
+                  onChange={() =>
+                    toggleValue(String(sub.id), setSelectedSubcategory)
+                  }
                   className="accent-primary w-3.5 h-3.5"
                 />
                 <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
@@ -576,26 +761,62 @@ const ProductsPage = () => {
 
       {/* Price Range */}
       <FilterSection title="Price Range (₹)">
-        <PriceSlider priceRange={priceRange} setPriceRange={setPriceRange} />
+        <PriceSlider
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          catMinPrice={catMinPrice}
+          catMaxPrice={catMaxPrice}
+        />
       </FilterSection>
 
       {/* Discount Range */}
       <FilterSection title="Discount Range">
         <div className="space-y-2.5">
-          {DISCOUNT_OPTIONS.map((pct) => (
-            <label key={pct} className="flex items-center gap-2.5 cursor-pointer group">
-              <input
-                type="radio"
-                name="discount_range"
-                checked={minDiscount === pct}
-                onChange={() => setMinDiscount(minDiscount === pct ? null : pct)}
-                className="accent-primary w-3.5 h-3.5"
-              />
-              <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
-                {pct}% and above
-              </span>
-            </label>
-          ))}
+          {availableDiscounts.length > 0 ? (
+            availableDiscounts.map((pct) => (
+              <label
+                key={pct}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
+                <input
+                  type="radio"
+                  name="discount_range"
+                  checked={minDiscount === pct}
+                  onChange={() =>
+                    setMinDiscount(minDiscount === pct ? null : pct)
+                  }
+                  className="accent-primary w-3.5 h-3.5"
+                />
+                <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
+                  {pct}% and above
+                </span>
+              </label>
+            ))
+          ) : selectedCategory.length > 0 ? (
+            <p className="text-[12px] text-[#94969f]">
+              No discounts available in this category
+            </p>
+          ) : (
+            [10, 20, 30, 40, 50, 60, 70, 80, 90].map((pct) => (
+              <label
+                key={pct}
+                className="flex items-center gap-2.5 cursor-pointer group"
+              >
+                <input
+                  type="radio"
+                  name="discount_range"
+                  checked={minDiscount === pct}
+                  onChange={() =>
+                    setMinDiscount(minDiscount === pct ? null : pct)
+                  }
+                  className="accent-primary w-3.5 h-3.5"
+                />
+                <span className="text-[13px] text-[#282c3f] group-hover:text-primary transition-colors">
+                  {pct}% and above
+                </span>
+              </label>
+            ))
+          )}
         </div>
       </FilterSection>
 
@@ -652,10 +873,13 @@ const ProductsPage = () => {
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-baseline gap-2.5">
             <h3 className="text-[17px] font-bold text-[#282c3f]">
-              {categoryName || (searchQuery ? `"${searchQuery}"` : "All Products")}
+              {categoryName ||
+                (searchQuery ? `"${searchQuery}"` : "All Products")}
             </h3>
             {!loading && pagination && (
-              <span className="text-[17px] text-[#94969f]">- {pagination.total} items</span>
+              <span className="text-[17px] text-[#94969f]">
+                - {pagination.total} items
+              </span>
             )}
           </div>
         </div>
@@ -668,19 +892,31 @@ const ProductsPage = () => {
             />
           )}
 
+          {/* Desktop sidebar */}
           <div className="hidden lg:block w-[220px] flex-shrink-0">
-            <div className="sticky top-0 max-h-screen overflow-y-auto p-2" style={{ scrollbarWidth: "none" }}>
+            <div
+              className="sticky top-0 max-h-screen overflow-y-auto p-2"
+              style={{ scrollbarWidth: "none" }}
+            >
               <SidebarContent />
             </div>
           </div>
 
+          {/* Mobile sidebar */}
           <aside
             className={`lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] bg-white overflow-y-auto transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
           >
             <div className="flex items-center justify-between p-4 border-b border-[#eaeaec]">
               <span className="font-extrabold text-[#282c3f]">Filters</span>
               <button onClick={() => setSidebarOpen(false)}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#282c3f" strokeWidth="2">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#282c3f"
+                  strokeWidth="2"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -698,7 +934,9 @@ const ProductsPage = () => {
               {hasActiveFilters && (
                 <div className="flex flex-wrap items-center gap-2">
                   {selectedCategory.map((catId) => {
-                    const cat = categories.find((c) => String(c.id) === String(catId));
+                    const cat = categories.find(
+                      (c) => String(c.id) === String(catId),
+                    );
                     return cat ? (
                       <span
                         key={catId}
@@ -706,14 +944,20 @@ const ProductsPage = () => {
                       >
                         {cat.name}
                         <button
-                          onClick={() => toggleValue(catId, setSelectedCategory)}
+                          onClick={() =>
+                            toggleValue(catId, setSelectedCategory)
+                          }
                           className="text-[#94969f] hover:text-primary font-bold leading-none"
-                        >×</button>
+                        >
+                          ×
+                        </button>
                       </span>
                     ) : null;
                   })}
                   {selectedSubcategory.map((subId) => {
-                    const sub = subcategories.find((s) => String(s.id) === String(subId));
+                    const sub = subcategories.find(
+                      (s) => String(s.id) === String(subId),
+                    );
                     return sub ? (
                       <span
                         key={subId}
@@ -721,34 +965,58 @@ const ProductsPage = () => {
                       >
                         {sub.name}
                         <button
-                          onClick={() => toggleValue(String(subId), setSelectedSubcategory)}
+                          onClick={() =>
+                            toggleValue(String(subId), setSelectedSubcategory)
+                          }
                           className="text-[#94969f] hover:text-primary font-bold leading-none"
-                        >×</button>
+                        >
+                          ×
+                        </button>
                       </span>
                     ) : null;
                   })}
                   {discountOnly && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
                       Offers
-                      <button onClick={() => setDiscountOnly(false)} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      <button
+                        onClick={() => setDiscountOnly(false)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {minDiscount !== null && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
                       {minDiscount}% and above
-                      <button onClick={() => setMinDiscount(null)} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      <button
+                        onClick={() => setMinDiscount(null)}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {(priceRange.min || priceRange.max) && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
                       ₹{priceRange.min || "0"} – ₹{priceRange.max || "8000+"}
-                      <button onClick={() => setPriceRange({ min: "", max: "" })} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      <button
+                        onClick={() => setPriceRange({ min: "", max: "" })}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {searchQuery && (
                     <span className="flex items-center gap-1.5 border border-[#d4d5d9] rounded-full text-[#282c3f] text-[12px] font-semibold px-2.5 py-1 bg-white hover:border-primary transition-colors">
                       "{searchQuery}"
-                      <button onClick={() => dispatch(setSearchQuery(""))} className="text-[#94969f] hover:text-primary font-bold leading-none">×</button>
+                      <button
+                        onClick={() => dispatch(setSearchQuery(""))}
+                        className="text-[#94969f] hover:text-primary font-bold leading-none"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                 </div>
@@ -760,7 +1028,14 @@ const ProductsPage = () => {
                   onClick={() => setSidebarOpen(true)}
                   className="lg:hidden flex items-center gap-2 border border-[#d4d5d9] px-4 py-2 text-[13px] font-semibold text-[#282c3f]"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <line x1="4" y1="6" x2="20" y2="6" />
                     <line x1="8" y1="12" x2="16" y2="12" />
                   </svg>
@@ -772,37 +1047,60 @@ const ProductsPage = () => {
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-12">
                 {[...Array(LIMIT)].map((_, i) => (
-                  <div key={i} className="bg-[#f5f5f6] aspect-[3/4] animate-pulse" />
+                  <div
+                    key={i}
+                    className="bg-[#f5f5f6] aspect-[3/4] animate-pulse"
+                  />
                 ))}
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <p className="text-primary font-semibold text-lg">{error}</p>
               </div>
-            ) : filteredProducts.length > 0 ? (
+            ) : displayProducts.length > 0 ? (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-12 p-5 mt-3 border-t border-[#eaeaec] shadow-[0_-1px_8px_rgba(0,0,0,0.03)]">
-                  {filteredProducts.map((product, i) => (
-                    <div key={product.id} style={{ animationDelay: `${i * 0.03}s` }}>
+                  {displayProducts.map((product, i) => (
+                    <div
+                      key={product.id}
+                      style={{ animationDelay: `${i * 0.03}s` }}
+                    >
                       <ProductCard product={product} />
                     </div>
                   ))}
                 </div>
-                <Pagination pagination={pagination} page={page} onPage={handlePage} />
+                <Pagination
+                  pagination={pagination}
+                  page={page}
+                  onPage={handlePage}
+                />
                 {pagination && (
                   <p className="text-center text-xs text-[#94969f] mt-3">
-                    Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, pagination.total)} of {pagination.total} products
+                    Showing {(page - 1) * LIMIT + 1}–
+                    {Math.min(page * LIMIT, pagination.total)} of{" "}
+                    {pagination.total} products
                   </p>
                 )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="1.2">
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#94969f"
+                  strokeWidth="1.2"
+                >
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.35-4.35" />
                 </svg>
-                <h2 className="text-xl font-bold text-[#282c3f] mt-4">No products found</h2>
-                <p className="text-[#94969f] mt-1 text-sm">Try adjusting your filters or search term</p>
+                <h2 className="text-xl font-bold text-[#282c3f] mt-4">
+                  No products found
+                </h2>
+                <p className="text-[#94969f] mt-1 text-sm">
+                  Try adjusting your filters or search term
+                </p>
                 <button
                   onClick={handleClearFilters}
                   className="mt-5 bg-primary text-white px-6 py-2.5 text-sm font-bold hover:bg-primary-hover transition-colors"

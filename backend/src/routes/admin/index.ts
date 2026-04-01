@@ -8,6 +8,8 @@ import heroRoute from "./hero.routes";
 import addressRoute from "./address.routes";
 import paymentRoute from "./payment.routes";
 import reviewRoute from "./review.routes";
+import couponRoute from "./coupon.routes"; // ← NEW
+
 const modules = [
   { route: "/", router: authRoute },
   { route: "/categories", router: categoryRoute },
@@ -18,6 +20,7 @@ const modules = [
   { route: "/payments", router: paymentRoute },
   { route: "/addresses", router: addressRoute },
   { route: "/reviews", router: reviewRoute },
+  { route: "/coupons", router: couponRoute }, // ← NEW
 ];
 
 const router = Router();

@@ -10,6 +10,7 @@ import locationRoute from "./location.routes";
 import heroRoute from "./hero.routes";
 import addressRoute from "./address.routes";
 import reviewRoute from "./review.routes";
+import couponRoute from "./coupon.routes"; // ← NEW
 
 const modules = [
   { route: "/auth", router: authRoute },
@@ -23,6 +24,7 @@ const modules = [
   { route: "/hero", router: heroRoute },
   { route: "/addresses", router: addressRoute },
   { route: "/reviews", router: reviewRoute },
+  { route: "/coupons", router: couponRoute }, // ← NEW
 ];
 
 const router = Router();

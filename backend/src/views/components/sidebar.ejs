@@ -18,19 +18,19 @@
           <img
             alt="Logo"
             src="/assets/media/logos/logo.ico"
-            class="h-40px app-sidebar-logo-default" />
+            class="h-40px app-sidebar-logo-default"
+          />
           <img
             alt="Logo"
             src="/assets/media/logos/logo.ico"
             class="h-35px app-sidebar-logo-minimize"
-        /></span>
-
+          />
+        </span>
         <h1 class="text-[--shopin-dark] m-0 app-sidebar-logo-default">
           Myntra
         </h1>
       </div>
     </a>
-    <!--begin::Sidebar toggle-->
     <div
       id="kt_app_sidebar_toggle"
       class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary body-bg h-30px w-30px position-absolute top-50 start-100 translate-middle rotate"
@@ -58,9 +58,7 @@
           />
         </svg>
       </span>
-      <!--end::Svg Icon-->
     </div>
-    <!--end::Sidebar toggle-->
   </div>
   <!--end::Logo-->
 
@@ -75,9 +73,10 @@
         id="kt_app_sidebar_menu"
         data-kt-menu="true"
       >
+        <!-- Dashboard -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && (page === 'dashboard') ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && page === 'dashboard' ? 'active' : '' %>"
             href="/admin"
           >
             <span class="menu-icon">
@@ -126,12 +125,11 @@
                   />
                 </svg>
               </span>
-              <!--end::Svg Icon-->
             </span>
             <span class="menu-title">Dashboard</span>
           </a>
         </div>
-        <!--begin:Menu item-->
+
         <div class="menu-item pt-5">
           <div class="menu-content">
             <span class="menu-heading fw-bold text-uppercase fs-7"
@@ -139,26 +137,21 @@
             >
           </div>
         </div>
-        <!--end:Menu item-->
-        <!--begin:Menu item-->
+
+        <!-- Users -->
         <div class="menu-item">
-          <!--begin:Menu link-->
           <a
-            class="menu-link <%= typeof page !== 'undefined' && (page === 'users' || page === 'user-details') ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && (page === 'users' || page === 'user-details') ? 'active' : '' %>"
             href="/admin/users"
           >
             <span class="menu-icon svg-icon svg-icon-1">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
                 width="24px"
                 height="24px"
                 viewBox="0 0 24 24"
                 version="1.1"
               >
-                <title>Stockholm-icons / Communication / Group</title>
-                <desc>Created with Sketch.</desc>
-                <defs />
                 <g
                   stroke="none"
                   stroke-width="1"
@@ -182,13 +175,12 @@
             </span>
             <span class="menu-title">Users</span>
           </a>
-          <!--end:Menu link-->
         </div>
 
-        <!--begin:Menu item Categories-->
+        <!-- Categories -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && (page === 'categories' || page === 'category-add') ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && (page === 'categories' || page === 'category-add') ? 'active' : '' %>"
             href="/admin/categories"
           >
             <span class="menu-icon svg-icon svg-icon-1">
@@ -213,12 +205,11 @@
             <span class="menu-title">Categories</span>
           </a>
         </div>
-        <!--end:Menu item Categories-->
 
-        <!--begin:Menu item SubCategories-->
+        <!-- Sub Categories -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && (page === 'subcategories') ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && page === 'subcategories' ? 'active' : '' %>"
             href="/admin/subcategories"
           >
             <span class="menu-icon svg-icon svg-icon-1">
@@ -246,10 +237,10 @@
           </a>
         </div>
 
-        <!--begin:Menu item Products-->
+        <!-- Products -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && (page === 'products' || page === 'product-add' || page === 'product-edit') ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && (page === 'products' || page === 'product-add' || page === 'product-edit') ? 'active' : '' %>"
             href="/admin/products"
           >
             <span class="menu-icon svg-icon svg-icon-1">
@@ -277,12 +268,11 @@
             <span class="menu-title">Products</span>
           </a>
         </div>
-        <!--end:Menu item Products-->
 
-        <!--begin:Menu item Orders-->
+        <!-- Orders -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && (page === 'orders' || page === 'order-details') ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && (page === 'orders' || page === 'order-details') ? 'active' : '' %>"
             href="/admin/orders"
           >
             <span class="menu-icon svg-icon svg-icon-1">
@@ -309,12 +299,11 @@
             <span class="menu-title">Orders</span>
           </a>
         </div>
-        <!--end:Menu item Orders-->
 
-        <!--begin:Menu item Payments-->
+        <!-- Payments -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && page === 'payments' ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && page === 'payments' ? 'active' : '' %>"
             href="/admin/payments"
           >
             <span class="menu-icon svg-icon svg-icon-1">
@@ -341,12 +330,47 @@
             <span class="menu-title">Payments</span>
           </a>
         </div>
-        <!--end:Menu item Payments-->
 
-        <!--begin:Menu item Hero Slides-->
+        <!-- ─── COUPONS (NEW) ─── -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && page === 'hero' ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && page === 'coupons' ? 'active' : '' %>"
+            href="/admin/coupons"
+          >
+            <span class="menu-icon svg-icon svg-icon-1">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  opacity="0.3"
+                  d="M18.0002 1H6.00024C4.90024 1 4.00024 1.9 4.00024 3V21C4.00024 22.1 4.90024 23 6.00024 23H18.0002C19.1002 23 20.0002 22.1 20.0002 21V3C20.0002 1.9 19.1002 1 18.0002 1ZM9.00024 19H7.00024V17H9.00024V19ZM9.00024 15H7.00024V13H9.00024V15ZM9.00024 11H7.00024V9H9.00024V11ZM13.0002 19H11.0002V17H13.0002V19ZM13.0002 15H11.0002V13H13.0002V15ZM13.0002 11H11.0002V9H13.0002V11ZM17.0002 19H15.0002V17H17.0002V19ZM17.0002 15H15.0002V13H17.0002V15ZM17.0002 11H15.0002V9H17.0002V11Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M12 7.99998C13.1 7.99998 14 7.09998 14 5.99998C14 4.89998 13.1 3.99998 12 3.99998C10.9 3.99998 10 4.89998 10 5.99998C10 7.09998 10.9 7.99998 12 7.99998Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M8 6H6M18 6H16"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <span class="menu-title">Coupons</span>
+          </a>
+        </div>
+        <!-- ─── END COUPONS ─── -->
+
+        <!-- Hero Slides -->
+        <div class="menu-item">
+          <a
+            class="menu-link <%= typeof page !== 'undefined' && page === 'hero' ? 'active' : '' %>"
             href="/admin/hero"
           >
             <span class="menu-icon svg-icon svg-icon-1">
@@ -371,12 +395,11 @@
             <span class="menu-title">Hero Slides</span>
           </a>
         </div>
-        <!--end:Menu item Hero Slides-->
 
-        <!--begin:Menu item Reviews-->
+        <!-- Reviews -->
         <div class="menu-item">
           <a
-            class="menu-link <%= typeof page !== 'undefined' && page === 'reviews' ? 'active' : ''; %>"
+            class="menu-link <%= typeof page !== 'undefined' && page === 'reviews' ? 'active' : '' %>"
             href="/admin/reviews"
           >
             <span class="menu-icon svg-icon svg-icon-1">
@@ -401,10 +424,9 @@
             <span class="menu-title">Reviews</span>
           </a>
         </div>
-        <!--end:Menu item Reviews-->
-
-        <!-- End Sidebar -->
       </div>
     </div>
   </div>
+  <!-- End Sidebar Menu -->
 </div>
+<!-- End Sidebar -->

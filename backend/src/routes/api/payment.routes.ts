@@ -8,7 +8,7 @@ const router = Router();
 router.post(
   "/webhook/razorpay",
   express.raw({ type: "application/json" }),
-  paymentController.razorpayWebhook,
+  paymentController.handleWebhook,
 );
 
 router.post("/create-order", protect, paymentController.createOrder);

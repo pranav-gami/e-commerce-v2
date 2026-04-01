@@ -7,12 +7,17 @@ import {
   sendOrderConfirmationEmail,
   sendPaymentFailedEmail,
 } from "../../config/mailer";
+import { recordCouponUsage } from "./coupon.service";
 
+// ─────────────────────────────────────────────
+// CREATE RAZORPAY ORDER  (now accepts optional couponCode)
+// ─────────────────────────────────────────────
 export const createRazorpayOrder = async (
   userId: number,
   addressId: number,
+  couponCode?: string,
 ) => {
-  // 1. Validate address belongs to this user
+  // 1. Validate address
   const address = await prisma.address.findFirst({
     where: { id: addressId, userId },
     include: {
@@ -22,35 +27,119 @@ export const createRazorpayOrder = async (
     },
   });
 
-  if (!address) {
+  if (!address)
     throw new ApiError(404, "Address not found or does not belong to you");
-  }
 
   // 2. Validate cart
   const cart = await prisma.cart.findUnique({
     where: { userId },
-    include: { items: { include: { product: true } } },
+    include: {
+      items: {
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              discount: true,
+              stock: true,
+              subCategoryId: true,
+              subCategory: { select: { categoryId: true } },
+            },
+          },
+        },
+      },
+    },
   });
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || cart.items.length === 0)
     throw new ApiError(400, "Cart is empty");
+
+  // 3. Check stock for all items
+  for (const item of cart.items) {
+    if (item.product.stock < item.quantity) {
+      throw new ApiError(
+        409,
+        `Not enough stock for "${item.product.name}". Available: ${item.product.stock}`,
+      );
+    }
   }
 
-  // 3. Calculate total
-  const total = cart.items.reduce((sum, item) => {
+  // 4. Calculate base total (after product discounts)
+  const baseTotal = cart.items.reduce((sum, item) => {
     const discountedPrice =
       item.product.price -
       (item.product.price * (item.product.discount || 0)) / 100;
     return sum + discountedPrice * item.quantity;
   }, 0);
 
-  // 4. Create order with address snapshot
+  // 5. Resolve coupon (optional)
+  let couponId: number | null = null;
+  let couponDiscount = 0;
+  let appliedCouponCode: string | null = null;
+
+  if (couponCode) {
+    const coupon = await prisma.coupon.findUnique({
+      where: { code: couponCode.trim().toUpperCase() },
+      include: {
+        category: { select: { subCategories: { select: { id: true } } } },
+      },
+    });
+
+    if (!coupon || !coupon.isActive)
+      throw new ApiError(400, "Invalid or inactive coupon");
+
+    if (coupon.expiresAt && coupon.expiresAt < new Date())
+      throw new ApiError(400, "Coupon has expired");
+
+    if (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit)
+      throw new ApiError(400, "Coupon usage limit reached");
+
+    const alreadyUsed = await prisma.couponUsage.findUnique({
+      where: { couponId_userId: { couponId: coupon.id, userId } },
+    });
+    if (alreadyUsed)
+      throw new ApiError(400, "You have already used this coupon");
+
+    // Find eligible items (matching the coupon's category via subCategory)
+    const subCategoryIds = coupon.category.subCategories.map((s) => s.id);
+    const eligibleItems = cart.items.filter(
+      (item) =>
+        item.product.subCategoryId &&
+        subCategoryIds.includes(item.product.subCategoryId),
+    );
+
+    if (eligibleItems.length === 0)
+      throw new ApiError(400, "No cart items qualify for this coupon category");
+
+    const eligibleSubtotal = eligibleItems.reduce((sum, item) => {
+      const dp =
+        item.product.price -
+        (item.product.price * (item.product.discount || 0)) / 100;
+      return sum + dp * item.quantity;
+    }, 0);
+
+    couponDiscount = parseFloat(
+      ((eligibleSubtotal * coupon.discountPct) / 100).toFixed(2),
+    );
+    couponId = coupon.id;
+    appliedCouponCode = coupon.code;
+  }
+
+  const finalTotal = parseFloat(
+    Math.max(0, baseTotal - couponDiscount).toFixed(2),
+  );
+
+  // 6. Create order in DB
   const order = await prisma.order.create({
     data: {
       userId,
       addressId,
-      total,
+      total: finalTotal,
       status: "PENDING",
+      couponId,
+      couponCode: appliedCouponCode,
+      couponDiscount,
 
       snapFullName: address.fullName,
       snapPhone: address.phone,
@@ -70,23 +159,20 @@ export const createRazorpayOrder = async (
     },
   });
 
-  // 5. Create Razorpay order
+  // 7. Create Razorpay order
   const razorpayOrder = await razorpay.orders.create({
-    amount: Math.round(total * 100),
+    amount: Math.round(finalTotal * 100),
     currency: "INR",
     receipt: `order_${order.id}`,
-    notes: {
-      orderId: String(order.id),
-      userId: String(userId),
-    },
+    notes: { orderId: String(order.id), userId: String(userId) },
   });
 
-  // 6. Create payment record
+  // 8. Create payment record
   await prisma.payment.create({
     data: {
       orderId: order.id,
       razorpayOrderId: razorpayOrder.id,
-      amount: total,
+      amount: finalTotal,
       status: "PENDING",
     },
   });
@@ -97,9 +183,15 @@ export const createRazorpayOrder = async (
     amount: razorpayOrder.amount,
     currency: razorpayOrder.currency,
     keyId: process.env.RAZORPAY_KEY_ID,
+    couponApplied: !!couponId,
+    couponDiscount,
+    finalTotal,
   };
 };
 
+// ─────────────────────────────────────────────
+// VERIFY PAYMENT (unchanged signature, coupon recorded in webhook)
+// ─────────────────────────────────────────────
 export const verifyPayment = async (
   userId: number,
   data: {
@@ -114,9 +206,8 @@ export const verifyPayment = async (
     .update(`${data.razorpayOrderId}|${data.razorpayPaymentId}`)
     .digest("hex");
 
-  if (generatedSignature !== data.razorpaySignature) {
+  if (generatedSignature !== data.razorpaySignature)
     throw new ApiError(400, "Invalid payment signature");
-  }
 
   const payment = await prisma.payment.findUnique({
     where: { razorpayOrderId: data.razorpayOrderId },
@@ -155,16 +246,14 @@ export const verifyPayment = async (
 // ─────────────────────────────────────────────
 // WEBHOOK HELPERS
 // ─────────────────────────────────────────────
-
 const verifyWebhookSignature = (body: string, signature: string) => {
   const expected = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
     .update(body)
     .digest("hex");
 
-  if (expected !== signature) {
+  if (expected !== signature)
     throw new ApiError(400, "Invalid webhook signature");
-  }
 };
 
 const handlePaymentSuccess = async (payment: any, entity: any) => {
@@ -182,7 +271,6 @@ const handlePaymentSuccess = async (payment: any, entity: any) => {
     const items = await tx.orderItem.findMany({
       where: { orderId: payment.orderId },
     });
-
     for (const item of items) {
       await tx.product.update({
         where: { id: item.productId },
@@ -190,10 +278,14 @@ const handlePaymentSuccess = async (payment: any, entity: any) => {
       });
     }
 
+    // Record coupon usage if this order had a coupon
     const order = await tx.order.findUnique({ where: { id: payment.orderId } });
-    if (!order) return;
+    if (order?.couponId) {
+      await recordCouponUsage(tx, order.couponId, order.userId, order.id);
+    }
 
-    const cart = await tx.cart.findUnique({ where: { userId: order.userId } });
+    // Clear cart
+    const cart = await tx.cart.findUnique({ where: { userId: order!.userId } });
     if (cart) {
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
     }
@@ -219,6 +311,8 @@ const handlePaymentSuccess = async (payment: any, entity: any) => {
       paymentId: entity.id,
       createdAt: orderWithUser.createdAt,
       fullOrder: { ...orderWithUser, paymentId: entity.id },
+      couponCode: orderWithUser.couponCode,
+      couponDiscount: orderWithUser.couponDiscount || 0,
     });
   }
 };
@@ -229,7 +323,6 @@ const handlePaymentFailure = async (payment: any) => {
       where: { id: payment.id },
       data: { status: "FAILED" },
     });
-
     await tx.order.update({
       where: { id: payment.orderId },
       data: { status: "CANCELLED" },
@@ -251,17 +344,14 @@ const handlePaymentFailure = async (payment: any) => {
 };
 
 const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
-  const razorpayPaymentId = paymentEntity.id;
-
   const dbPayment = await prisma.payment.findFirst({
-    where: { razorpayPaymentId },
+    where: { razorpayPaymentId: paymentEntity.id },
     include: { order: true },
   });
 
   if (!dbPayment) return;
 
   const refundAmount = refundEntity.amount / 100;
-
   if (dbPayment.refundedAmount === refundAmount) return;
 
   await prisma.$transaction(async (tx) => {
@@ -304,17 +394,11 @@ const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
       amount: refundAmount,
     }).catch(console.error);
   }
-
-  console.log("Refund processed via webhook:", {
-    paymentId: razorpayPaymentId,
-    refundAmount,
-  });
 };
 
 // ─────────────────────────────────────────────
 // WEBHOOK HANDLER
 // ─────────────────────────────────────────────
-
 export const handleWebhook = async (body: string, signature: string) => {
   verifyWebhookSignature(body, signature);
 
@@ -338,21 +422,15 @@ export const handleWebhook = async (body: string, signature: string) => {
   if (!dbPayment) return { received: true };
 
   switch (type) {
-    case "payment.captured": {
-      if (dbPayment.status === "SUCCESS") break;
-      await handlePaymentSuccess(dbPayment, paymentEntity);
+    case "payment.captured":
+      if (dbPayment.status !== "SUCCESS")
+        await handlePaymentSuccess(dbPayment, paymentEntity);
       break;
-    }
-    case "payment.failed": {
-      if (dbPayment.status === "FAILED") break;
-      await handlePaymentFailure(dbPayment);
+    case "payment.failed":
+      if (dbPayment.status !== "FAILED") await handlePaymentFailure(dbPayment);
       break;
-    }
-    case "refund.processed": {
+    case "refund.processed":
       await handleRefundProcessed(paymentEntity, refundEntity);
-      break;
-    }
-    default:
       break;
   }
 

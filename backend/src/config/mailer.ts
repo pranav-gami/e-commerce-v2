@@ -133,9 +133,29 @@ export const sendOrderConfirmationEmail = async ({
   paymentId,
   createdAt,
   fullOrder,
-}: SendOrderConfirmationProps) => {
-  // ✅ Generate PDF buffer
+  couponCode,
+  couponDiscount = 0,
+}: {
+  to: string;
+  customerName: string;
+  orderId: number;
+  items: any[];
+  total: number;
+  paymentId: string;
+  createdAt: Date;
+  fullOrder: any;
+  couponCode?: string | null;
+  couponDiscount?: number;
+}) => {
   const pdfBuffer = await generateInvoicePDF(fullOrder);
+
+  const subtotal = items.reduce(
+    (sum, item) =>
+      sum +
+      (item.price - (item.price * (item.discount || 0)) / 100) * item.quantity,
+    0,
+  );
+
   const itemsHTML = items
     .map(
       (item) => `
@@ -144,7 +164,10 @@ export const sendOrderConfirmationEmail = async ({
         <td align="center">${item.quantity}</td>
         <td align="right">₹${item.price.toFixed(2)}</td>
         <td align="right">${item.discount}%</td>
-        <td align="right">₹${((item.price - (item.price * (item.discount || 0)) / 100) * item.quantity).toFixed(2)}</td>
+        <td align="right">₹${(
+          (item.price - (item.price * (item.discount || 0)) / 100) *
+          item.quantity
+        ).toFixed(2)}</td>
       </tr>`,
     )
     .join("");
@@ -156,130 +179,283 @@ export const sendOrderConfirmationEmail = async ({
 <style>
   body {
     font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
   }
 
   .email-container {
     max-width: 600px;
     margin: auto;
-    background-color: #ffffff;
+    background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
   }
 
+  /* ── TOP BAR (matches invoice) ── */
+  .top-bar {
+    background: #e94560;
+    height: 10px;
+    width: 100%;
+  }
+
   .header {
     background-color: #f9f9f9;
-    color: #c73652; /* primary brand color */
-    padding: 20px;
+    color: #c73652;
+    padding: 24px 20px 18px;
     text-align: center;
   }
 
   .header h1 {
     margin: 0;
-    font-size: 24px;
+    font-size: 22px;
+    color: #c73652;
   }
 
   .content {
-    padding: 20px;
+    padding: 24px 28px;
   }
 
-  .content h2 {
-    color: #c73652; /* section headings */
-    font-size: 20px;
+  h2 {
+    color: #c73652;
     margin-bottom: 10px;
+    font-size: 16px;
   }
 
   .order-summary {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    font-size: 13px;
   }
 
   .order-summary th {
-    background-color: #fcd6dd; /* softer pink background for contrast */
-    color: #c73652; /* make header text match brand */
+    background-color: #fcd6dd;
+    color: #c73652;
+    padding: 9px 8px;
     text-align: left;
-    padding: 8px;
-    font-weight: bold;
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .order-summary td {
-    padding: 8px;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 9px 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    color: #333;
   }
 
-  .total {
-    text-align: right;
-    font-weight: bold;
+  /* ── PRICE BOX ── */
+  .price-box {
+    margin-top: 18px;
+    font-size: 13px;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    color: #444;
+  }
+
+  /* ── COUPON ROW (inside price box) ── */
+  .coupon-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    color: #2a7a2a;
+    font-weight: 600;
+  }
+
+  .coupon-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .coupon-badge {
+    display: inline-block;
+    background: #fff4e5;
+    color: #c17a00;
+    border: 1px dashed #c17a00;
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .coupon-saving {
+    font-weight: 700;
+    color: #2a7a2a;
+  }
+
+  /* ── DIVIDER before total ── */
+  .price-divider {
+    border: none;
+    border-top: 2px solid #e94560;
+    margin: 10px 0 6px;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 800;
+    color: #111;
+    padding: 4px 0;
+  }
+
+  /* ── YOU SAVED BANNER ── */
+  .saved-banner {
+    margin-top: 14px;
+    background: #f0faf3;
+    border-left: 4px solid #28a745;
+    border-radius: 4px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #1e6e33;
+    font-weight: 600;
+  }
+
+  .saved-banner .saved-icon {
     font-size: 18px;
-    margin-top: 10px;
-    color: #c73652;
+    line-height: 1;
   }
 
+  .saved-banner .saved-amount {
+    color: #e94560;
+  }
+
+  /* ── FOOTER ── */
   .footer {
     background-color: #f9f9f9;
-    color: #555555;
-    padding: 15px;
+    padding: 16px;
     text-align: center;
-    font-size: 14px;
+    font-size: 12px;
+    color: #777;
+    border-top: 1px solid #eee;
   }
 
-  a {
-    color: #c73652;
-    text-decoration: underline;
+  .footer a {
+    color: #e94560;
+    text-decoration: none;
+    margin: 0 4px;
   }
 
-  /* Optional: highlight Thank You text */
-  .thank-you {
-    color: #c73652;
-    font-size: 22px;
-    font-weight: bold;
-    text-align: center;
-    margin: 20px 0;
+  /* ── BOTTOM BAR (matches invoice) ── */
+  .bottom-bar {
+    background: #e94560;
+    height: 10px;
+    width: 100%;
   }
 </style>
 </head>
+
 <body>
   <div class="email-container">
+
+    <div class="top-bar"></div>
+
     <div class="header">
       <h1>Thank You For Your Order!</h1>
     </div>
+
     <div class="content">
-      <p>Hi ${customerName},</p>
-      <p>Your order has been successfully placed.</p>
+      <p>Hi <strong>${customerName}</strong>,</p>
+      <p>Your order has been successfully placed. Here's a summary below, and your invoice PDF is attached.</p>
 
       <p><b>Order ID:</b> ${orderId}</p>
       <p><b>Payment ID:</b> ${paymentId}</p>
       <p><b>Date:</b> ${new Date(createdAt).toLocaleDateString("en-IN")}</p>
 
       <h2>Order Summary</h2>
+
       <table class="order-summary">
         <tr>
           <th>Product</th>
           <th>Qty</th>
           <th>Price</th>
           <th>Discount</th>
-          <th>Discounted Price</th>
+          <th>Final</th>
         </tr>
         ${itemsHTML}
       </table>
 
-      <p class="total">Total: ₹${total.toFixed(2)}</p>
+      <!-- Price Breakdown -->
+      <div class="price-box">
 
-      <p>📎 Invoice PDF is attached.</p>
+        <div class="price-row">
+          <span>Subtotal</span>
+          <span>₹${subtotal.toFixed(2)}</span>
+        </div>
+
+        <div class="price-row">
+          <span>Shipping</span>
+          <span>FREE</span>
+        </div>
+
+        ${
+          couponCode && couponDiscount > 0
+            ? `
+        <div class="coupon-row">
+          <div class="coupon-label">
+            <span>Coupon Applied</span>
+            <span class="coupon-badge">${couponCode}</span>
+          </div>
+          <span class="coupon-saving">− ₹${couponDiscount.toFixed(2)}</span>
+        </div>
+        `
+            : ""
+        }
+
+        <hr class="price-divider" />
+
+        <div class="total-row">
+          <span>Total Paid</span>
+          <span>₹${total.toFixed(2)}</span>
+        </div>
+
+      </div>
+
+      <!-- You Saved Banner -->
+      ${
+        couponCode && couponDiscount > 0
+          ? `
+      <div class="saved-banner">
+        <span>You saved <span class="saved-amount">₹${couponDiscount.toFixed(2)}</span> using coupon <strong>${couponCode}</strong> on this order!</span>
+      </div>
+      `
+          : ""
+      }
+
+      <p style="margin-top: 18px; font-size: 13px; color: #555;">
+        📎 Your invoice PDF is attached to this email.
+      </p>
     </div>
+
     <div class="footer">
-      Any address information, legal, terms etc. <br/>
-      <a href="#" style="color:black;text-decoration:underline;">Email Preferences</a> | 
-      <a href="#" style="color:black;text-decoration:underline;">Unsubscribe</a> | 
-      <a href="#" style="color:black;text-decoration:underline;">View Online</a>
+      Need help? Contact us anytime at <a href="mailto:support@myntra.com">support@myntra.com</a><br/>
+      <span style="margin-top:6px; display:inline-block;">
+        <a href="#">Email Preferences</a> |
+        <a href="#">Unsubscribe</a> |
+        <a href="#">View Online</a>
+      </span>
     </div>
+
+    <div class="bottom-bar"></div>
+
   </div>
 </body>
 </html>
 `;
+
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to,
@@ -294,7 +470,7 @@ export const sendOrderConfirmationEmail = async ({
     ],
   });
 
-  console.log("✅ Email sent with PDF attachment");
+  console.log("✅ Email sent with coupon + PDF");
 };
 
 // PAYMENT FAILED EMAIL

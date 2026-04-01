@@ -7,38 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-enum Role {
-  USER
-  ADMIN
-}
-
-enum ProductStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  FAILED
-  REFUNDED
-  PARTIALLY_REFUNDED
-}
-
-enum ReviewStatus {
-  PUBLISHED
-  DELETED     
-}
-
 model Country {
   id        Int       @id @default(autoincrement())
   name      String    @unique
@@ -46,9 +14,9 @@ model Country {
   phoneCode String
   flag      String?
   currency  String?
+  addresses Address[]
   states    State[]
   users     User[]
-  addresses Address[]
 }
 
 model State {
@@ -56,53 +24,50 @@ model State {
   name      String
   isoCode   String
   countryId Int
-  country   Country   @relation(fields: [countryId], references: [id])
-  cities    City[]
-  users     User[]
   addresses Address[]
+  cities    City[]
+  country   Country   @relation(fields: [countryId], references: [id])
+  users     User[]
 
   @@unique([isoCode, countryId])
 }
 
 model City {
-  id      Int       @id @default(autoincrement())
-  name    String
-  stateId Int
-  state   State     @relation(fields: [stateId], references: [id])
-  users   User[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  stateId   Int
   addresses Address[]
+  state     State     @relation(fields: [stateId], references: [id])
+  users     User[]
 
   @@unique([name, stateId])
 }
 
-
 model User {
-  id         Int       @id @default(autoincrement())
-  name       String
-  email      String    @unique
-  password   String
-  otp        String?
-  otpExpiry  DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime?
-  role       Role      @default(USER)
-  phone      String
-  address    String?
-  postalCode String?
-  countryId  Int?
-  stateId    Int?
-  cityId     Int?
-
-  country   Country?  @relation(fields: [countryId], references: [id])
-  state     State?    @relation(fields: [stateId], references: [id])
-  city      City?     @relation(fields: [cityId], references: [id])
-  addresses Address[]
-  cart      Cart?
-  orders    Order[]
-  reviews    Review[]
-
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  otp          String?
+  otpExpiry    DateTime?
+  createdAt    DateTime      @default(now())
+  address      String?
+  phone        String
+  updatedAt    DateTime?
+  role         Role          @default(USER)
+  cityId       Int?
+  countryId    Int?
+  stateId      Int?
+  postalCode   String?
+  addresses    Address[]
+  cart         Cart?
+  couponUsages CouponUsage[]
+  orders       Order[]
+  reviews      Review[]
+  city         City?         @relation(fields: [cityId], references: [id])
+  country      Country?      @relation(fields: [countryId], references: [id])
+  state        State?        @relation(fields: [stateId], references: [id])
 }
-
 
 model Address {
   id         Int       @id @default(autoincrement())
@@ -118,12 +83,11 @@ model Address {
   isDefault  Boolean   @default(false)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime?
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  country Country @relation(fields: [countryId], references: [id])
-  state   State   @relation(fields: [stateId], references: [id])
-  city    City    @relation(fields: [cityId], references: [id])
-  orders  Order[]
+  city       City      @relation(fields: [cityId], references: [id])
+  country    Country   @relation(fields: [countryId], references: [id])
+  state      State     @relation(fields: [stateId], references: [id])
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders     Order[]
 }
 
 model PendingVerification {
@@ -133,7 +97,6 @@ model PendingVerification {
   otpExpiry DateTime
   createdAt DateTime @default(now())
 }
-
 
 model HeroSlide {
   id        Int       @id @default(autoincrement())
@@ -148,7 +111,6 @@ model HeroSlide {
   updatedAt DateTime?
 }
 
-
 model Category {
   id            Int           @id @default(autoincrement())
   name          String        @unique
@@ -157,6 +119,7 @@ model Category {
   image         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime?
+  Coupon        Coupon[]
   subCategories SubCategory[]
 }
 
@@ -189,10 +152,9 @@ model Product {
   status        ProductStatus @default(ACTIVE)
   cartItems     CartItem[]
   orderItems    OrderItem[]
-  reviews    Review[]
   subCategory   SubCategory   @relation(fields: [subCategoryId], references: [id])
+  reviews       Review[]
 }
-
 
 model Cart {
   id        Int        @id @default(autoincrement())
@@ -216,16 +178,14 @@ model CartItem {
   @@unique([cartId, productId])
 }
 
-
 model Order {
-  id        Int         @id @default(autoincrement())
-  userId    Int
-  addressId Int
-  total     Float
-  status    OrderStatus @default(PENDING)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime?
-
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  total          Float
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?
+  status         OrderStatus  @default(PENDING)
+  addressId      Int
   snapFullName   String
   snapPhone      String
   snapAddress    String
@@ -233,12 +193,15 @@ model Order {
   snapCity       String
   snapState      String
   snapCountry    String
-
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  address Address     @relation(fields: [addressId], references: [id])
-  payment Payment?
-  items   OrderItem[]
-  reviews    Review[]
+  couponCode     String?
+  couponDiscount Float?       @default(0)
+  couponId       Int?
+  couponUsage    CouponUsage?
+  address        Address      @relation(fields: [addressId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items          OrderItem[]
+  payment        Payment?
+  reviews        Review[]
 }
 
 model OrderItem {
@@ -251,7 +214,6 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
 }
 
-
 model Payment {
   id                Int           @id @default(autoincrement())
   orderId           Int           @unique
@@ -259,30 +221,92 @@ model Payment {
   razorpayPaymentId String?
   razorpaySignature String?
   amount            Float
-  refundedAmount    Float?        @default(0)
   currency          String        @default("INR")
   status            PaymentStatus @default(PENDING)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime?
+  refundedAmount    Float?        @default(0)
   order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model Review {
-  id         Int          @id @default(autoincrement())
-  userId     Int
-  productId  Int
-  orderId    Int          
-  rating     Int          
-  title      String?
-  body       String?
-  verified   Boolean      @default(false) 
-  status     ReviewStatus @default(PUBLISHED)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime?
-
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  order      Order        @relation(fields: [orderId], references: [id])
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  productId Int
+  orderId   Int
+  rating    Int
+  title     String?
+  body      String?
+  verified  Boolean      @default(false)
+  status    ReviewStatus @default(PUBLISHED)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime?
+  order     Order        @relation(fields: [orderId], references: [id])
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId, orderId])
+}
+
+model Coupon {
+  id          Int           @id @default(autoincrement())
+  code        String        @unique
+  discountPct Float
+  categoryId  Int
+  isActive    Boolean       @default(true)
+  usageLimit  Int           @default(100)
+  usageCount  Int           @default(0)
+  expiresAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  usages      CouponUsage[]
+
+  @@index([code])
+  @@index([categoryId])
+}
+
+model CouponUsage {
+  id       Int      @id @default(autoincrement())
+  couponId Int
+  userId   Int
+  orderId  Int      @unique
+  usedAt   DateTime @default(now())
+  coupon   Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, userId])
+  @@index([userId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum ReviewStatus {
+  PUBLISHED
+  DELETED
 }

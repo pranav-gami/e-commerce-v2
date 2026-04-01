@@ -1,0 +1,208 @@
+<div class="d-flex flex-column flex-column-fluid">
+
+  <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+          <%= editMode ? 'Edit Coupon' : 'Add Coupon' %>
+        </h1>
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+          <li class="breadcrumb-item text-muted"><a href="/admin" class="text-muted text-hover-primary">Home</a></li>
+          <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
+          <li class="breadcrumb-item text-muted"><a href="/admin/coupons" class="text-muted text-hover-primary">Coupons</a></li>
+          <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
+          <li class="breadcrumb-item text-muted"><%= editMode ? 'Edit' : 'Add' %></li>
+        </ul>
+      </div>
+      <a href="/admin/coupons" class="btn btn-sm btn-light fw-semibold">← Back</a>
+    </div>
+  </div>
+
+  <div id="kt_app_content" class="app-content flex-column-fluid">
+    <div id="kt_app_content_container" class="app-container container-xxl">
+      <div class="card mw-600px mx-auto">
+        <div class="card-header border-0 pt-6">
+          <h3 class="card-title fw-bold text-dark"><%= editMode ? 'Edit Coupon' : 'Create New Coupon' %></h3>
+        </div>
+        <div class="card-body">
+
+          <!-- Alert -->
+          <div id="alertBox" class="alert d-none mb-5" role="alert"></div>
+
+          <form id="couponForm">
+            <!-- Code -->
+            <div class="mb-5">
+              <label class="form-label required fw-semibold">Coupon Code</label>
+              <input
+                type="text"
+                name="code"
+                class="form-control form-control-solid text-uppercase"
+                placeholder="e.g. TSHIRT20"
+                value="<%= editMode && coupon ? coupon.code : '' %>"
+                style="text-transform:uppercase;"
+                required
+              />
+              <div class="form-text text-muted">Alphanumeric, no spaces. Will be saved in UPPERCASE.</div>
+            </div>
+
+            <!-- Discount % -->
+            <div class="mb-5">
+              <label class="form-label required fw-semibold">Discount Percentage</label>
+              <div class="input-group">
+                <input
+                  type="number"
+                  name="discountPct"
+                  class="form-control form-control-solid"
+                  placeholder="e.g. 10"
+                  min="1"
+                  max="100"
+                  step="0.01"
+                  value="<%= editMode && coupon ? coupon.discountPct : '' %>"
+                  required
+                />
+                <span class="input-group-text bg-light-primary text-primary fw-bold">%</span>
+              </div>
+              <div class="form-text text-muted">Discount applied on eligible products' subtotal.</div>
+            </div>
+
+            <!-- Category -->
+            <div class="mb-5">
+              <label class="form-label required fw-semibold">Category</label>
+              <select name="categoryId" class="form-select form-select-solid" required>
+                <option value="">Select Category</option>
+                <% categories.forEach(cat => { %>
+                  <option value="<%= cat.id %>" <%= editMode && coupon && coupon.categoryId === cat.id ? 'selected' : '' %>>
+                    <%= cat.name %>
+                  </option>
+                <% }) %>
+              </select>
+              <div class="form-text text-muted">Coupon will only apply to products in this category.</div>
+            </div>
+
+            <!-- Usage Limit -->
+            <div class="mb-5">
+              <label class="form-label fw-semibold">Usage Limit <span class="text-muted fs-8">(optional)</span></label>
+              <input
+                type="number"
+                name="usageLimit"
+                class="form-control form-control-solid"
+                placeholder="Leave empty for unlimited"
+                min="1"
+                value="<%= editMode && coupon && coupon.usageLimit ? coupon.usageLimit : '' %>"
+              />
+              <div class="form-text text-muted">Total number of times this coupon can be used across all users.</div>
+            </div>
+
+            <!-- Expiry Date -->
+            <div class="mb-5">
+              <label class="form-label fw-semibold">Expiry Date <span class="text-muted fs-8">(optional)</span></label>
+              <input
+                type="datetime-local"
+                name="expiresAt"
+                class="form-control form-control-solid"
+                value="<%= editMode && coupon && coupon.expiresAt ? new Date(coupon.expiresAt).toISOString().slice(0,16) : '' %>"
+              />
+            </div>
+
+            <!-- Active Status -->
+            <div class="mb-8">
+              <label class="form-label fw-semibold d-block">Status</label>
+              <div class="form-check form-switch form-check-custom form-check-solid">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="isActive"
+                  id="isActiveSwitch"
+                  value="true"
+                  <%= !editMode || (coupon && coupon.isActive) ? 'checked' : '' %>
+                />
+                <label class="form-check-label fw-semibold text-gray-700" for="isActiveSwitch">Active</label>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="d-flex gap-3">
+              <button type="submit" class="btn btn-primary fw-bold" id="submitBtn">
+                <span id="btnText"><%= editMode ? 'Update Coupon' : 'Create Coupon' %></span>
+                <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
+              </button>
+              <a href="/admin/coupons" class="btn btn-light fw-bold">Cancel</a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const editMode = <%= editMode %>;
+const couponId = <%= editMode && coupon ? coupon.id : 'null' %>;
+
+document.getElementById('couponForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const alertBox = document.getElementById('alertBox');
+  const submitBtn = document.getElementById('submitBtn');
+  const btnText = document.getElementById('btnText');
+  const btnSpinner = document.getElementById('btnSpinner');
+
+  alertBox.className = 'alert d-none mb-5';
+
+  const form = e.target;
+  const code = form.code.value.trim().toUpperCase();
+  const discountPct = Number(form.discountPct.value);
+  const categoryId = Number(form.categoryId.value);
+  const usageLimit = form.usageLimit.value ? Number(form.usageLimit.value) : null;
+  const expiresAt = form.expiresAt.value || null;
+  const isActive = form.isActive.checked;
+
+  if (!code || !discountPct || !categoryId) {
+    alertBox.className = 'alert alert-danger mb-5';
+    alertBox.textContent = 'Please fill in all required fields.';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  btnSpinner.classList.remove('d-none');
+
+  try {
+    const url = editMode ? `/admin/coupons/${couponId}` : '/admin/coupons';
+    const method = editMode ? 'PATCH' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ code, discountPct, categoryId, usageLimit, expiresAt, isActive })
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+      alertBox.className = 'alert alert-success mb-5';
+      alertBox.textContent = json.message || (editMode ? 'Coupon updated!' : 'Coupon created!');
+      if (!editMode) {
+        setTimeout(() => window.location.href = '/admin/coupons', 1200);
+      }
+    } else {
+      alertBox.className = 'alert alert-danger mb-5';
+      alertBox.textContent = json.message || 'Something went wrong.';
+    }
+  } catch (err) {
+    alertBox.className = 'alert alert-danger mb-5';
+    alertBox.textContent = 'Network error. Please try again.';
+  } finally {
+    submitBtn.disabled = false;
+    btnSpinner.classList.add('d-none');
+  }
+});
+
+// Force uppercase on code input
+document.querySelector('[name="code"]').addEventListener('input', function() {
+  this.value = this.value.toUpperCase();
+});
+</script>

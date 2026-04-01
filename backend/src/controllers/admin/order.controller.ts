@@ -37,8 +37,6 @@ export const updateOrderStatus = catchAsyncHandler(
   },
 );
 
-// view pages
-
 export const getOrdersPage = async (req: AuthRequest, res: Response) => {
   try {
     if (req.headers.accept?.includes("application/json")) {

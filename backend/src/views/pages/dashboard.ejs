@@ -1,203 +1,208 @@
+
 <div class="d-flex flex-column flex-column-fluid">
+
   <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
     <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+
+      <%# Left: Title + breadcrumb %>
       <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Dashboard</h1>
+        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+          Dashboard
+        </h1>
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-          <li class="breadcrumb-item text-muted"><a href="/admin" class="text-muted text-hover-primary">Home</a></li>
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin" class="text-muted text-hover-primary">Home</a>
+          </li>
           <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
           <li class="breadcrumb-item text-muted">Dashboard</li>
         </ul>
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <span class="text-muted fs-7">Last updated: <strong class="text-dark" id="dash-time"></strong></span>
+
+      <%# Right: Quick action buttons + timestamp %>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-muted fs-8 me-2">
+          Updated: <strong class="text-dark" id="dash-time"></strong>
+        </span>
+        <a href="/admin/orders" class="btn btn-sm btn-light-primary fw-semibold">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" style="vertical-align:-2px">
+            <path opacity=".3" d="M18 21.6C16.3 21.6 15 20.3 15 18.6V2.5c0-.3-.4-.5-.7-.3L13 3.6 11.7 2.3c-.4-.4-1-.4-1.4 0L9 3.6 7.7 2.3c-.4-.4-1-.4-1.4 0L5 3.6 3.7 2.3C3.5 2.1 3 2.2 3 3.5V18.6C3 20.3 4.3 21.6 6 21.6H18z" fill="currentColor"/>
+            <path d="M7 7h8M7 10h8M7 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          All Orders
+        </a>
+        <a href="/admin/products/add" class="btn btn-sm btn-primary fw-semibold">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" style="vertical-align:-2px">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          Add Product
+        </a>
       </div>
+
     </div>
   </div>
 
+  <%# ── Main Content ─────────────────────────────────────── %>
   <div id="kt_app_content" class="app-content flex-column-fluid">
     <div id="kt_app_content_container" class="app-container container-xxl">
 
-      <!-- Stat Cards Row -->
+      <%# ── KPI Cards ──────────────────────────────────────── %>
       <div class="row g-5 mb-6">
 
-        <!-- Total Users -->
-        <div class="col-sm-6 col-xl-4">
-          <div class="card dash-stat-card h-100">
+        <%# Revenue %>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card dash-kpi h-100">
             <div class="card-body p-6">
-              <div class="d-flex align-items-start justify-content-between mb-4">
-                <div class="dash-icon dash-icon-primary">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path opacity="0.3" d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z" fill="currentColor"/>
-                    <path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z" fill="currentColor"/>
-                  </svg>
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="dash-icon" style="background:rgba(233,69,96,.1);color:#e94560">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path opacity=".3" d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" fill="currentColor"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM2 11h4M18 11h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 </div>
-                <span class="badge badge-light-success fs-8 fw-semibold">Active</span>
+                <span class="badge badge-light-success fs-8">Revenue</span>
               </div>
-              <div class="dash-value"><%= stats.totalUsers %></div>
-              <div class="dash-label">Total Users</div>
-              <div class="dash-footer"><a href="/admin/users" class="dash-link">View all users →</a></div>
+              <div class="dash-value">
+                <%
+                  const rev = stats.totalRevenue || 0;
+                  let revDisplay;
+                  if (rev >= 100000) revDisplay = '₹' + (rev/100000).toFixed(1) + 'L';
+                  else if (rev >= 1000) revDisplay = '₹' + (rev/1000).toFixed(1) + 'K';
+                  else revDisplay = '₹' + rev;
+                %>
+                <%= revDisplay %>
+              </div>
+              <div class="dash-label">Total Revenue</div>
+              <div class="dash-footer">
+                <span class="text-muted fs-8">From successful payments</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- New Users This Month -->
-        <div class="col-sm-6 col-xl-4">
-          <div class="card dash-stat-card h-100">
+        <%# Total Orders %>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card dash-kpi h-100">
             <div class="card-body p-6">
-              <div class="d-flex align-items-start justify-content-between mb-4">
-                <div class="dash-icon dash-icon-info">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path opacity="0.3" d="M2 4V16C2 16.6 2.4 17 3 17H13L16.6 20.6C17.1 21.1 18 20.8 18 20V17H21C21.6 17 22 16.6 22 16V4C22 3.4 21.6 3 21 3H3C2.4 3 2 3.4 2 4Z" fill="currentColor"/>
-                    <path d="M18 9H6C5.4 9 5 8.6 5 8C5 7.4 5.4 7 6 7H18C18.6 7 19 7.4 19 8C19 8.6 18.6 9 18 9ZM16 12C16 11.4 15.6 11 15 11H6C5.4 11 5 11.4 5 12C5 12.6 5.4 13 6 13H15C15.6 13 16 12.6 16 12Z" fill="currentColor"/>
-                  </svg>
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="dash-icon" style="background:rgba(26,158,110,.1);color:#1a9e6e">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path opacity=".3" d="M18 21.6C16.3 21.6 15 20.3 15 18.6V2.5c0-.3-.4-.5-.7-.3L13 3.6 11.7 2.3c-.4-.4-1-.4-1.4 0L9 3.6 7.7 2.3c-.4-.4-1-.4-1.4 0L5 3.6 3.7 2.3C3.5 2.1 3 2.2 3 3.5V18.6C3 20.3 4.3 21.6 6 21.6H18z" fill="currentColor"/><path d="M7 7h8M7 10h8M7 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 </div>
-                <span class="badge badge-light-info fs-8 fw-semibold">This Month</span>
+                <span class="badge badge-light-info fs-8">All time</span>
               </div>
-              <div class="dash-value"><%= stats.newUsersThisMonth %></div>
-              <div class="dash-label">New Registrations</div>
-              <div class="dash-footer"><span class="text-muted fs-8">Joined in current month</span></div>
+              <div class="dash-value"><%= (stats.totalOrders || 0).toLocaleString('en-IN') %></div>
+              <div class="dash-label">Total Orders</div>
+              <div class="dash-footer">
+                <a href="/admin/orders" class="dash-link">View all orders →</a>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Total Categories -->
-        <div class="col-sm-6 col-xl-4">
-          <div class="card dash-stat-card h-100">
+        <%# Total Users %>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card dash-kpi h-100">
             <div class="card-body p-6">
-              <div class="d-flex align-items-start justify-content-between mb-4">
-                <div class="dash-icon dash-icon-warning">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path opacity="0.3" d="M19 22H5C4.4 22 4 21.6 4 21V3C4 2.4 4.4 2 5 2H14L20 8V21C20 21.6 19.6 22 19 22Z" fill="currentColor"/>
-                    <path d="M15 8H20L14 2V7C14 7.6 14.4 8 15 8Z" fill="currentColor"/>
-                  </svg>
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="dash-icon" style="background:rgba(15,52,96,.1);color:#0f3460">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path opacity=".3" d="M22 12c0 5.5-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2s10 4.5 10 10zM12 7c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z" fill="currentColor"/><path d="M12 22c2.6 0 5-1 6.7-2.6C17.9 16.9 15.2 15 12 15c-3.2 0-5.9 1.9-6.7 4.4C7 21 9.4 22 12 22z" fill="currentColor"/></svg>
                 </div>
-                <span class="badge badge-light-warning fs-8 fw-semibold"><%= stats.totalSubCategories %> subs</span>
+                <span class="badge badge-light-primary fs-8"><%= stats.newUsersThisMonth %> new</span>
               </div>
-              <div class="dash-value"><%= stats.totalCategories %></div>
-              <div class="dash-label">Total Categories</div>
-              <div class="dash-footer"><a href="/admin/categories" class="dash-link">Manage categories →</a></div>
+              <div class="dash-value"><%= (stats.totalUsers || 0).toLocaleString('en-IN') %></div>
+              <div class="dash-label">Total Customers</div>
+              <div class="dash-footer">
+                <a href="/admin/users" class="dash-link">View all users →</a>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Sub Categories -->
-        <div class="col-sm-6 col-xl-4">
-          <div class="card dash-stat-card h-100">
+        <%# Avg Order Value %>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card dash-kpi h-100">
             <div class="card-body p-6">
-              <div class="d-flex align-items-start justify-content-between mb-4">
-                <div class="dash-icon dash-icon-danger">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path opacity="0.3" d="M21.25 18.525L13.05 21.825C12.35 22.125 11.65 22.125 10.95 21.825L2.75 18.525C1.75 18.125 1.75 16.725 2.75 16.325L4.04999 15.825L10.25 18.325C11.35 18.825 12.65 18.825 13.75 18.325L19.95 15.825L21.25 16.325C22.25 16.725 22.25 18.125 21.25 18.525Z" fill="currentColor"/>
-                    <path d="M13.05 16.425L21.25 13.125C22.25 12.725 22.25 11.325 21.25 10.925L13.05 7.62502C12.35 7.32502 11.65 7.32502 10.95 7.62502L2.75 10.925C1.75 11.325 1.75 12.725 2.75 13.125L10.95 16.425C11.65 16.725 12.45 16.725 13.05 16.425Z" fill="currentColor"/>
-                  </svg>
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="dash-icon" style="background:rgba(243,156,18,.1);color:#d4900a">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path opacity=".3" d="M12 2 2 7l10 5 10-5-10-5z" fill="currentColor"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
-                <span class="badge badge-light-danger fs-8 fw-semibold">Sub-cats</span>
+                <span class="badge badge-light-warning fs-8"><%= stats.totalProducts %> products</span>
               </div>
-              <div class="dash-value"><%= stats.totalSubCategories %></div>
-              <div class="dash-label">Sub Categories</div>
-              <div class="dash-footer"><a href="/admin/subcategories" class="dash-link">View sub categories →</a></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total Accounts -->
-        <div class="col-sm-6 col-xl-4">
-          <div class="card dash-stat-card h-100">
-            <div class="card-body p-6">
-              <div class="d-flex align-items-start justify-content-between mb-4">
-                <div class="dash-icon dash-icon-success">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path opacity="0.3" d="M20 3H4C3.4 3 3 3.4 3 4V19C3 19.6 3.4 20 4 20H20C20.6 20 21 19.6 21 19V4C21 3.4 20.6 3 20 3ZM14 17H6V16H14V17ZM18 13H6V12H18V13ZM18 9H6V8H18V9Z" fill="currentColor"/>
-                  </svg>
-                </div>
-                <span class="badge badge-light-success fs-8 fw-semibold">All Roles</span>
+              <div class="dash-value">
+                <%
+                  const aov = stats.avgOrderValue || 0;
+                  let aovDisplay;
+                  if (aov >= 1000) aovDisplay = '₹' + (aov/1000).toFixed(1) + 'K';
+                  else aovDisplay = '₹' + aov;
+                %>
+                <%= aovDisplay %>
               </div>
-              <div class="dash-value"><%= stats.totalAccounts %></div>
-              <div class="dash-label">Total Accounts</div>
-              <div class="dash-footer"><span class="text-muted fs-8">Admins + Users</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="col-sm-6 col-xl-4">
-          <div class="card dash-stat-card dash-gradient h-100">
-            <div class="card-body p-6 d-flex flex-column justify-content-between">
-              <div>
-                <div class="text-white fw-bold fs-5 mb-1">Quick Actions</div>
-                <div class="text-white opacity-75 fs-8 mb-4">Manage your store</div>
-              </div>
-              <div class="d-flex flex-column gap-2">
-                <a href="/admin/products/add" class="btn btn-sm btn-white text-dark fw-semibold w-100">+ Add Product</a>
-                <a href="/admin/categories" class="btn btn-sm btn-white text-dark fw-semibold w-100">+ Add Category</a>
+              <div class="dash-label">Avg Order Value</div>
+              <div class="dash-footer">
+                <span class="text-muted fs-8"><%= stats.cancelledOrders || 0 %> cancelled orders</span>
               </div>
             </div>
           </div>
         </div>
 
       </div>
+      <%# end KPI row %>
 
-      <!-- Tables Row -->
-      <div class="row g-5">
+      <%# ── Charts Row ──────────────────────────────────────── %>
+      <div class="row g-5 mb-6">
 
-        <!-- Recent Categories -->
-        <div class="col-xl-6">
-          <div class="card card-flush h-xl-100">
+        <%# Revenue Line Chart — 7 days %>
+        <div class="col-xl-8">
+          <div class="card card-flush h-100">
             <div class="card-header pt-5 border-0">
-              <h3 class="card-title fw-bold text-dark">Recent Categories</h3>
+              <h3 class="card-title fw-bold text-dark">Revenue — Last 7 Days</h3>
               <div class="card-toolbar">
-                <a href="/admin/categories" class="btn btn-sm btn-light-primary">View All</a>
+                <span class="text-muted fs-8 fw-semibold">Daily revenue from payments</span>
               </div>
             </div>
-            <div class="card-body py-3">
-              <div class="table-responsive">
-                <table class="table table-row-dashed align-middle gs-0 gy-3">
-                  <thead>
-                    <tr class="fw-bold text-muted fs-8 text-uppercase">
-                      <th class="ps-2">Image</th>
-                      <th>Name</th>
-                      <th class="text-center">Subs</th>
-                      <th>Created</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% if (stats.recentCategories && stats.recentCategories.length > 0) { %>
-                      <% stats.recentCategories.forEach(cat => { %>
-                        <tr>
-                          <td class="ps-2">
-                            <% if (cat.image) { %>
-                              <img src="<%= cat.image %>" alt="<%= cat.name %>" class="dash-thumb rounded" />
-                            <% } else { %>
-                              <div class="symbol symbol-40px">
-                                <div class="symbol-label bg-light-primary text-primary fw-bold fs-6">
-                                  <%= cat.name.charAt(0).toUpperCase() %>
-                                </div>
-                              </div>
-                            <% } %>
-                          </td>
-                          <td class="fw-semibold text-dark"><%= cat.name %></td>
-                          <td class="text-center"><span class="badge badge-light-primary"><%= cat.subCategories?.length || 0 %></span></td>
-                          <td class="text-muted fs-8"><%= new Date(cat.createdAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) %></td>
-                        </tr>
-                      <% }) %>
-                    <% } else { %>
-                      <tr><td colspan="4" class="text-center text-muted py-8">No categories yet</td></tr>
-                    <% } %>
-                  </tbody>
-                </table>
+            <div class="card-body pt-3">
+              <div style="position:relative;height:260px;width:100%">
+                <canvas id="revenueChart"></canvas>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Recent Users -->
-        <div class="col-xl-6">
-          <div class="card card-flush h-xl-100">
+        <%# Order Status Doughnut %>
+        <div class="col-xl-4">
+          <div class="card card-flush h-100">
             <div class="card-header pt-5 border-0">
-              <h3 class="card-title fw-bold text-dark">Recent Users</h3>
+              <h3 class="card-title fw-bold text-dark">Order Status</h3>
+            </div>
+            <div class="card-body pt-0">
+              <div style="position:relative;height:180px;width:100%;max-width:190px;margin:0 auto">
+                <canvas id="statusChart"></canvas>
+              </div>
+              <div class="mt-5" id="status-legend">
+                <% const statusColors = {PENDING:'#e94560',CONFIRMED:'#0f3460',SHIPPED:'#f39c12',DELIVERED:'#1a9e6e',CANCELLED:'#e74c3c'}; %>
+                <% Object.entries(stats.orderStatus || {}).forEach(([status, count]) => { %>
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="d-flex align-items-center gap-2 text-muted fs-8">
+                      <span style="width:9px;height:9px;border-radius:2px;background:<%= statusColors[status] || '#ccc' %>;display:inline-block;"></span>
+                      <%= status %>
+                    </span>
+                    <span class="fw-bold text-dark fs-8"><%= (count || 0).toLocaleString('en-IN') %></span>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <%# end charts row %>
+
+      <%# ── Bottom Row ──────────────────────────────────────── %>
+      <div class="row g-5">
+
+        <%# Recent Orders Table %>
+        <div class="col-xl-7">
+          <div class="card card-flush h-100">
+            <div class="card-header pt-5 border-0">
+              <h3 class="card-title fw-bold text-dark">Recent Orders</h3>
               <div class="card-toolbar">
-                <a href="/admin/users" class="btn btn-sm btn-light-primary">View All</a>
+                <a href="/admin/orders" class="btn btn-sm btn-light-primary">View All</a>
               </div>
             </div>
             <div class="card-body py-3">
@@ -205,31 +210,54 @@
                 <table class="table table-row-dashed align-middle gs-0 gy-3">
                   <thead>
                     <tr class="fw-bold text-muted fs-8 text-uppercase">
-                      <th class="ps-2">User</th>
-                      <th>Email</th>
-                      <th>Joined</th>
+                      <th class="ps-2">Customer</th>
+                      <th>Order ID</th>
+                      <th>Status</th>
+                      <th class="text-end pe-2">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% if (stats.recentUsers && stats.recentUsers.length > 0) { %>
-                      <% stats.recentUsers.filter(u => u.role !== 'ADMIN').forEach(user => { %>
+                    <% if (stats.recentOrdersFormatted && stats.recentOrdersFormatted.length > 0) { %>
+                      <% stats.recentOrdersFormatted.forEach(order => { %>
+                        <%
+                          const sMap = {
+                            PENDING:   {bg:'rgba(233,69,96,.1)',   color:'#e94560'},
+                            CONFIRMED: {bg:'rgba(15,52,96,.1)',    color:'#0f3460'},
+                            SHIPPED:   {bg:'rgba(243,156,18,.1)',  color:'#d4900a'},
+                            DELIVERED: {bg:'rgba(26,158,110,.1)',  color:'#1a9e6e'},
+                            CANCELLED: {bg:'rgba(231,76,60,.1)',   color:'#e74c3c'},
+                          };
+                          const st = sMap[order.status] || sMap['PENDING'];
+                          const initials = (order.userName || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+                          const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+                        %>
                         <tr>
                           <td class="ps-2">
                             <div class="d-flex align-items-center">
                               <div class="symbol symbol-35px me-3">
-                                <div class="symbol-label bg-light-primary text-primary fw-bold fs-7">
-                                  <%= user.name ? user.name.charAt(0).toUpperCase() : '?' %>
-                                </div>
+                                <div class="symbol-label bg-light-primary text-primary fw-bold fs-7"><%= initials %></div>
                               </div>
-                              <a href="/admin/users/<%= user.id %>" class="fw-semibold text-dark text-hover-primary"><%= user.name || 'N/A' %></a>
+                              <div>
+                                <span class="fw-semibold text-dark d-block fs-8"><%= order.userName %></span>
+                                <span class="text-muted fs-9"><%= dateStr %></span>
+                              </div>
                             </div>
                           </td>
-                          <td class="text-muted fs-8"><%= user.email %></td>
-                          <td class="text-muted fs-8"><%= new Date(user.createdAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) %></td>
+                          <td>
+                            <a href="/admin/orders/<%= order.id %>" class="text-dark fw-semibold text-hover-primary fs-8">#<%= order.id %></a>
+                          </td>
+                          <td>
+                            <span class="badge rounded-pill fw-semibold fs-9" style="background:<%= st.bg %>;color:<%= st.color %>;">
+                              <%= order.status %>
+                            </span>
+                          </td>
+                          <td class="text-end pe-2 fw-bold text-dark fs-8">
+                            ₹<%= (order.total || 0).toLocaleString('en-IN') %>
+                          </td>
                         </tr>
                       <% }) %>
                     <% } else { %>
-                      <tr><td colspan="3" class="text-center text-muted py-8">No users yet</td></tr>
+                      <tr><td colspan="4" class="text-center text-muted py-8">No orders yet</td></tr>
                     <% } %>
                   </tbody>
                 </table>
@@ -238,30 +266,199 @@
           </div>
         </div>
 
+        <%# Top Categories %>
+        <div class="col-xl-5">
+          <div class="card card-flush h-100">
+            <div class="card-header pt-5 border-0">
+              <h3 class="card-title fw-bold text-dark">Top Categories</h3>
+              <div class="card-toolbar">
+                <span class="text-muted fs-8">By items sold</span>
+              </div>
+            </div>
+            <div class="card-body pt-3">
+              <%
+                const catColors = ['#e94560','#0f3460','#1a9e6e','#f39c12','#9b59b6'];
+                const maxSold = stats.topCategories && stats.topCategories.length > 0
+                  ? Math.max(...stats.topCategories.map(c => c.sold), 1)
+                  : 1;
+              %>
+              <% if (stats.topCategories && stats.topCategories.length > 0) { %>
+                <% stats.topCategories.forEach((cat, i) => { %>
+                  <%
+                    const pct = Math.round((cat.sold / maxSold) * 100);
+                    const color = catColors[i % catColors.length];
+                  %>
+                  <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="fw-semibold text-dark fs-8"><%= cat.name %></span>
+                      <span class="text-muted fs-9"><%= cat.sold %> sold</span>
+                    </div>
+                    <div style="height:7px;background:#f0f2f5;border-radius:50px;overflow:hidden">
+                      <div style="width:<%= pct %>%;height:100%;background:<%= color %>;border-radius:50px"></div>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <div class="text-center text-muted py-8 fs-8">No sales data yet</div>
+              <% } %>
+
+              <%# Quick store vitals below categories %>
+              <div class="separator border-gray-200 my-5"></div>
+              <div class="d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted fs-8 fw-semibold">Total Categories</span>
+                  <span class="fw-bold text-dark fs-8"><%= stats.totalCategories %></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted fs-8 fw-semibold">Sub Categories</span>
+                  <span class="fw-bold text-dark fs-8"><%= stats.totalSubCategories %></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted fs-8 fw-semibold">Total Products</span>
+                  <span class="fw-bold text-dark fs-8"><%= stats.totalProducts %></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted fs-8 fw-semibold">New Users (month)</span>
+                  <span class="fw-bold text-dark fs-8" style="color:#1a9e6e">+<%= stats.newUsersThisMonth %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
+      <%# end bottom row %>
+
     </div>
   </div>
 </div>
 
+<%# ── Styles ─────────────────────────────────────────────── %>
 <style>
-.dash-stat-card { border-radius: 16px !important; border: 1px solid #eef0f4 !important; transition: transform 0.2s, box-shadow 0.2s !important; }
-.dash-stat-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.10) !important; }
-.dash-gradient { background: linear-gradient(135deg, #e94560 0%, #c73652 100%) !important; border: none !important; }
-.dash-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.dash-icon-primary { background: rgba(233,69,96,0.10); color: #e94560; }
-.dash-icon-info    { background: rgba(15,52,96,0.10);  color: #0f3460; }
-.dash-icon-warning { background: rgba(255,168,0,0.12); color: #d4900a; }
-.dash-icon-danger  { background: rgba(231,76,60,0.10); color: #e74c3c; }
-.dash-icon-success { background: rgba(26,158,110,0.10); color: #1a9e6e; }
-.dash-value { font-size: 2.2rem; font-weight: 800; color: #1a1a2e; line-height: 1.1; letter-spacing: -1px; }
-.dash-label { font-size: 0.78rem; font-weight: 700; color: #8a95a8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
-.dash-footer { border-top: 1px solid #f0f2f5; padding-top: 0.65rem; margin-top: 0.75rem; }
-.dash-link { font-size: 0.82rem; font-weight: 600; color: #e94560; text-decoration: none; }
+.dash-kpi {
+  border-radius: 16px !important;
+  border: 1px solid #eef0f4 !important;
+  transition: transform .2s, box-shadow .2s !important;
+}
+.dash-kpi:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.10) !important;
+}
+.dash-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dash-value {
+  font-size: 1.9rem; font-weight: 800; color: #1a1a2e;
+  line-height: 1.1; letter-spacing: -0.8px;
+}
+.dash-label {
+  font-size: 0.75rem; font-weight: 700; color: #8a95a8;
+  margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px;
+}
+.dash-footer {
+  border-top: 1px solid #f0f2f5;
+  padding-top: .65rem; margin-top: .75rem;
+}
+.dash-link {
+  font-size: .82rem; font-weight: 600;
+  color: #e94560; text-decoration: none;
+}
 .dash-link:hover { color: #c73652; }
-.dash-thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; }
 </style>
 
+<%# ── Scripts ────────────────────────────────────────────── %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const el = document.getElementById('dash-time');
-if (el) { const n = new Date(); el.textContent = n.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}); }
+// Timestamp
+const timeEl = document.getElementById('dash-time');
+if (timeEl) {
+  timeEl.textContent = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Revenue chart (data injected server-side) ─────────────
+const revenueLabels = <%- JSON.stringify(stats.revenueChart ? stats.revenueChart.labels : []) %>;
+const revenueData   = <%- JSON.stringify(stats.revenueChart ? stats.revenueChart.data : []) %>;
+
+(function buildRevenueChart() {
+  const ctx  = document.getElementById('revenueChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 260);
+  grad.addColorStop(0, 'rgba(233,69,96,.18)');
+  grad.addColorStop(1, 'rgba(233,69,96,0)');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: revenueLabels,
+      datasets: [{
+        label: 'Revenue (₹)',
+        data: revenueData,
+        borderColor: '#e94560',
+        backgroundColor: grad,
+        borderWidth: 2.5,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#e94560',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: v => '₹' + Number(v.raw).toLocaleString('en-IN')
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 12 }, color: '#a0aab8' }
+        },
+        y: {
+          grid: { color: '#f4f5f7' },
+          ticks: {
+            font: { size: 12 },
+            color: '#a0aab8',
+            callback: v => v >= 1000 ? '₹' + (v/1000).toFixed(0) + 'K' : '₹' + v
+          }
+        }
+      }
+    }
+  });
+})();
+
+// ── Order status doughnut (data injected server-side) ─────
+const statusData = <%- JSON.stringify(stats.orderStatus || {}) %>;
+
+(function buildStatusChart() {
+  const order  = ['PENDING','CONFIRMED','SHIPPED','DELIVERED','CANCELLED'];
+  const colors = ['#e94560','#0f3460','#f39c12','#1a9e6e','#e74c3c'];
+  const data   = order.map(s => statusData[s] || 0);
+
+  new Chart(document.getElementById('statusChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: order,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      cutout: '70%'
+    }
+  });
+})();
 </script>

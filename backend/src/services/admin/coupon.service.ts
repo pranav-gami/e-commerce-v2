@@ -7,8 +7,7 @@ import ApiError from "../../utils/ApiError";
 export const createCoupon = async (data: {
   code: string;
   discountPct: number;
-  categoryId: number;
-  usageLimit?: number | null;
+  usageLimit: number;
   expiresAt?: string | null;
   isActive?: boolean;
 }) => {
@@ -21,21 +20,14 @@ export const createCoupon = async (data: {
   const exists = await prisma.coupon.findUnique({ where: { code } });
   if (exists) throw new ApiError(409, "Coupon code already exists");
 
-  const category = await prisma.category.findUnique({
-    where: { id: data.categoryId },
-  });
-  if (!category) throw new ApiError(404, "Category not found");
-
   return prisma.coupon.create({
     data: {
       code,
       discountPct: data.discountPct,
-      categoryId: data.categoryId,
-      usageLimit: data.usageLimit ?? null,
+      usageLimit: data.usageLimit,
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       isActive: data.isActive ?? true,
     },
-    include: { category: { select: { id: true, name: true } } },
   });
 };
 
@@ -45,7 +37,6 @@ export const createCoupon = async (data: {
 export const getAllCoupons = async (params?: {
   page?: number;
   limit?: number;
-  categoryId?: number;
   isActive?: boolean;
 }) => {
   const page = Math.max(1, params?.page ?? 1);
@@ -53,17 +44,12 @@ export const getAllCoupons = async (params?: {
   const skip = (page - 1) * limit;
 
   const where: any = {};
-  if (params?.categoryId) where.categoryId = params.categoryId;
   if (params?.isActive !== undefined) where.isActive = params.isActive;
 
   const [total, coupons] = await Promise.all([
     prisma.coupon.count({ where }),
     prisma.coupon.findMany({
       where,
-      include: {
-        category: { select: { id: true, name: true } },
-        _count: { select: { usages: true } },
-      },
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
@@ -88,7 +74,6 @@ export const getCouponById = async (id: number) => {
   const coupon = await prisma.coupon.findUnique({
     where: { id },
     include: {
-      category: { select: { id: true, name: true } },
       usages: {
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { usedAt: "desc" },
@@ -108,7 +93,6 @@ export const updateCoupon = async (
   data: {
     code?: string;
     discountPct?: number;
-    categoryId?: number;
     usageLimit?: number | null;
     expiresAt?: string | null;
     isActive?: boolean;
@@ -131,26 +115,18 @@ export const updateCoupon = async (
       throw new ApiError(400, "Discount must be between 1 and 100 percent");
   }
 
-  if (data.categoryId) {
-    const category = await prisma.category.findUnique({
-      where: { id: data.categoryId },
-    });
-    if (!category) throw new ApiError(404, "Category not found");
-  }
-
   return prisma.coupon.update({
     where: { id },
     data: {
-      ...(data.code && { code: data.code }),
-      ...(data.discountPct !== undefined && { discountPct: data.discountPct }),
-      ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
-      ...(data.usageLimit !== undefined && { usageLimit: data.usageLimit }),
-      ...(data.expiresAt !== undefined && {
-        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-      }),
-      ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.code ? { code: data.code } : {}),
+      ...(data.discountPct !== undefined
+        ? { discountPct: data.discountPct }
+        : {}),
+      ...(data.expiresAt !== undefined
+        ? { expiresAt: data.expiresAt ? new Date(data.expiresAt) : null }
+        : {}),
+      ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
     },
-    include: { category: { select: { id: true, name: true } } },
   });
 };
 
@@ -173,6 +149,5 @@ export const toggleCouponStatus = async (id: number) => {
   return prisma.coupon.update({
     where: { id },
     data: { isActive: !coupon.isActive },
-    include: { category: { select: { id: true, name: true } } },
   });
 };

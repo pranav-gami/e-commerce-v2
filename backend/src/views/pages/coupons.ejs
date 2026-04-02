@@ -1,21 +1,45 @@
 <div class="d-flex flex-column flex-column-fluid">
-
   <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
-    <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
-      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+    <div
+      id="kt_app_toolbar_container"
+      class="app-container container-xxl d-flex flex-stack"
+    >
+      <div
+        class="page-title d-flex flex-column justify-content-center flex-wrap me-3"
+      >
+        <h1
+          class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
+        >
           Coupons
         </h1>
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-          <li class="breadcrumb-item text-muted"><a href="/admin" class="text-muted text-hover-primary">Home</a></li>
-          <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
+        <ul
+          class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1"
+        >
+          <li class="breadcrumb-item text-muted">
+            <a href="/admin" class="text-muted text-hover-primary">Home</a>
+          </li>
+          <li class="breadcrumb-item">
+            <span class="bullet bg-gray-400 w-5px h-2px"></span>
+          </li>
           <li class="breadcrumb-item text-muted">Coupons</li>
         </ul>
       </div>
       <div class="d-flex align-items-center gap-2">
         <a href="/admin/coupons/add" class="btn btn-sm btn-primary fw-semibold">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" style="vertical-align:-2px">
-            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="me-1"
+            style="vertical-align: -2px"
+          >
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            />
           </svg>
           Add Coupon
         </a>
@@ -25,22 +49,17 @@
 
   <div id="kt_app_content" class="app-content flex-column-fluid">
     <div id="kt_app_content_container" class="app-container container-xxl">
-
       <!-- Filters -->
       <div class="card mb-5">
         <div class="card-body py-4 d-flex flex-wrap gap-3 align-items-center">
-          <select id="filterCategory" class="form-select form-select-sm w-auto">
-            <option value="">All Categories</option>
-            <% categories.forEach(cat => { %>
-              <option value="<%= cat.id %>"><%= cat.name %></option>
-            <% }) %>
-          </select>
           <select id="filterStatus" class="form-select form-select-sm w-auto">
             <option value="">All Status</option>
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </select>
-          <button onclick="loadCoupons()" class="btn btn-sm btn-light-primary">Apply Filters</button>
+          <button onclick="loadCoupons()" class="btn btn-sm btn-light-danger">
+            Apply Filters
+          </button>
         </div>
       </div>
 
@@ -57,82 +76,88 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <script>
-async function loadCoupons() {
-  const categoryId = document.getElementById('filterCategory').value;
-  const isActive = document.getElementById('filterStatus').value;
+  async function loadCoupons() {
+    const isActive = document.getElementById("filterStatus").value;
 
-  const params = new URLSearchParams();
-  if (categoryId) params.append('categoryId', categoryId);
-  if (isActive !== '') params.append('isActive', isActive);
+    const params = new URLSearchParams();
+    if (isActive !== "") params.append("isActive", isActive);
 
-  try {
-    const res = await fetch(`/admin/coupons/list?${params}`, {
-      headers: { 'Accept': 'application/json' }
-    });
-    const json = await res.json();
-    const coupons = json.data?.coupons || [];
+    try {
+      const res = await fetch(`/admin/coupons/list?${params}`, {
+        headers: { Accept: "application/json" },
+      });
+      const json = await res.json();
+      const coupons = json.data?.coupons || [];
 
-    if (coupons.length === 0) {
-      document.getElementById('tableContainer').innerHTML = `
+      if (coupons.length === 0) {
+        document.getElementById("tableContainer").innerHTML = `
         <div class="text-center py-10 text-muted">No coupons found.</div>`;
-      return;
-    }
+        return;
+      }
 
-    const rows = coupons.map(c => {
-      const expired = c.expiresAt && new Date(c.expiresAt) < new Date();
-      const badge = c.isActive && !expired
-        ? `<span class="badge badge-light-success">Active</span>`
-        : `<span class="badge badge-light-danger">${expired ? 'Expired' : 'Inactive'}</span>`;
+      const now = new Date();
 
-      const expiry = c.expiresAt
-        ? new Date(c.expiresAt).toLocaleDateString('en-IN')
-        : '—';
+      const rows = coupons
+        .map((c) => {
+          const expired = c.expiresAt && new Date(c.expiresAt) < now;
 
-      const usage = c.usageLimit
-        ? `${c.usageCount} / ${c.usageLimit}`
-        : `${c.usageCount} / ∞`;
+          const badge =
+            c.isActive && !expired
+              ? `<span class="badge badge-light-success">Active</span>`
+              : `<span class="badge badge-light-danger">${expired ? "Expired" : "Inactive"}</span>`;
 
-      return `<tr>
+          const expiry = c.expiresAt
+            ? new Date(c.expiresAt).toLocaleDateString("en-IN")
+            : "—";
+
+          const usage = `${c.usageCount} / ${c.usageLimit}`;
+
+          return `
+      <tr>
         <td><span class="fw-bold text-primary font-monospace fs-6">${c.code}</span></td>
         <td><span class="badge badge-light-warning fs-7">${c.discountPct}% OFF</span></td>
-        <td>${c.category?.name || '—'}</td>
         <td>${usage}</td>
         <td>${expiry}</td>
         <td>${badge}</td>
         <td>
-          <a href="/admin/coupons/${c.id}/edit" class="btn btn-sm btn-icon btn-light-primary me-1" title="Edit">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </a>
-          <button onclick="toggleStatus(${c.id})" class="btn btn-sm btn-icon btn-light-warning me-1" title="${c.isActive ? 'Deactivate' : 'Activate'}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-          </button>
-          <button onclick="deleteCoupon(${c.id}, '${c.code}')" class="btn btn-sm btn-icon btn-light-danger" title="Delete">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-            </svg>
-          </button>
-        </td>
-      </tr>`;
-    }).join('');
+  <button href="/admin/coupons/${c.id}/edit" class="btn btn-sm btn-icon btn-light-danger" title="Edit">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  </button>
 
-    document.getElementById('tableContainer').innerHTML = `
+  <button onclick="toggleStatus(${c.id})" class="btn btn-sm btn-icon btn-light-warning me-1" title="${c.isActive ? "Deactivate" : "Activate"}">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  </button>
+
+  <button onclick="deleteCoupon(${c.id}, '${c.code}')" class="btn btn-sm btn-icon btn-light-danger" title="Delete">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+      <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+    </svg>
+  </button>
+</td>
+      </tr>`;
+        })
+        .join("");
+
+      document.getElementById("tableContainer").innerHTML = `
       <table class="table table-row-dashed table-row-gray-200 align-middle gs-0 gy-4">
         <thead>
           <tr class="border-0">
             <th class="text-muted fw-bold text-uppercase fs-8">Code</th>
             <th class="text-muted fw-bold text-uppercase fs-8">Discount</th>
-            <th class="text-muted fw-bold text-uppercase fs-8">Category</th>
             <th class="text-muted fw-bold text-uppercase fs-8">Usage</th>
             <th class="text-muted fw-bold text-uppercase fs-8">Expires</th>
             <th class="text-muted fw-bold text-uppercase fs-8">Status</th>
@@ -141,37 +166,45 @@ async function loadCoupons() {
         </thead>
         <tbody>${rows}</tbody>
       </table>`;
-  } catch (err) {
-    document.getElementById('tableContainer').innerHTML =
-      `<div class="text-center py-10 text-danger">Failed to load coupons.</div>`;
+    } catch (err) {
+      document.getElementById("tableContainer").innerHTML =
+        `<div class="text-center py-10 text-danger">Failed to load coupons.</div>`;
+    }
   }
-}
 
-async function toggleStatus(id) {
-  if (!confirm('Toggle this coupon\'s status?')) return;
-  try {
-    const res = await fetch(`/admin/coupons/${id}/toggle`, {
-      method: 'PATCH',
-      headers: { 'Accept': 'application/json' }
-    });
-    const json = await res.json();
-    if (json.success) loadCoupons();
-    else alert(json.message || 'Failed');
-  } catch { alert('Error toggling status'); }
-}
+  async function toggleStatus(id) {
+    if (!confirm("Toggle this coupon's status?")) return;
 
-async function deleteCoupon(id, code) {
-  if (!confirm(`Delete coupon "${code}"? This cannot be undone.`)) return;
-  try {
-    const res = await fetch(`/admin/coupons/${id}`, {
-      method: 'DELETE',
-      headers: { 'Accept': 'application/json' }
-    });
-    const json = await res.json();
-    if (json.success) loadCoupons();
-    else alert(json.message || 'Failed');
-  } catch { alert('Error deleting coupon'); }
-}
+    try {
+      const res = await fetch(`/admin/coupons/${id}/toggle`, {
+        method: "PATCH",
+        headers: { Accept: "application/json" },
+      });
 
-loadCoupons();
+      const json = await res.json();
+      if (json.success) loadCoupons();
+      else alert(json.message || "Failed");
+    } catch {
+      alert("Error toggling status");
+    }
+  }
+
+  async function deleteCoupon(id, code) {
+    if (!confirm(`Delete coupon "${code}"? This cannot be undone.`)) return;
+
+    try {
+      const res = await fetch(`/admin/coupons/${id}`, {
+        method: "DELETE",
+        headers: { Accept: "application/json" },
+      });
+
+      const json = await res.json();
+      if (json.success) loadCoupons();
+      else alert(json.message || "Failed");
+    } catch {
+      alert("Error deleting coupon");
+    }
+  }
+
+  loadCoupons();
 </script>

@@ -15,9 +15,6 @@ export const getCouponsPage = catchAsyncHandler(
       const result = await couponService.getAllCoupons({
         page: req.query.page ? Number(req.query.page) : 1,
         limit: req.query.limit ? Number(req.query.limit) : 20,
-        categoryId: req.query.categoryId
-          ? Number(req.query.categoryId)
-          : undefined,
         isActive:
           req.query.isActive !== undefined
             ? req.query.isActive === "true"
@@ -27,12 +24,10 @@ export const getCouponsPage = catchAsyncHandler(
     }
 
     const admin = await adminService.getCurrentAdmin(req.user?.id!);
-    const categories = await categoryService.getAllCategories();
     res.render("pages/coupons", {
       page: "coupons",
       title: "Coupons",
       admin,
-      categories,
     });
   },
 );
@@ -43,12 +38,10 @@ export const getCouponsPage = catchAsyncHandler(
 export const getAddCouponPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const admin = await adminService.getCurrentAdmin(req.user?.id!);
-    const categories = await categoryService.getAllCategories();
     res.render("pages/coupon-form", {
       page: "coupons",
       title: "Add Coupon",
       admin,
-      categories,
       editMode: false,
       coupon: null,
     });
@@ -61,13 +54,11 @@ export const getAddCouponPage = catchAsyncHandler(
 export const getEditCouponPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const admin = await adminService.getCurrentAdmin(req.user?.id!);
-    const categories = await categoryService.getAllCategories();
     const coupon = await couponService.getCouponById(Number(req.params.id));
     res.render("pages/coupon-form", {
       page: "coupons",
       title: "Edit Coupon",
       admin,
-      categories,
       editMode: true,
       coupon,
     });
@@ -79,18 +70,16 @@ export const getEditCouponPage = catchAsyncHandler(
 // ─────────────────────────────────────────────
 export const createCoupon = catchAsyncHandler(
   async (req: Request, res: Response) => {
-    const { code, discountPct, categoryId, usageLimit, expiresAt, isActive } =
-      req.body;
+    const { code, discountPct, usageLimit, expiresAt, isActive } = req.body;
 
     if (!code) throw new ApiError(400, "Coupon code is required");
     if (!discountPct) throw new ApiError(400, "Discount percent is required");
-    if (!categoryId) throw new ApiError(400, "Category is required");
+    if (!usageLimit) throw new ApiError(400, "Usage Limit is required");
 
     const data = await couponService.createCoupon({
       code,
       discountPct: Number(discountPct),
-      categoryId: Number(categoryId),
-      usageLimit: usageLimit ? Number(usageLimit) : null,
+      usageLimit: Number(usageLimit),
       expiresAt: expiresAt || null,
       isActive:
         isActive !== undefined
@@ -110,9 +99,6 @@ export const getAllCoupons = catchAsyncHandler(
     const result = await couponService.getAllCoupons({
       page: req.query.page ? Number(req.query.page) : 1,
       limit: req.query.limit ? Number(req.query.limit) : 20,
-      categoryId: req.query.categoryId
-        ? Number(req.query.categoryId)
-        : undefined,
       isActive:
         req.query.isActive !== undefined
           ? req.query.isActive === "true"
@@ -137,14 +123,12 @@ export const getCouponById = catchAsyncHandler(
 // ─────────────────────────────────────────────
 export const updateCoupon = catchAsyncHandler(
   async (req: Request, res: Response) => {
-    const { code, discountPct, categoryId, usageLimit, expiresAt, isActive } =
-      req.body;
+    const { code, discountPct, usageLimit, expiresAt, isActive } = req.body;
     const data = await couponService.updateCoupon(Number(req.params.id), {
       ...(code && { code }),
       ...(discountPct !== undefined && { discountPct: Number(discountPct) }),
-      ...(categoryId !== undefined && { categoryId: Number(categoryId) }),
       ...(usageLimit !== undefined && {
-        usageLimit: usageLimit ? Number(usageLimit) : null,
+        usageLimit: usageLimit && Number(usageLimit),
       }),
       ...(expiresAt !== undefined && { expiresAt }),
       ...(isActive !== undefined && {

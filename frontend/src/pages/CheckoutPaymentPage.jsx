@@ -31,11 +31,7 @@ const CheckoutPaymentPage = () => {
       {/* Stepper bar */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/">
-            <span className="text-2xl font-extrabold text-primary">Shop</span>
-            <span className="text-2xl font-extrabold text-gray-800">.in</span>
-          </Link>
-
+          <div className="w-28" />
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
             <Link
               to="/cart"
@@ -44,19 +40,14 @@ const CheckoutPaymentPage = () => {
               BAG
             </Link>
             <span className="text-gray-300">──────</span>
-            <Link
-              to="/checkout/address"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              ADDRESS
-            </Link>
+            <span className="text-gray-400">ADDRESS</span>
+
             <span className="text-gray-300">──────</span>
             <span className="text-primary border-b-2 border-primary pb-0.5">
               PAYMENT
             </span>
           </div>
-
-          <div className="flex items-center gap-1.5 text-xs font-bold text-green-600">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 w-28 justify-end">
             <svg
               width="14"
               height="14"

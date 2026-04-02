@@ -480,7 +480,11 @@ div.dataTables_wrapper .dataTables_length select {
   color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(233, 69, 96, 0.25) !important;
 }
-
+.btn-btn-light-primary:hover {
+  background-color: #e94560 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.25) !important;
+}
 .btn-success {
   background: linear-gradient(135deg, #1a9e6e 0%, #157a55 100%) !important;
   border: none !important;

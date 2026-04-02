@@ -9,14 +9,6 @@ import {
   resetCoupon,
 } from "../redux/slices/couponSlice";
 
-/*
-  Drop-in replacement for your existing PaymentGateway.
-  The ONLY change vs the original:
-    - Reads appliedCoupon from Redux
-    - Passes couponCode to /payment/create-order
-    - Dispatches resetCoupon() after successful payment
-*/
-
 const loadRazorpay = () =>
   new Promise((resolve) => {
     if (window.Razorpay) return resolve(true);

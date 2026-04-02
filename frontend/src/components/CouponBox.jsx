@@ -11,7 +11,7 @@ import {
   selectCouponError,
   selectAvailableCoupons,
 } from "../redux/slices/couponSlice";
-
+import { selectCartItems } from "../redux/slices/cartSlice";
 const formatPrice = (price) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -30,8 +30,19 @@ const CouponBox = () => {
 
   const [code, setCode] = useState("");
   const [showAvailable, setShowAvailable] = useState(false);
-
+  const cartItems = useAppSelector(selectCartItems);
   // Load available coupons when box mounts
+
+  useEffect(() => {
+    if (!appliedCoupon) return;
+
+    const timer = setTimeout(() => {
+      dispatch(validateCoupon(appliedCoupon.code));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [cartItems]);
+
   useEffect(() => {
     dispatch(fetchAvailableCoupons());
   }, [dispatch]);

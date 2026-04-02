@@ -34,6 +34,12 @@ const ShoppingCart = () => {
     }
   }, [isCartOpen, cartItems, cartTotal]);
 
+  // Lock body scroll while drawer is open
+  useEffect(() => {
+    document.body.style.overflow = isCartOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isCartOpen]);
+
   const handleRemove = (cartItemId) => {
     dispatch(removeFromCart(cartItemId));
     trackRemoveFromCart(cartItemId);
@@ -55,112 +61,152 @@ const ShoppingCart = () => {
 
   return (
     <>
+      {/* ── BACKDROP ── */}
       <div
-        className="overlay"
+        className="fixed inset-0 bg-black/40 z-[1000]"
         onClick={() => dispatch(setCartOpen(false))}
-      ></div>
-      <div className="cart-drawer">
-        <div className="cart-header">
-          <h2>Shopping Cart</h2>
+      />
+
+      {/* ── DRAWER ──
+          Full-screen on mobile, fixed-width sidebar on sm+ */}
+      <div
+        className="
+          fixed z-[1001] bg-white flex flex-col
+          inset-0
+          sm:inset-auto sm:top-0 sm:right-0 sm:h-full sm:w-[420px]
+          shadow-2xl
+        "
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-[#eaeaec] flex-shrink-0">
+          <h2 className="text-base sm:text-lg font-bold text-[#282c3f] m-0">
+            Shopping Bag
+            {cartItems.length > 0 && (
+              <span className="ml-2 text-sm font-normal text-[#94969f]">
+                ({cartItems.length} {cartItems.length === 1 ? "item" : "items"})
+              </span>
+            )}
+          </h2>
           <button
-            className="close-btn"
             onClick={() => dispatch(setCartOpen(false))}
+            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#f5f5f6] transition-colors bg-transparent border-none cursor-pointer text-[#282c3f]"
+            aria-label="Close cart"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        <div className="cart-body">
+        {/* Body – scrollable */}
+        <div className="flex-1 overflow-y-auto">
           {cartItems.length === 0 ? (
-            <div className="empty-cart">
-              <svg
-                width="80"
-                height="80"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1"
-              >
+            <div className="flex flex-col items-center justify-center h-full gap-4 px-6 text-center py-16">
+              <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#d4d5d9" strokeWidth="1">
                 <circle cx="9" cy="21" r="1" />
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
               </svg>
-              <p>Your cart is empty</p>
+              <p className="text-[#282c3f] font-bold text-base m-0">Your bag is empty</p>
+              <p className="text-[#94969f] text-sm m-0">Add items to it now</p>
+              <button
+                onClick={() => dispatch(setCartOpen(false))}
+                className="mt-2 px-8 py-2.5 bg-[#ff3f6c] text-white font-bold text-sm rounded hover:bg-[#e8365d] transition-colors border-none cursor-pointer"
+              >
+                Shop Now
+              </button>
             </div>
           ) : (
-            <div className="cart-items">
+            <ul className="divide-y divide-[#f0f0f0] m-0 p-0 list-none">
               {cartItems.map((item) => (
-                <div key={item.cartItemId} className="cart-item">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="cart-item-image"
-                  />
-                  <div className="cart-item-info">
-                    <h4>{item.name}</h4>
-                    <p className="cart-item-price">{formatPrice(item.price)}</p>
-                    <div className="cart-item-actions">
-                      <div className="quantity-controls">
+                <li key={item.cartItemId} className="flex gap-3 px-4 sm:px-5 py-4">
+                  {/* Product image */}
+                  <div className="w-20 h-24 sm:w-24 sm:h-28 flex-shrink-0 rounded overflow-hidden bg-[#f5f5f6]">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <p className="text-[13px] sm:text-sm font-bold text-[#282c3f] m-0 leading-snug line-clamp-2">
+                        {item.name}
+                      </p>
+                      <p className="text-[13px] sm:text-sm font-bold text-[#282c3f] mt-1 m-0">
+                        {formatPrice(item.price)}
+                      </p>
+                    </div>
+
+                    {/* Qty + Remove row */}
+                    <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                      {/* Quantity stepper */}
+                      <div className="flex items-center border border-[#d4d5d9] rounded overflow-hidden">
                         <button
                           onClick={() =>
-                            dispatch(
-                              updateQuantity({
-                                cartItemId: item.cartItemId,
-                                quantity: item.quantity - 1,
-                              }),
-                            )
+                            dispatch(updateQuantity({
+                              cartItemId: item.cartItemId,
+                              quantity: item.quantity - 1,
+                            }))
                           }
-                          className="qty-btn"
+                          className="w-8 h-8 flex items-center justify-center bg-transparent border-none cursor-pointer text-[#282c3f] text-lg font-bold hover:bg-[#f5f5f6] transition-colors"
+                          aria-label="Decrease quantity"
                         >
-                          -
+                          −
                         </button>
-                        <span className="quantity">{item.quantity}</span>
+                        <span className="w-8 text-center text-[13px] font-bold text-[#282c3f] select-none">
+                          {item.quantity}
+                        </span>
                         <button
                           onClick={() =>
-                            dispatch(
-                              updateQuantity({
-                                cartItemId: item.cartItemId,
-                                quantity: item.quantity + 1,
-                              }),
-                            )
+                            dispatch(updateQuantity({
+                              cartItemId: item.cartItemId,
+                              quantity: item.quantity + 1,
+                            }))
                           }
-                          className="qty-btn"
+                          className="w-8 h-8 flex items-center justify-center bg-transparent border-none cursor-pointer text-[#282c3f] text-lg font-bold hover:bg-[#f5f5f6] transition-colors"
+                          aria-label="Increase quantity"
                         >
                           +
                         </button>
                       </div>
+
+                      {/* Remove */}
                       <button
                         onClick={() => handleRemove(item.cartItemId)}
-                        className="remove-btn"
+                        className="text-[12px] font-semibold text-[#ff3f6c] bg-transparent border-none cursor-pointer hover:underline p-0"
                       >
                         Remove
                       </button>
                     </div>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
 
+        {/* Footer – sticky checkout bar */}
         {cartItems.length > 0 && (
-          <div className="cart-footer">
-            <div className="cart-total">
-              <span>Subtotal:</span>
-              <span className="total-amount">{formatPrice(cartTotal)}</span>
+          <div className="flex-shrink-0 border-t border-[#eaeaec] bg-white px-4 sm:px-5 py-4 space-y-3">
+            {/* Price summary */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[#535766] font-medium">Subtotal</span>
+              <span className="text-base font-bold text-[#282c3f]">{formatPrice(cartTotal)}</span>
             </div>
-            <button className="btn btn-primary btn-lg" onClick={handleCheckout}>
-              Proceed to Checkout
+            <p className="text-[11px] text-[#94969f] m-0">
+              Shipping &amp; taxes calculated at checkout
+            </p>
+
+            {/* CTA */}
+            <button
+              onClick={handleCheckout}
+              className="w-full py-3.5 bg-[#ff3f6c] text-white font-bold text-sm rounded hover:bg-[#e8365d] active:scale-[0.98] transition-all border-none cursor-pointer tracking-wide"
+            >
+              PROCEED TO CHECKOUT
             </button>
           </div>
         )}

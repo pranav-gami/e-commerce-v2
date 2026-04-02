@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PaymentGateway from "../components/PaymentGateway";
 import MoveToWishlistToast from "../components/MoveToWishlistToast";
-import CouponBox from "../components/CouponBox"; // ← NEW
+import CouponBox from "../components/CouponBox";
 import api, { BACKEND_URL } from "../utils/api";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
@@ -15,9 +15,9 @@ import {
   clearCart,
 } from "../redux/slices/cartSlice";
 import {
-  selectAppliedCoupon, // ← NEW
-  selectCouponDiscount, // ← NEW
-} from "../redux/slices/couponSlice"; // ← NEW
+  selectAppliedCoupon,
+  selectCouponDiscount,
+} from "../redux/slices/couponSlice";
 import { addToWishlist } from "../redux/slices/wishlistSlice";
 
 const CartPage = () => {
@@ -27,7 +27,6 @@ const CartPage = () => {
   const subtotal = useAppSelector(selectCartTotal);
   const user = useAppSelector(selectUser);
 
-  // Coupon state
   const appliedCoupon = useAppSelector(selectAppliedCoupon);
   const couponDiscount = useAppSelector(selectCouponDiscount);
 
@@ -55,8 +54,7 @@ const CartPage = () => {
         let related = allProducts.filter(
           (p) =>
             !cartProductIds.has(p.id) &&
-            (cartCategoryIds.has(p.subCategoryId) ||
-              cartCategoryIds.size === 0),
+            (cartCategoryIds.has(p.subCategoryId) || cartCategoryIds.size === 0),
         );
         if (related.length < 4)
           related = allProducts.filter((p) => !cartProductIds.has(p.id));
@@ -81,16 +79,13 @@ const CartPage = () => {
     }
   };
 
-  const handleQuantityDecrease = async (item) => {
+  const handleQuantityDecrease = (item) => {
     if (item.quantity <= 1) {
       setWishlistToast(item);
       dispatch(removeFromCart(item.cartItemId));
     } else {
       dispatch(
-        updateQuantity({
-          cartItemId: item.cartItemId,
-          quantity: item.quantity - 1,
-        }),
+        updateQuantity({ cartItemId: item.cartItemId, quantity: item.quantity - 1 }),
       );
     }
   };
@@ -120,126 +115,106 @@ const CartPage = () => {
     0,
   );
 
-  // Total after product discounts AND coupon discount
   const finalTotal = Math.max(0, subtotal - couponDiscount);
 
   return (
     <div className="bg-brand-light min-h-screen">
-      {/* Top stepper bar */}
+
+      {/* ── Top stepper bar ── */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="w-28" />
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-            <Link
-              to="/cart"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <span className="text-primary border-b-2 border-primary pb-0.5">
-                BAG
-              </span>
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between">
+          {/* Hide spacer on mobile to save room */}
+          <div className="hidden sm:block w-28" />
+
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+            <Link to="/cart" className="text-gray-400 hover:text-gray-600 transition-colors">
+              <span className="text-primary border-b-2 border-primary pb-0.5">BAG</span>
             </Link>
-            <span className="text-gray-300">──────</span>
+            <span className="text-gray-300 hidden xs:inline">──</span>
+            <span className="text-gray-300 hidden sm:inline">────</span>
             <span className="text-gray-400">ADDRESS</span>
-            <span className="text-gray-300">──────</span>
+            <span className="text-gray-300 hidden xs:inline">──</span>
+            <span className="text-gray-300 hidden sm:inline">────</span>
             <span className="text-gray-400">PAYMENT</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 w-28 justify-end">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
+
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-bold text-green-600 sm:w-28 justify-end">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
-            100% SECURE
+            <span className="hidden xs:inline">100%</span> SECURE
           </div>
         </div>
       </div>
 
-      <div className="max-w-screen-xl mx-auto px-4 py-6">
+      <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+
+        {/* ── Empty state ── */}
         {cartItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded shadow-sm">
-            <div className="w-20 h-20 bg-brand-light rounded-full flex items-center justify-center mb-5">
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#94969f"
-                strokeWidth="1.2"
-              >
+          <div className="flex flex-col items-center justify-center py-16 sm:py-24 text-center bg-white rounded shadow-sm mx-0 sm:mx-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-brand-light rounded-full flex items-center justify-center mb-4 sm:mb-5">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="1.2" className="sm:w-10 sm:h-10">
                 <circle cx="9" cy="21" r="1" />
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
               </svg>
             </div>
-            <h2 className="text-xl font-extrabold text-brand-dark">
-              Hey, it feels so light!
-            </h2>
-            <p className="text-brand-gray mt-1 text-sm">
-              There is nothing in your bag. Let's add some items.
-            </p>
-            <Link
-              to="/products"
-              className="mt-6 bg-primary text-white px-8 py-3 text-sm font-bold hover:bg-primary-hover transition-colors rounded-sm tracking-wider"
-            >
+            <h2 className="text-lg sm:text-xl font-extrabold text-brand-dark">Hey, it feels so light!</h2>
+            <p className="text-brand-gray mt-1 text-sm">There is nothing in your bag. Let's add some items.</p>
+            <Link to="/products" className="mt-5 sm:mt-6 bg-primary text-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm font-bold hover:bg-primary-hover transition-colors rounded-sm tracking-wider">
               START SHOPPING
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+
             {/* ── Cart Items ── */}
-            <div className="flex-1">
-              {/* Column headers */}
-              <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-white rounded-t border border-brand-border text-xs font-extrabold text-brand-gray uppercase tracking-wider">
+            <div className="flex-1 min-w-0">
+
+              {/* Desktop column headers */}
+              <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-white rounded-t border border-brand-border text-xs font-extrabold text-brand-gray uppercase tracking-wider">
                 <span>Product</span>
                 <span className="text-center">Price</span>
                 <span className="text-center">Quantity</span>
                 <span className="text-center">Subtotal</span>
                 <span>
-                  <button
-                    onClick={() => dispatch(clearCart())}
-                    className="text-red-400 hover:text-red-600 font-bold text-xs"
-                  >
+                  <button onClick={() => dispatch(clearCart())} className="text-red-400 hover:text-red-600 font-bold text-xs">
                     Remove All
                   </button>
                 </span>
               </div>
 
+              {/* Mobile: "Remove All" header */}
+              <div className="flex md:hidden items-center justify-between px-3 py-2 bg-white rounded-t border border-brand-border">
+                <span className="text-xs font-extrabold text-brand-gray uppercase tracking-wider">
+                  {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
+                </span>
+                <button onClick={() => dispatch(clearCart())} className="text-red-400 hover:text-red-600 font-bold text-xs">
+                  Remove All
+                </button>
+              </div>
+
               <div className="border border-t-0 border-brand-border rounded-b bg-white divide-y divide-brand-border">
                 {cartItems.map((item) => {
-                  const discountedPrice =
-                    item.price - (item.price * (item.discount || 0)) / 100;
-                  const alreadyWishlisted = wishlistItems.some(
-                    (w) => w.id === item.id,
-                  );
+                  const discountedPrice = item.price - (item.price * (item.discount || 0)) / 100;
+                  const alreadyWishlisted = wishlistItems.some((w) => w.id === item.id);
+
                   return (
-                    <div key={item.cartItemId} className="p-4">
-                      <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
+                    <div key={item.cartItemId} className="p-3 sm:p-4">
+
+                      {/* ── Desktop row (md+) ── */}
+                      <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
                         {/* Product */}
                         <div className="flex items-start gap-3">
                           <div
                             className="w-20 h-24 flex-shrink-0 bg-brand-light rounded overflow-hidden cursor-pointer"
-                            onClick={() =>
-                              navigate(`/products/${item.id || item.productId}`)
-                            }
+                            onClick={() => navigate(`/products/${item.id || item.productId}`)}
                           >
-                            <img
-                              src={item.image || "/placeholder.png"}
-                              alt={item.name}
-                              className="w-full h-full object-cover hover:scale-105 transition-transform"
-                            />
+                            <img src={item.image || "/placeholder.png"} alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4
-                              onClick={() =>
-                                navigate(
-                                  `/products/${item.id || item.productId}`,
-                                )
-                              }
+                              onClick={() => navigate(`/products/${item.id || item.productId}`)}
                               className="text-sm font-bold text-brand-dark cursor-pointer hover:text-primary transition-colors line-clamp-2"
                             >
                               {item.name}
@@ -251,70 +226,30 @@ const CartPage = () => {
                             )}
                           </div>
                         </div>
-
                         {/* Price */}
                         <div className="text-center">
-                          <p className="text-sm font-bold text-brand-dark">
-                            {formatPrice(discountedPrice)}
-                          </p>
-                          {item.discount > 0 && (
-                            <p className="text-xs text-brand-gray line-through">
-                              {formatPrice(item.price)}
-                            </p>
-                          )}
+                          <p className="text-sm font-bold text-brand-dark">{formatPrice(discountedPrice)}</p>
+                          {item.discount > 0 && <p className="text-xs text-brand-gray line-through">{formatPrice(item.price)}</p>}
                         </div>
-
                         {/* Quantity */}
                         <div className="flex justify-center">
                           <div className="flex items-center border border-brand-border rounded overflow-hidden">
+                            <button onClick={() => handleQuantityDecrease(item)} className="w-8 h-8 flex items-center justify-center text-brand-gray hover:bg-brand-light hover:text-primary transition-colors text-lg font-bold">−</button>
+                            <span className="w-8 h-8 flex items-center justify-center text-sm font-bold text-brand-dark border-x border-brand-border">{item.quantity}</span>
                             <button
-                              onClick={() => handleQuantityDecrease(item)}
-                              className="w-8 h-8 flex items-center justify-center text-brand-gray hover:bg-brand-light hover:text-primary transition-colors text-lg font-bold"
-                            >
-                              −
-                            </button>
-                            <span className="w-8 h-8 flex items-center justify-center text-sm font-bold text-brand-dark border-x border-brand-border">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() =>
-                                dispatch(
-                                  updateQuantity({
-                                    cartItemId: item.cartItemId,
-                                    quantity: item.quantity + 1,
-                                  }),
-                                )
-                              }
+                              onClick={() => dispatch(updateQuantity({ cartItemId: item.cartItemId, quantity: item.quantity + 1 }))}
                               disabled={item.quantity >= item.stock}
                               className="w-8 h-8 flex items-center justify-center text-brand-gray hover:bg-brand-light hover:text-primary transition-colors disabled:opacity-40 text-lg font-bold"
-                            >
-                              +
-                            </button>
+                            >+</button>
                           </div>
                         </div>
-
                         {/* Subtotal */}
                         <div className="text-center">
-                          <p className="text-sm font-bold text-brand-dark">
-                            {formatPrice(discountedPrice * item.quantity)}
-                          </p>
+                          <p className="text-sm font-bold text-brand-dark">{formatPrice(discountedPrice * item.quantity)}</p>
                         </div>
-
                         {/* Remove */}
-                        <button
-                          onClick={() =>
-                            dispatch(removeFromCart(item.cartItemId))
-                          }
-                          className="flex items-center gap-1 text-xs text-brand-gray hover:text-red-500 transition-colors font-semibold"
-                        >
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
+                        <button onClick={() => dispatch(removeFromCart(item.cartItemId))} className="flex items-center gap-1 text-xs text-brand-gray hover:text-red-500 transition-colors font-semibold">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polyline points="3 6 5 6 21 6" />
                             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
                             <path d="M10 11v6M14 11v6M9 6V4h6v2" />
@@ -323,32 +258,75 @@ const CartPage = () => {
                         </button>
                       </div>
 
-                      {/* Move to Wishlist */}
-                      <div className="mt-2 ml-[92px]">
+                      {/* ── Mobile row (< md) ── */}
+                      <div className="flex md:hidden gap-3">
+                        {/* Image */}
+                        <div
+                          className="w-20 h-24 flex-shrink-0 bg-brand-light rounded overflow-hidden cursor-pointer"
+                          onClick={() => navigate(`/products/${item.id || item.productId}`)}
+                        >
+                          <img src={item.image || "/placeholder.png"} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <h4
+                            onClick={() => navigate(`/products/${item.id || item.productId}`)}
+                            className="text-sm font-bold text-brand-dark cursor-pointer hover:text-primary transition-colors line-clamp-2"
+                          >
+                            {item.name}
+                          </h4>
+
+                          {/* Price row */}
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-sm font-bold text-brand-dark">{formatPrice(discountedPrice)}</span>
+                            {item.discount > 0 && (
+                              <>
+                                <span className="text-xs text-brand-gray line-through">{formatPrice(item.price)}</span>
+                                <span className="text-[10px] font-bold bg-primary-light text-primary px-1.5 py-0.5 rounded-sm">{item.discount}% OFF</span>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Quantity + Remove row */}
+                          <div className="flex items-center justify-between mt-2.5">
+                            <div className="flex items-center border border-brand-border rounded overflow-hidden">
+                              <button onClick={() => handleQuantityDecrease(item)} className="w-7 h-7 flex items-center justify-center text-brand-gray hover:text-primary text-base font-bold">−</button>
+                              <span className="w-7 h-7 flex items-center justify-center text-sm font-bold text-brand-dark border-x border-brand-border">{item.quantity}</span>
+                              <button
+                                onClick={() => dispatch(updateQuantity({ cartItemId: item.cartItemId, quantity: item.quantity + 1 }))}
+                                disabled={item.quantity >= item.stock}
+                                className="w-7 h-7 flex items-center justify-center text-brand-gray hover:text-primary disabled:opacity-40 text-base font-bold"
+                              >+</button>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-bold text-brand-dark">{formatPrice(discountedPrice * item.quantity)}</span>
+                              <button onClick={() => dispatch(removeFromCart(item.cartItemId))} className="text-brand-gray hover:text-red-500 transition-colors">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                  <path d="M10 11v6M14 11v6M9 6V4h6v2" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Move to Wishlist (both layouts) */}
+                      <div className="mt-2 md:ml-[92px]">
                         <button
                           onClick={() => handleDirectMoveToWishlist(item)}
-                          className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${
-                            alreadyWishlisted
-                              ? "text-primary cursor-default"
-                              : "text-brand-gray hover:text-primary"
-                          }`}
                           disabled={alreadyWishlisted}
+                          className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${
+                            alreadyWishlisted ? "text-primary cursor-default" : "text-brand-gray hover:text-primary"
+                          }`}
                         >
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill={alreadyWishlisted ? "#ff3f6c" : "none"}
-                            stroke={
-                              alreadyWishlisted ? "#ff3f6c" : "currentColor"
-                            }
-                            strokeWidth="2"
-                          >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill={alreadyWishlisted ? "#ff3f6c" : "none"} stroke={alreadyWishlisted ? "#ff3f6c" : "currentColor"} strokeWidth="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                           </svg>
-                          {alreadyWishlisted
-                            ? "Already in Wishlist"
-                            : "Move to Wishlist"}
+                          {alreadyWishlisted ? "Already in Wishlist" : "Move to Wishlist"}
                         </button>
                       </div>
                     </div>
@@ -356,23 +334,22 @@ const CartPage = () => {
                 })}
               </div>
 
-              {/* ── Coupon Box (below cart items) ── */}
+              {/* Coupon Box */}
               <div className="mt-4">
                 <CouponBox />
               </div>
             </div>
 
-            {/* ── Summary ── */}
+            {/* ── Price Summary ── */}
             <div className="lg:w-80 flex-shrink-0">
-              <div className="bg-white border border-brand-border rounded shadow-sm sticky top-20">
+              <div className="bg-white border border-brand-border rounded shadow-sm lg:sticky lg:top-20">
                 <div className="p-4 border-b border-brand-border">
-                  <h3 className="text-sm font-extrabold text-brand-gray uppercase tracking-wider">
-                    Price Details
-                  </h3>
+                  <h3 className="text-sm font-extrabold text-brand-gray uppercase tracking-wider">Price Details</h3>
                 </div>
+
                 <div className="p-4 space-y-3">
                   <div className="flex justify-between text-sm text-brand-dark">
-                    <span>Price ({cartItems.length} items)</span>
+                    <span>Price ({cartItems.length} {cartItems.length === 1 ? "item" : "items"})</span>
                     <span>{formatPrice(subtotal + savings)}</span>
                   </div>
 
@@ -383,18 +360,10 @@ const CartPage = () => {
                     </div>
                   )}
 
-                  {/* Coupon discount row */}
                   {appliedCoupon && couponDiscount > 0 && (
                     <div className="flex justify-between text-sm text-green-600 font-semibold">
                       <span className="flex items-center gap-1">
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
                           <line x1="7" y1="7" x2="7.01" y2="7" />
                         </svg>
@@ -418,8 +387,7 @@ const CartPage = () => {
 
                   {(savings > 0 || couponDiscount > 0) && (
                     <p className="text-green-600 text-xs font-semibold bg-green-50 px-3 py-2 rounded-sm text-center">
-                      You will save {formatPrice(savings + couponDiscount)} on
-                      this order
+                      You will save {formatPrice(savings + couponDiscount)} on this order
                     </p>
                   )}
                 </div>
@@ -427,23 +395,13 @@ const CartPage = () => {
                 <div className="p-4 pt-0">
                   <button
                     onClick={() => {
-                      if (!user) {
-                        navigate("/login");
-                        return;
-                      }
+                      if (!user) { navigate("/login"); return; }
                       navigate("/checkout/address");
                     }}
                     className="w-full bg-primary text-white py-3.5 text-sm font-extrabold tracking-wider hover:bg-primary-hover transition-colors rounded-sm flex items-center justify-center gap-2"
                   >
                     PLACE ORDER
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <line x1="5" y1="12" x2="19" y2="12" />
                       <polyline points="12 5 19 12 12 19" />
                     </svg>
@@ -452,47 +410,18 @@ const CartPage = () => {
 
                 <div className="border-t border-brand-border p-4 flex flex-col gap-2">
                   {[
+                    { icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />, text: "Safe & Secure Payments" },
                     {
-                      icon: (
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      ),
-                      text: "Safe & Secure Payments",
-                    },
-                    {
-                      icon: (
-                        <>
-                          <rect x="1" y="3" width="15" height="13" />
-                          <path d="M16 8h4l3 3v5h-7V8z" />
-                          <circle cx="5.5" cy="18.5" r="2.5" />
-                          <circle cx="18.5" cy="18.5" r="2.5" />
-                        </>
-                      ),
+                      icon: <><rect x="1" y="3" width="15" height="13" /><path d="M16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></>,
                       text: "Free Delivery on this order",
                     },
                     {
-                      icon: (
-                        <>
-                          <polyline points="23 4 23 10 17 10" />
-                          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                        </>
-                      ),
+                      icon: <><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></>,
                       text: "Easy 7-day Returns",
                     },
                   ].map((t, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 text-xs text-brand-gray"
-                    >
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#94969f"
-                        strokeWidth="2"
-                      >
-                        {t.icon}
-                      </svg>
+                    <div key={i} className="flex items-center gap-2 text-xs text-brand-gray">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="2">{t.icon}</svg>
                       {t.text}
                     </div>
                   ))}
@@ -502,26 +431,18 @@ const CartPage = () => {
           </div>
         )}
 
-        {/* Related Products */}
+        {/* ── Related Products ── */}
         {relatedProducts.length > 0 && (
-          <section className="mt-10">
-            <div className="flex items-center justify-between mb-5">
+          <section className="mt-8 sm:mt-10">
+            <div className="flex items-center justify-between mb-4 sm:mb-5">
               <div>
-                <p className="text-xs font-bold text-primary uppercase tracking-widest">
-                  You Might Also Like
-                </p>
-                <h2 className="text-xl font-extrabold text-brand-dark mt-0.5">
-                  Recommended for You
-                </h2>
+                <p className="text-xs font-bold text-primary uppercase tracking-widest">You Might Also Like</p>
+                <h2 className="text-lg sm:text-xl font-extrabold text-brand-dark mt-0.5">Recommended for You</h2>
               </div>
-              <Link
-                to="/products"
-                className="text-primary text-sm font-bold hover:underline"
-              >
-                View All →
-              </Link>
+              <Link to="/products" className="text-primary text-sm font-bold hover:underline flex-shrink-0">View All →</Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {relatedProducts.map((product) => {
                 const discounted = product.discount
                   ? product.price - (product.price * product.discount) / 100
@@ -534,11 +455,7 @@ const CartPage = () => {
                   >
                     <div className="relative overflow-hidden aspect-[3/4] bg-brand-light">
                       <img
-                        src={
-                          product.image
-                            ? `${BACKEND_URL}${product.image}`
-                            : "/placeholder.png"
-                        }
+                        src={product.image ? `${BACKEND_URL}${product.image}` : "/placeholder.png"}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -548,55 +465,24 @@ const CartPage = () => {
                         </span>
                       )}
                     </div>
-                    <div className="p-3">
-                      <p className="text-xs text-brand-gray">
-                        {product.subCategory?.name || ""}
-                      </p>
-                      <h4 className="text-sm font-semibold text-brand-dark line-clamp-2 mt-0.5">
-                        {product.name}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1.5 justify-between">
-                        <div>
-                          <span className="text-sm font-bold text-brand-dark">
-                            {formatPrice(discounted)}
-                          </span>
+                    <div className="p-2 sm:p-3">
+                      <h4 className="text-xs sm:text-sm font-semibold text-brand-dark line-clamp-2">{product.name}</h4>
+                      <div className="flex items-center justify-between mt-1.5 gap-1">
+                        <div className="min-w-0">
+                          <span className="text-xs sm:text-sm font-bold text-brand-dark">{formatPrice(discounted)}</span>
                           {product.discount > 0 && (
-                            <span className="text-xs text-brand-gray line-through ml-1">
-                              {formatPrice(product.price)}
-                            </span>
+                            <span className="text-[10px] text-brand-gray line-through ml-1 hidden sm:inline">{formatPrice(product.price)}</span>
                           )}
                         </div>
                         <button
                           onClick={(e) => handleAddRelated(e, product)}
-                          disabled={
-                            addingId === product.id || product.stock === 0
-                          }
-                          className="w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-hover transition-colors disabled:opacity-50"
+                          disabled={addingId === product.id || product.stock === 0}
+                          className="w-6 h-6 sm:w-7 sm:h-7 bg-primary text-white rounded-full flex items-center justify-center flex-shrink-0 hover:bg-primary-hover transition-colors disabled:opacity-50"
                         >
-                          {addingId === product.id ? (
-                            <svg
-                              width="10"
-                              height="10"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="white"
-                              strokeWidth="2.5"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          ) : (
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="white"
-                              strokeWidth="2.5"
-                            >
-                              <line x1="12" y1="5" x2="12" y2="19" />
-                              <line x1="5" y1="12" x2="19" y2="12" />
-                            </svg>
-                          )}
+                          {addingId === product.id
+                            ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                            : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                          }
                         </button>
                       </div>
                     </div>
@@ -609,10 +495,7 @@ const CartPage = () => {
       </div>
 
       {showPayment && (
-        <PaymentGateway
-          onClose={() => setShowPayment(false)}
-          total={finalTotal}
-        />
+        <PaymentGateway onClose={() => setShowPayment(false)} total={finalTotal} />
       )}
 
       {wishlistToast && (

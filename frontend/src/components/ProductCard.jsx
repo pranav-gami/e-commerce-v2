@@ -33,7 +33,7 @@ const ProductCard = ({ product }) => {
 
   const cartItem = useMemo(
     () => cartItems?.find((item) => item.productId === product.id),
-    [cartItems, product.id],
+    [cartItems, product.id]
   );
 
   const quantity = cartItem?.quantity || 0;
@@ -47,10 +47,7 @@ const ProductCard = ({ product }) => {
   const handleNavigate = () => navigate(`/products/${product.id}`);
 
   const requireAuth = () => {
-    if (!user) {
-      navigate("/login");
-      return false;
-    }
+    if (!user) { navigate("/login"); return false; }
     return true;
   };
 
@@ -75,9 +72,9 @@ const ProductCard = ({ product }) => {
   return (
     <div
       onClick={handleNavigate}
-      className="group relative bg-white cursor-pointer overflow-hidden hover:shadow-sm transition"
+      className="group relative bg-white cursor-pointer overflow-hidden hover:shadow-md transition-shadow duration-200 rounded-sm"
     >
-      {/* IMAGE */}
+      {/* ── IMAGE ── */}
       <div className="relative aspect-[4/5] bg-[#f5f5f6] overflow-hidden">
         <img
           src={product.image || "/placeholder.png"}
@@ -85,6 +82,7 @@ const ProductCard = ({ product }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
+        {/* Rating badge */}
         {product.reviewCount && (
           <div className="absolute bottom-2 left-2 bg-white px-2 py-[2px] flex items-center text-[11px] font-semibold rounded shadow-sm">
             <span className="flex items-center gap-[2px] text-[#282c3f]">
@@ -98,25 +96,43 @@ const ProductCard = ({ product }) => {
           </div>
         )}
 
+        {/* Wishlist icon – always visible on touch, hover-only on desktop */}
+        <button
+          onClick={handleWishlist}
+          aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          className={`
+            absolute top-2 right-2 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center
+            transition-all duration-200
+            sm:opacity-0 sm:group-hover:opacity-100
+            ${inWishlist ? "opacity-100" : "opacity-100 sm:opacity-0"}
+          `}
+        >
+          <svg
+            width="16" height="16" viewBox="0 0 24 24"
+            fill={inWishlist ? "#ff3f6c" : "none"}
+            stroke={inWishlist ? "#ff3f6c" : "#282c3f"}
+            strokeWidth="2"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
+
         {!inStock && <Overlay label="OUT OF STOCK" />}
         {!isActive && <Overlay label="Not available" />}
 
-        {/* HOVER PANEL */}
-        <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-all duration-300">
+        {/* Hover panel – desktop only (touch users use the icon above) */}
+        <div className="hidden sm:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
           <div className="bg-white border-t border-[#eaeaec] p-2">
             <button
               onClick={handleWishlist}
               className={`w-full text-[12px] font-bold py-2 flex items-center justify-center gap-1.5 rounded
-                ${
-                  inWishlist
-                    ? "bg-gray-700 text-white"
-                    : "border border-[#d4d5d9] text-[#282c3f] hover:border-gray-600"
+                ${inWishlist
+                  ? "bg-gray-700 text-white"
+                  : "border border-[#d4d5d9] text-[#282c3f] hover:border-gray-600"
                 }`}
             >
               <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
+                width="14" height="14" viewBox="0 0 24 24"
                 fill={inWishlist ? "#ff3f6c" : "none"}
                 stroke={inWishlist ? "#ff3f6c" : "#282c3f"}
                 strokeWidth="2"
@@ -129,32 +145,34 @@ const ProductCard = ({ product }) => {
         </div>
       </div>
 
-      {/* INFO */}
+      {/* ── INFO ── */}
       <div className="px-2 py-2">
-        <div className="relative overflow-hidden">
-          <div className="transition-all duration-200 group-hover:opacity-0 group-hover:-translate-y-2">
-            <p className="text-[16px] font-bold text-[#282c3f] truncate">
+        {/* Brand / name – slide-up on hover (desktop only) */}
+        <div className="relative overflow-hidden min-h-[40px]">
+          <div className="transition-all duration-200 sm:group-hover:opacity-0 sm:group-hover:-translate-y-2">
+            <p className="text-[13px] sm:text-[15px] font-bold text-[#282c3f] truncate leading-tight">
               {product.subCategory?.category?.name || "Brand"}
             </p>
-            <p className="text-[14px] text-[#535766] truncate">
+            <p className="text-[12px] sm:text-[13px] text-[#535766] truncate leading-tight">
               {product.name}
             </p>
           </div>
-          <div className="absolute inset-0 flex items-center opacity-0 translate-y-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-            <p className="text-[14px] text-[#535766]">Sizes: OneSize</p>
+          <div className="hidden sm:flex absolute inset-0 items-center opacity-0 translate-y-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+            <p className="text-[13px] text-[#535766]">Sizes: OneSize</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-1 text-[14px]">
-          <span className="font-bold text-[#282c3f]">
+        {/* Price row */}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
+          <span className="text-[13px] sm:text-[14px] font-bold text-[#282c3f]">
             {formatPrice(discountedPrice)}
           </span>
           {product.discount > 0 && (
             <>
-              <span className="line-through text-[#94969f]">
+              <span className="text-[12px] sm:text-[13px] line-through text-[#94969f]">
                 {formatPrice(product.price)}
               </span>
-              <span className="text-[#ff905a] font-semibold">
+              <span className="text-[11px] sm:text-[12px] text-[#ff905a] font-semibold whitespace-nowrap">
                 ({product.discount}% OFF)
               </span>
             </>
@@ -163,9 +181,7 @@ const ProductCard = ({ product }) => {
 
         {error && <p className="text-[11px] text-red-500 mt-1">{error}</p>}
         {wishlistMsg && (
-          <p className="text-[11px] text-primary mt-1 font-semibold">
-            {wishlistMsg}
-          </p>
+          <p className="text-[11px] text-[#ff3f6c] mt-1 font-semibold">{wishlistMsg}</p>
         )}
       </div>
     </div>

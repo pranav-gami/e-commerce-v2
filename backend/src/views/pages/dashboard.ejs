@@ -23,13 +23,16 @@
         <span class="text-muted fs-8 me-2">
           Updated: <strong class="text-dark" id="dash-time"></strong>
         </span>
-        <a href="/admin/orders" class="btn btn-sm btn-light-primary fw-semibold">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" style="vertical-align:-2px">
-            <path opacity=".3" d="M18 21.6C16.3 21.6 15 20.3 15 18.6V2.5c0-.3-.4-.5-.7-.3L13 3.6 11.7 2.3c-.4-.4-1-.4-1.4 0L9 3.6 7.7 2.3c-.4-.4-1-.4-1.4 0L5 3.6 3.7 2.3C3.5 2.1 3 2.2 3 3.5V18.6C3 20.3 4.3 21.6 6 21.6H18z" fill="currentColor"/>
-            <path d="M7 7h8M7 10h8M7 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          All Orders
-        </a>
+<button 
+  onclick="window.location.href='/admin/orders'" 
+  class="btn btn-sm btn-light-danger fw-semibold"
+>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" style="vertical-align:-2px">
+    <path opacity=".3" d="M18 21.6C16.3 21.6 15 20.3 15 18.6V2.5c0-.3-.4-.5-.7-.3L13 3.6 11.7 2.3c-.4-.4-1-.4-1.4 0L9 3.6 7.7 2.3c-.4-.4-1-.4-1.4 0L5 3.6 3.7 2.3C3.5 2.1 3 2.2 3 3.5V18.6C3 20.3 4.3 21.6 6 21.6H18z" fill="currentColor"/>
+    <path d="M7 7h8M7 10h8M7 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  All Orders
+</button>
         <a href="/admin/products/add" class="btn btn-sm btn-primary fw-semibold">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" style="vertical-align:-2px">
             <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
@@ -202,8 +205,14 @@
             <div class="card-header pt-5 border-0">
               <h3 class="card-title fw-bold text-dark">Recent Orders</h3>
               <div class="card-toolbar">
-                <a href="/admin/orders" class="btn btn-sm btn-light-primary">View All</a>
-              </div>
+  <button 
+    type="button"
+    onclick="window.location.href='/admin/orders'"
+    class="btn btn-sm btn-light-danger"
+  >
+    View All
+  </button>
+</div>
             </div>
             <div class="card-body py-3">
               <div class="table-responsive">

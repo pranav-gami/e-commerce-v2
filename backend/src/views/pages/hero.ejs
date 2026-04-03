@@ -1,11 +1,17 @@
 <div class="d-flex flex-column flex-column-fluid">
   <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
     <div class="app-container container-xxl d-flex flex-stack">
-      <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-        <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+      <div
+        class="page-title d-flex flex-column justify-content-center flex-wrap me-3"
+      >
+        <h1
+          class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
+        >
           Hero Slides
         </h1>
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+        <ul
+          class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1"
+        >
           <li class="breadcrumb-item text-muted">
             <a href="/admin" class="text-muted text-hover-primary">Home</a>
           </li>
@@ -15,8 +21,20 @@
           <li class="breadcrumb-item text-muted">Hero Slides</li>
         </ul>
       </div>
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSlideModal">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="me-2"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#addSlideModal"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          class="me-2"
+        >
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+        </svg>
         Add Slide
       </button>
     </div>
@@ -24,18 +42,25 @@
 
   <div id="kt_app_content" class="app-content flex-column-fluid">
     <div id="kt_app_content_container" class="app-container container-xxl">
-
       <!-- Live Preview -->
       <div class="card mb-6">
         <div class="card-header border-0">
           <h3 class="card-title fw-bold">Live Preview</h3>
           <div class="card-toolbar">
-            <span class="badge badge-light-primary fs-8">Auto-rotates every 4.5s</span>
+            <span class="badge badge-light-primary fs-8"
+              >Auto-rotates every 4.5s</span
+            >
           </div>
         </div>
         <div class="card-body pt-0">
-          <div id="hero-preview" class="rounded overflow-hidden position-relative" style="height: 200px; background: #1a1a2e;">
-            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted fs-7">
+          <div
+            id="hero-preview"
+            class="rounded overflow-hidden position-relative"
+            style="height: 200px; background: #1a1a2e"
+          >
+            <div
+              class="w-100 h-100 d-flex align-items-center justify-content-center text-muted fs-7"
+            >
               Loading preview...
             </div>
           </div>
@@ -58,7 +83,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -69,64 +93,151 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold">Add Hero Slide</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
       </div>
       <div class="modal-body p-6">
         <form id="add-slide-form" enctype="multipart/form-data">
-
           <!-- Image Upload -->
           <div class="mb-5">
             <label class="form-label required fw-semibold">Slide Image</label>
-            <div id="add-drop-zone" class="border-2 border-dashed border-gray-300 rounded p-6 text-center cursor-pointer" style="border-style: dashed !important; transition: all 0.2s;">
-              <img id="add-preview-img" src="" alt="" class="rounded mb-3 d-none" style="max-height:140px;object-fit:cover;max-width:100%;" />
+            <div
+              id="add-drop-zone"
+              class="border-2 border-dashed border-gray-300 rounded p-6 text-center cursor-pointer"
+              style="border-style: dashed !important; transition: all 0.2s"
+            >
+              <img
+                id="add-preview-img"
+                src=""
+                alt=""
+                class="rounded mb-3 d-none"
+                style="max-height: 140px; object-fit: cover; max-width: 100%"
+              />
               <div id="add-upload-placeholder">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" class="text-muted mb-2"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor" opacity="0.5"/></svg>
-                <p class="text-muted fs-7 mb-1">Click to upload or drag & drop</p>
+                <svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  class="text-muted mb-2"
+                >
+                  <path
+                    d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+                    fill="currentColor"
+                    opacity="0.5"
+                  />
+                </svg>
+                <p class="text-muted fs-7 mb-1">
+                  Click to upload or drag & drop
+                </p>
                 <p class="text-muted fs-8">JPEG, PNG, WebP — max 5MB</p>
               </div>
-              <input type="file" id="add-image-input" name="image" accept="image/*" class="d-none" required />
+              <input
+                type="file"
+                id="add-image-input"
+                name="image"
+                accept="image/*"
+                class="d-none"
+                required
+              />
             </div>
           </div>
 
           <div class="row g-4">
             <div class="col-md-6">
-              <label class="form-label required fw-semibold">Eyebrow Text</label>
-              <input type="text" name="eyebrow" class="form-control form-control-solid" placeholder="e.g. New Collection" required />
-              <div class="form-text text-muted">Small label above the title</div>
+              <label class="form-label required fw-semibold"
+                >Eyebrow Text</label
+              >
+              <input
+                type="text"
+                name="eyebrow"
+                class="form-control form-control-solid"
+                placeholder="e.g. New Collection"
+                required
+              />
+              <div class="form-text text-muted">
+                Small label above the title
+              </div>
             </div>
             <div class="col-md-6">
               <label class="form-label required fw-semibold">Order</label>
-              <input type="number" name="order" class="form-control form-control-solid" placeholder="0" min="0" value="0" />
-              <div class="form-text text-muted">Display order (lower = first)</div>
+              <input
+                type="number"
+                name="order"
+                class="form-control form-control-solid"
+                placeholder="0"
+                min="0"
+                value="0"
+              />
+              <div class="form-text text-muted">
+                Display order (lower = first)
+              </div>
             </div>
             <div class="col-12">
               <label class="form-label required fw-semibold">Title</label>
-              <input type="text" name="title" class="form-control form-control-solid" placeholder="e.g. Style That Speaks" required />
+              <input
+                type="text"
+                name="title"
+                class="form-control form-control-solid"
+                placeholder="e.g. Style That Speaks"
+                required
+              />
             </div>
             <div class="col-12">
-              <label class="form-label required fw-semibold">Title Highlight Span</label>
-              <input type="text" name="titleSpan" class="form-control form-control-solid" placeholder="e.g. Speaks (must be part of title)" required />
-              <div class="form-text text-muted">This word/phrase in the title will be colored</div>
+              <label class="form-label required fw-semibold"
+                >Title Highlight Span</label
+              >
+              <input
+                type="text"
+                name="titleSpan"
+                class="form-control form-control-solid"
+                placeholder="e.g. Speaks (must be part of title)"
+                required
+              />
+              <div class="form-text text-muted">
+                This word/phrase in the title will be colored
+              </div>
             </div>
             <div class="col-12">
               <label class="form-label required fw-semibold">Subtitle</label>
-              <textarea name="subtitle" class="form-control form-control-solid" rows="2" placeholder="Short description below title" required></textarea>
+              <textarea
+                name="subtitle"
+                class="form-control form-control-solid"
+                rows="2"
+                placeholder="Short description below title"
+                required
+              ></textarea>
             </div>
             <div class="col-12">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" name="isActive" id="add-isActive" checked />
-                <label class="form-check-label fw-semibold" for="add-isActive">Active (visible on homepage)</label>
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="isActive"
+                  id="add-isActive"
+                  checked
+                />
+                <label class="form-check-label fw-semibold" for="add-isActive"
+                  >Active (visible on homepage)</label
+                >
               </div>
             </div>
           </div>
-
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+          Cancel
+        </button>
         <button type="button" class="btn btn-primary" id="save-add-slide">
           <span class="indicator-label">Save Slide</span>
-          <span class="indicator-progress d-none">Saving... <span class="spinner-border spinner-border-sm ms-1"></span></span>
+          <span class="indicator-progress d-none"
+            >Saving...
+            <span class="spinner-border spinner-border-sm ms-1"></span
+          ></span>
         </button>
       </div>
     </div>
@@ -139,7 +250,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold">Edit Hero Slide</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
       </div>
       <div class="modal-body p-6">
         <form id="edit-slide-form" enctype="multipart/form-data">
@@ -148,53 +263,115 @@
           <div class="mb-5">
             <label class="form-label fw-semibold">Current Image</label>
             <div class="d-flex align-items-center gap-4 mb-3">
-              <img id="edit-current-img" src="" alt="" class="rounded" style="height:80px;object-fit:cover;width:140px;" />
+              <img
+                id="edit-current-img"
+                src=""
+                alt=""
+                class="rounded"
+                style="height: 80px; object-fit: cover; width: 140px"
+              />
               <span class="text-muted fs-8">Upload a new image to replace</span>
             </div>
-            <div id="edit-drop-zone" class="border-2 border-dashed border-gray-300 rounded p-4 text-center cursor-pointer" style="border-style: dashed !important;">
-              <img id="edit-preview-img" src="" alt="" class="rounded mb-2 d-none" style="max-height:100px;object-fit:cover;max-width:100%;" />
+            <div
+              id="edit-drop-zone"
+              class="border-2 border-dashed border-gray-300 rounded p-4 text-center cursor-pointer"
+              style="border-style: dashed !important"
+            >
+              <img
+                id="edit-preview-img"
+                src=""
+                alt=""
+                class="rounded mb-2 d-none"
+                style="max-height: 100px; object-fit: cover; max-width: 100%"
+              />
               <div id="edit-upload-placeholder">
-                <p class="text-muted fs-8 mb-0">Click to upload new image (optional)</p>
+                <p class="text-muted fs-8 mb-0">
+                  Click to upload new image (optional)
+                </p>
               </div>
-              <input type="file" id="edit-image-input" name="image" accept="image/*" class="d-none" />
+              <input
+                type="file"
+                id="edit-image-input"
+                name="image"
+                accept="image/*"
+                class="d-none"
+              />
             </div>
           </div>
 
           <div class="row g-4">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Eyebrow Text</label>
-              <input type="text" id="edit-eyebrow" name="eyebrow" class="form-control form-control-solid" />
+              <input
+                type="text"
+                id="edit-eyebrow"
+                name="eyebrow"
+                class="form-control form-control-solid"
+              />
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Order</label>
-              <input type="number" id="edit-order" name="order" class="form-control form-control-solid" min="0" />
+              <input
+                type="number"
+                id="edit-order"
+                name="order"
+                class="form-control form-control-solid"
+                min="0"
+              />
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold">Title</label>
-              <input type="text" id="edit-title" name="title" class="form-control form-control-solid" />
+              <input
+                type="text"
+                id="edit-title"
+                name="title"
+                class="form-control form-control-solid"
+              />
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold">Title Highlight Span</label>
-              <input type="text" id="edit-titleSpan" name="titleSpan" class="form-control form-control-solid" />
+              <input
+                type="text"
+                id="edit-titleSpan"
+                name="titleSpan"
+                class="form-control form-control-solid"
+              />
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold">Subtitle</label>
-              <textarea id="edit-subtitle" name="subtitle" class="form-control form-control-solid" rows="2"></textarea>
+              <textarea
+                id="edit-subtitle"
+                name="subtitle"
+                class="form-control form-control-solid"
+                rows="2"
+              ></textarea>
             </div>
             <div class="col-12">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="edit-isActive" name="isActive" />
-                <label class="form-check-label fw-semibold" for="edit-isActive">Active</label>
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="edit-isActive"
+                  name="isActive"
+                />
+                <label class="form-check-label fw-semibold" for="edit-isActive"
+                  >Active</label
+                >
               </div>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+          Cancel
+        </button>
         <button type="button" class="btn btn-primary" id="save-edit-slide">
           <span class="indicator-label">Update Slide</span>
-          <span class="indicator-progress d-none">Saving... <span class="spinner-border spinner-border-sm ms-1"></span></span>
+          <span class="indicator-progress d-none"
+            >Saving...
+            <span class="spinner-border spinner-border-sm ms-1"></span
+          ></span>
         </button>
       </div>
     </div>
@@ -202,37 +379,43 @@
 </div>
 
 <script>
-(function () {
-  const BACKEND_URL = '';
-  let allSlides = [];
-  let previewIndex = 0;
-  let previewTimer = null;
+  (function () {
+    const BACKEND_URL = "";
+    let allSlides = [];
+    let previewIndex = 0;
+    let previewTimer = null;
 
-  // ── Load slides ────────────────────────────────────────────
-  async function loadSlides() {
-    try {
-      const res = await fetch('/admin/hero/list', { credentials: 'same-origin' });
-      const json = await res.json();
-      allSlides = json.data || [];
-      renderGrid();
-      renderPreview();
-    } catch (e) {
-      document.getElementById('slides-grid').innerHTML =
-        '<div class="col-12 text-center text-danger py-8">Failed to load slides</div>';
-    }
-  }
-
-  // ── Render slide cards grid ────────────────────────────────
-  function renderGrid() {
-    const grid = document.getElementById('slides-grid');
-    document.getElementById('slides-count').textContent = `${allSlides.length} slide${allSlides.length !== 1 ? 's' : ''}`;
-
-    if (!allSlides.length) {
-      grid.innerHTML = '<div class="col-12 text-center text-muted py-10 fs-6">No slides yet. Add your first hero slide!</div>';
-      return;
+    // ── Load slides ────────────────────────────────────────────
+    async function loadSlides() {
+      try {
+        const res = await fetch("/admin/hero/list", {
+          credentials: "same-origin",
+        });
+        const json = await res.json();
+        allSlides = json.data || [];
+        renderGrid();
+        renderPreview();
+      } catch (e) {
+        document.getElementById("slides-grid").innerHTML =
+          '<div class="col-12 text-center text-danger py-8">Failed to load slides</div>';
+      }
     }
 
-    grid.innerHTML = allSlides.map(slide => `
+    // ── Render slide cards grid ────────────────────────────────
+    function renderGrid() {
+      const grid = document.getElementById("slides-grid");
+      document.getElementById("slides-count").textContent =
+        `${allSlides.length} slide${allSlides.length !== 1 ? "s" : ""}`;
+
+      if (!allSlides.length) {
+        grid.innerHTML =
+          '<div class="col-12 text-center text-muted py-10 fs-6">No slides yet. Add your first hero slide!</div>';
+        return;
+      }
+
+      grid.innerHTML = allSlides
+        .map(
+          (slide) => `
       <div class="col-md-6 col-xl-4">
         <div class="card h-100 slide-card" data-id="${slide.id}">
           <div class="position-relative overflow-hidden rounded-top" style="height:160px;background:#eee;">
@@ -240,8 +423,8 @@
               class="w-100 h-100" style="object-fit:cover;"
               onerror="this.style.display='none'" />
             <div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
-              <span class="badge ${slide.isActive ? 'badge-light-success' : 'badge-light-danger'}">
-                ${slide.isActive ? 'Active' : 'Inactive'}
+              <span class="badge ${slide.isActive ? "badge-light-success" : "badge-light-danger"}">
+                ${slide.isActive ? "Active" : "Inactive"}
               </span>
               <span class="badge badge-light-secondary">Order: ${slide.order}</span>
             </div>
@@ -252,42 +435,45 @@
             <p class="text-muted fs-8 mb-0 line-clamp-2">${slide.subtitle}</p>
           </div>
           <div class="card-footer border-0 pt-0 pb-4 px-4 d-flex gap-2">
-            <button class="btn btn-light-primary btn-sm flex-fill" onclick="openEdit(${slide.id})">
+            <button class="btn btn-light-danger btn-sm flex-fill" onclick="openEdit(${slide.id})">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" class="me-1"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
               Edit
             </button>
-            <button class="btn btn-sm ${slide.isActive ? 'btn-light-warning' : 'btn-light-success'}" onclick="toggleSlide(${slide.id}, ${slide.isActive})" title="${slide.isActive ? 'Deactivate' : 'Activate'}">
-              ${slide.isActive ? '⏸' : '▶'}
+            <button class="btn btn-sm ${slide.isActive ? "btn-light-warning" : "btn-light-success"}" onclick="toggleSlide(${slide.id}, ${slide.isActive})" title="${slide.isActive ? "Deactivate" : "Activate"}">
+              ${slide.isActive ? "⏸" : "▶"}
             </button>
             <button class="btn btn-light-danger btn-sm" onclick="deleteSlide(${slide.id})" title="Delete">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/></svg>
             </button>
           </div>
         </div>
-      </div>`).join('');
-  }
-
-  // ── Live preview ───────────────────────────────────────────
-  function renderPreview() {
-    const container = document.getElementById('hero-preview');
-    const active = allSlides.filter(s => s.isActive);
-    if (!active.length) {
-      container.innerHTML = '<div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted fs-7">No active slides</div>';
-      return;
+      </div>`,
+        )
+        .join("");
     }
-    clearInterval(previewTimer);
-    previewIndex = 0;
-    showPreviewSlide(active);
-    previewTimer = setInterval(() => {
-      previewIndex = (previewIndex + 1) % active.length;
-      showPreviewSlide(active);
-    }, 4500);
-  }
 
-  function showPreviewSlide(active) {
-    const s = active[previewIndex];
-    const container = document.getElementById('hero-preview');
-    container.innerHTML = `
+    // ── Live preview ───────────────────────────────────────────
+    function renderPreview() {
+      const container = document.getElementById("hero-preview");
+      const active = allSlides.filter((s) => s.isActive);
+      if (!active.length) {
+        container.innerHTML =
+          '<div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted fs-7">No active slides</div>';
+        return;
+      }
+      clearInterval(previewTimer);
+      previewIndex = 0;
+      showPreviewSlide(active);
+      previewTimer = setInterval(() => {
+        previewIndex = (previewIndex + 1) % active.length;
+        showPreviewSlide(active);
+      }, 4500);
+    }
+
+    function showPreviewSlide(active) {
+      const s = active[previewIndex];
+      const container = document.getElementById("hero-preview");
+      container.innerHTML = `
       <img src="${BACKEND_URL}${s.image}" alt="${s.eyebrow}" class="w-100 h-100 position-absolute top-0 start-0" style="object-fit:cover;" onerror="this.style.display='none'" />
       <div class="position-absolute inset-0 w-100 h-100 d-flex align-items-end p-4" style="background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);">
         <div>
@@ -297,148 +483,234 @@
         </div>
       </div>
       <div class="position-absolute bottom-0 start-50 translate-middle-x d-flex gap-1 pb-2">
-        ${active.map((_, i) => `<div class="rounded-pill bg-white ${i === previewIndex ? 'opacity-100' : 'opacity-50'}" style="height:3px;width:${i === previewIndex ? '20px' : '6px'};transition:all 0.3s;"></div>`).join('')}
+        ${active.map((_, i) => `<div class="rounded-pill bg-white ${i === previewIndex ? "opacity-100" : "opacity-50"}" style="height:3px;width:${i === previewIndex ? "20px" : "6px"};transition:all 0.3s;"></div>`).join("")}
       </div>`;
-  }
-
-  // ── Image drag-drop setup ──────────────────────────────────
-  function setupDropZone(zoneId, inputId, previewId, placeholderId) {
-    const zone = document.getElementById(zoneId);
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-    const placeholder = document.getElementById(placeholderId);
-
-    zone.addEventListener('click', () => input.click());
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.style.borderColor = '#e94560'; zone.style.background = 'rgba(233,69,96,0.04)'; });
-    zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; zone.style.background = ''; });
-    zone.addEventListener('drop', (e) => { e.preventDefault(); zone.style.borderColor = ''; zone.style.background = ''; if (e.dataTransfer.files[0]) { input.files = e.dataTransfer.files; showPreview(e.dataTransfer.files[0], preview, placeholder); } });
-    input.addEventListener('change', () => { if (input.files[0]) showPreview(input.files[0], preview, placeholder); });
-  }
-
-  function showPreview(file, preview, placeholder) {
-    const reader = new FileReader();
-    reader.onload = (e) => { preview.src = e.target.result; preview.classList.remove('d-none'); placeholder.classList.add('d-none'); };
-    reader.readAsDataURL(file);
-  }
-
-  setupDropZone('add-drop-zone', 'add-image-input', 'add-preview-img', 'add-upload-placeholder');
-  setupDropZone('edit-drop-zone', 'edit-image-input', 'edit-preview-img', 'edit-upload-placeholder');
-
-  // ── Add slide ──────────────────────────────────────────────
-  document.getElementById('save-add-slide').addEventListener('click', async () => {
-    const form = document.getElementById('add-slide-form');
-    const btn = document.getElementById('save-add-slide');
-    const fd = new FormData(form);
-    fd.set('isActive', form.querySelector('[name="isActive"]').checked ? 'true' : 'false');
-
-    btn.querySelector('.indicator-label').classList.add('d-none');
-    btn.querySelector('.indicator-progress').classList.remove('d-none');
-    btn.disabled = true;
-
-    try {
-      const res = await fetch('/admin/hero', { method: 'POST', body: fd, credentials: 'same-origin' });
-      const json = await res.json();
-      if (json.success) {
-        bootstrap.Modal.getInstance(document.getElementById('addSlideModal')).hide();
-        form.reset();
-        document.getElementById('add-preview-img').classList.add('d-none');
-        document.getElementById('add-upload-placeholder').classList.remove('d-none');
-        await loadSlides();
-        showToast('Slide added successfully!', 'success');
-      } else throw new Error(json.message);
-    } catch (e) {
-      showToast(e.message || 'Failed to add slide', 'danger');
-    } finally {
-      btn.querySelector('.indicator-label').classList.remove('d-none');
-      btn.querySelector('.indicator-progress').classList.add('d-none');
-      btn.disabled = false;
     }
-  });
 
-  // ── Edit slide ─────────────────────────────────────────────
-  window.openEdit = function(id) {
-    const s = allSlides.find(x => x.id === id);
-    if (!s) return;
-    document.getElementById('edit-slide-id').value = s.id;
-    document.getElementById('edit-eyebrow').value = s.eyebrow;
-    document.getElementById('edit-title').value = s.title;
-    document.getElementById('edit-titleSpan').value = s.titleSpan;
-    document.getElementById('edit-subtitle').value = s.subtitle;
-    document.getElementById('edit-order').value = s.order;
-    document.getElementById('edit-isActive').checked = s.isActive;
-    document.getElementById('edit-current-img').src = BACKEND_URL + s.image;
-    document.getElementById('edit-preview-img').classList.add('d-none');
-    document.getElementById('edit-upload-placeholder').classList.remove('d-none');
-    document.getElementById('edit-image-input').value = '';
-    new bootstrap.Modal(document.getElementById('editSlideModal')).show();
-  };
+    // ── Image drag-drop setup ──────────────────────────────────
+    function setupDropZone(zoneId, inputId, previewId, placeholderId) {
+      const zone = document.getElementById(zoneId);
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      const placeholder = document.getElementById(placeholderId);
 
-  document.getElementById('save-edit-slide').addEventListener('click', async () => {
-    const id = document.getElementById('edit-slide-id').value;
-    const form = document.getElementById('edit-slide-form');
-    const btn = document.getElementById('save-edit-slide');
-    const fd = new FormData(form);
-    fd.set('isActive', form.querySelector('[name="isActive"]').checked ? 'true' : 'false');
-
-    btn.querySelector('.indicator-label').classList.add('d-none');
-    btn.querySelector('.indicator-progress').classList.remove('d-none');
-    btn.disabled = true;
-
-    try {
-      const res = await fetch(`/admin/hero/${id}`, { method: 'PUT', body: fd, credentials: 'same-origin' });
-      const json = await res.json();
-      if (json.success) {
-        bootstrap.Modal.getInstance(document.getElementById('editSlideModal')).hide();
-        await loadSlides();
-        showToast('Slide updated!', 'success');
-      } else throw new Error(json.message);
-    } catch (e) {
-      showToast(e.message || 'Failed to update slide', 'danger');
-    } finally {
-      btn.querySelector('.indicator-label').classList.remove('d-none');
-      btn.querySelector('.indicator-progress').classList.add('d-none');
-      btn.disabled = false;
+      zone.addEventListener("click", () => input.click());
+      zone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        zone.style.borderColor = "#e94560";
+        zone.style.background = "rgba(233,69,96,0.04)";
+      });
+      zone.addEventListener("dragleave", () => {
+        zone.style.borderColor = "";
+        zone.style.background = "";
+      });
+      zone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        zone.style.borderColor = "";
+        zone.style.background = "";
+        if (e.dataTransfer.files[0]) {
+          input.files = e.dataTransfer.files;
+          showPreview(e.dataTransfer.files[0], preview, placeholder);
+        }
+      });
+      input.addEventListener("change", () => {
+        if (input.files[0]) showPreview(input.files[0], preview, placeholder);
+      });
     }
-  });
 
-  // ── Toggle ─────────────────────────────────────────────────
-  window.toggleSlide = async function(id, isActive) {
-    try {
-      const res = await fetch(`/admin/hero/${id}/toggle`, { method: 'PATCH', credentials: 'same-origin' });
-      const json = await res.json();
-      if (json.success) { await loadSlides(); showToast(`Slide ${isActive ? 'deactivated' : 'activated'}!`, 'success'); }
-      else throw new Error(json.message);
-    } catch (e) { showToast('Failed to toggle slide', 'danger'); }
-  };
+    function showPreview(file, preview, placeholder) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.classList.remove("d-none");
+        placeholder.classList.add("d-none");
+      };
+      reader.readAsDataURL(file);
+    }
 
-  // ── Delete ─────────────────────────────────────────────────
-  window.deleteSlide = function(id) {
-    Swal.fire({
-      title: 'Delete this slide?',
-      text: 'This action cannot be undone.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete',
-      confirmButtonColor: '#e94560',
-      cancelButtonText: 'Cancel',
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+    setupDropZone(
+      "add-drop-zone",
+      "add-image-input",
+      "add-preview-img",
+      "add-upload-placeholder",
+    );
+    setupDropZone(
+      "edit-drop-zone",
+      "edit-image-input",
+      "edit-preview-img",
+      "edit-upload-placeholder",
+    );
+
+    // ── Add slide ──────────────────────────────────────────────
+    document
+      .getElementById("save-add-slide")
+      .addEventListener("click", async () => {
+        const form = document.getElementById("add-slide-form");
+        const btn = document.getElementById("save-add-slide");
+        const fd = new FormData(form);
+        fd.set(
+          "isActive",
+          form.querySelector('[name="isActive"]').checked ? "true" : "false",
+        );
+
+        btn.querySelector(".indicator-label").classList.add("d-none");
+        btn.querySelector(".indicator-progress").classList.remove("d-none");
+        btn.disabled = true;
+
         try {
-          const res = await fetch(`/admin/hero/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+          const res = await fetch("/admin/hero", {
+            method: "POST",
+            body: fd,
+            credentials: "same-origin",
+          });
           const json = await res.json();
-          if (json.success) { await loadSlides(); showToast('Slide deleted!', 'success'); }
-          else throw new Error(json.message);
-        } catch (e) { showToast('Failed to delete slide', 'danger'); }
+          if (json.success) {
+            bootstrap.Modal.getInstance(
+              document.getElementById("addSlideModal"),
+            ).hide();
+            form.reset();
+            document.getElementById("add-preview-img").classList.add("d-none");
+            document
+              .getElementById("add-upload-placeholder")
+              .classList.remove("d-none");
+            await loadSlides();
+            showToast("Slide added successfully!", "success");
+          } else throw new Error(json.message);
+        } catch (e) {
+          showToast(e.message || "Failed to add slide", "danger");
+        } finally {
+          btn.querySelector(".indicator-label").classList.remove("d-none");
+          btn.querySelector(".indicator-progress").classList.add("d-none");
+          btn.disabled = false;
+        }
+      });
+
+    // ── Edit slide ─────────────────────────────────────────────
+    window.openEdit = function (id) {
+      const s = allSlides.find((x) => x.id === id);
+      if (!s) return;
+      document.getElementById("edit-slide-id").value = s.id;
+      document.getElementById("edit-eyebrow").value = s.eyebrow;
+      document.getElementById("edit-title").value = s.title;
+      document.getElementById("edit-titleSpan").value = s.titleSpan;
+      document.getElementById("edit-subtitle").value = s.subtitle;
+      document.getElementById("edit-order").value = s.order;
+      document.getElementById("edit-isActive").checked = s.isActive;
+      document.getElementById("edit-current-img").src = BACKEND_URL + s.image;
+      document.getElementById("edit-preview-img").classList.add("d-none");
+      document
+        .getElementById("edit-upload-placeholder")
+        .classList.remove("d-none");
+      document.getElementById("edit-image-input").value = "";
+      new bootstrap.Modal(document.getElementById("editSlideModal")).show();
+    };
+
+    document
+      .getElementById("save-edit-slide")
+      .addEventListener("click", async () => {
+        const id = document.getElementById("edit-slide-id").value;
+        const form = document.getElementById("edit-slide-form");
+        const btn = document.getElementById("save-edit-slide");
+        const fd = new FormData(form);
+        fd.set(
+          "isActive",
+          form.querySelector('[name="isActive"]').checked ? "true" : "false",
+        );
+
+        btn.querySelector(".indicator-label").classList.add("d-none");
+        btn.querySelector(".indicator-progress").classList.remove("d-none");
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(`/admin/hero/${id}`, {
+            method: "PUT",
+            body: fd,
+            credentials: "same-origin",
+          });
+          const json = await res.json();
+          if (json.success) {
+            bootstrap.Modal.getInstance(
+              document.getElementById("editSlideModal"),
+            ).hide();
+            await loadSlides();
+            showToast("Slide updated!", "success");
+          } else throw new Error(json.message);
+        } catch (e) {
+          showToast(e.message || "Failed to update slide", "danger");
+        } finally {
+          btn.querySelector(".indicator-label").classList.remove("d-none");
+          btn.querySelector(".indicator-progress").classList.add("d-none");
+          btn.disabled = false;
+        }
+      });
+
+    // ── Toggle ─────────────────────────────────────────────────
+    window.toggleSlide = async function (id, isActive) {
+      try {
+        const res = await fetch(`/admin/hero/${id}/toggle`, {
+          method: "PATCH",
+          credentials: "same-origin",
+        });
+        const json = await res.json();
+        if (json.success) {
+          await loadSlides();
+          showToast(
+            `Slide ${isActive ? "deactivated" : "activated"}!`,
+            "success",
+          );
+        } else throw new Error(json.message);
+      } catch (e) {
+        showToast("Failed to toggle slide", "danger");
       }
-    });
-  };
+    };
 
-  // ── Toast helper ───────────────────────────────────────────
-  function showToast(msg, type = 'success') {
-    const colors = { success: '#1a9e6e', danger: '#e94560', warning: '#f59e0b' };
-    Swal.fire({ toast: true, position: 'top-end', icon: type === 'danger' ? 'error' : type, title: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true });
-  }
+    // ── Delete ─────────────────────────────────────────────────
+    window.deleteSlide = function (id) {
+      Swal.fire({
+        title: "Delete this slide?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete",
+        confirmButtonColor: "#e94560",
+        cancelButtonText: "Cancel",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const res = await fetch(`/admin/hero/${id}`, {
+              method: "DELETE",
+              credentials: "same-origin",
+            });
+            const json = await res.json();
+            if (json.success) {
+              await loadSlides();
+              showToast("Slide deleted!", "success");
+            } else throw new Error(json.message);
+          } catch (e) {
+            showToast("Failed to delete slide", "danger");
+          }
+        }
+      });
+    };
 
-  loadSlides();
-})();
+    // ── Toast helper ───────────────────────────────────────────
+    function showToast(msg, type = "success") {
+      const colors = {
+        success: "#1a9e6e",
+        danger: "#e94560",
+        warning: "#f59e0b",
+      };
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: type === "danger" ? "error" : type,
+        title: msg,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    }
+
+    loadSlides();
+  })();
 </script>

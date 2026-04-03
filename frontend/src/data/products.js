@@ -7,7 +7,7 @@ const mapProduct = (product) => ({
 });
 
 export const fetchProducts = async (params = {}) => {
-  // If there's a text search query, use Elasticsearch
+  // ── Elasticsearch path (text search) ────────────────────────────────────
   if (params.search && params.search.trim()) {
     const query = new URLSearchParams();
     query.set("q", params.search.trim());
@@ -15,6 +15,12 @@ export const fetchProducts = async (params = {}) => {
     if (params.subCategoryId) query.set("subCategory", params.subCategoryId);
     if (params.page) query.set("page", params.page);
     if (params.limit) query.set("limit", params.limit);
+    // pass filter/sort params to search as well
+    if (params.sortBy) query.set("sortBy", params.sortBy);
+    if (params.priceMin) query.set("priceMin", params.priceMin);
+    if (params.priceMax) query.set("priceMax", params.priceMax);
+    if (params.minDiscount) query.set("minDiscount", params.minDiscount);
+    if (params.discountOnly) query.set("discountOnly", "true");
 
     const res = await api.get(`/products/search?${query.toString()}`);
     const { products, total } = res.data.data;
@@ -33,18 +39,34 @@ export const fetchProducts = async (params = {}) => {
     };
   }
 
-  // No search query — keep using PostgreSQL (browsing by category etc.)
+  // ── PostgreSQL path (browse / filter / sort) ─────────────────────────────
   const query = new URLSearchParams();
-  if (params.categoryId)
+
+  // Category / subcategory — support multiple ids
+  if (params.categoryId) {
     String(params.categoryId)
       .split(",")
       .forEach((id) => id.trim() && query.append("categoryId", id.trim()));
-  if (params.subCategoryId)
+  }
+  if (params.subCategoryId) {
     String(params.subCategoryId)
       .split(",")
       .forEach((id) => id.trim() && query.append("subCategoryId", id.trim()));
+  }
+
+  // Pagination
   if (params.page) query.set("page", params.page);
   if (params.limit) query.set("limit", params.limit);
+
+  // ── ALL FILTER & SORT PARAMS ─────────────────────────────────────────────
+  if (params.sortBy) query.set("sortBy", params.sortBy);
+  if (params.priceMin !== undefined && params.priceMin !== "")
+    query.set("priceMin", params.priceMin);
+  if (params.priceMax !== undefined && params.priceMax !== "")
+    query.set("priceMax", params.priceMax);
+  if (params.minDiscount !== undefined && params.minDiscount !== null)
+    query.set("minDiscount", params.minDiscount);
+  if (params.discountOnly) query.set("discountOnly", "true");
 
   const res = await api.get(`/products?${query.toString()}`);
   const { products, pagination } = res.data.data;
@@ -53,6 +75,27 @@ export const fetchProducts = async (params = {}) => {
     products: products.map(mapProduct),
     pagination,
   };
+};
+
+/**
+ * Fetch filter metadata for the current category/subcategory selection.
+ * Uses a dedicated lightweight backend endpoint instead of fetching 500 products.
+ */
+export const fetchFilterMeta = async (params = {}) => {
+  const query = new URLSearchParams();
+  if (params.categoryId) {
+    String(params.categoryId)
+      .split(",")
+      .forEach((id) => id.trim() && query.append("categoryId", id.trim()));
+  }
+  if (params.subCategoryId) {
+    String(params.subCategoryId)
+      .split(",")
+      .forEach((id) => id.trim() && query.append("subCategoryId", id.trim()));
+  }
+
+  const res = await api.get(`/products/filter-meta?${query.toString()}`);
+  return res.data.data; // { minPrice, maxPrice, availableDiscounts }
 };
 
 export const fetchProductById = async (id) => {

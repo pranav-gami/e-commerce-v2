@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "npx nodemon",
+    "seed": "ts-node src/scripts/runSeed.ts",
     "build": "tsc && tsc-alias && cp -r src/views dist/views",
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev --name",
@@ -18,9 +19,6 @@
   "license": "ISC",
   "engines": {
     "node": ">=22.10.0"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
   },
   "description": "",
   "dependencies": {

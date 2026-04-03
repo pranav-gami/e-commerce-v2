@@ -74,6 +74,7 @@ export const createRazorpayOrder = async (
   }, 0);
 
   // 5. Resolve coupon (optional)
+  // 5. Resolve coupon (optional)
   let couponId: number | null = null;
   let couponDiscount = 0;
   let appliedCouponCode: string | null = null;
@@ -81,9 +82,6 @@ export const createRazorpayOrder = async (
   if (couponCode) {
     const coupon = await prisma.coupon.findUnique({
       where: { code: couponCode.trim().toUpperCase() },
-      include: {
-        category: { select: { subCategories: { select: { id: true } } } },
-      },
     });
 
     if (!coupon || !coupon.isActive)
@@ -92,35 +90,15 @@ export const createRazorpayOrder = async (
     if (coupon.expiresAt && coupon.expiresAt < new Date())
       throw new ApiError(400, "Coupon has expired");
 
-    if (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit)
-      throw new ApiError(400, "Coupon usage limit reached");
-
     const alreadyUsed = await prisma.couponUsage.findUnique({
       where: { couponId_userId: { couponId: coupon.id, userId } },
     });
     if (alreadyUsed)
       throw new ApiError(400, "You have already used this coupon");
 
-    // Find eligible items (matching the coupon's category via subCategory)
-    const subCategoryIds = coupon.category.subCategories.map((s) => s.id);
-    const eligibleItems = cart.items.filter(
-      (item) =>
-        item.product.subCategoryId &&
-        subCategoryIds.includes(item.product.subCategoryId),
-    );
-
-    if (eligibleItems.length === 0)
-      throw new ApiError(400, "No cart items qualify for this coupon category");
-
-    const eligibleSubtotal = eligibleItems.reduce((sum, item) => {
-      const dp =
-        item.product.price -
-        (item.product.price * (item.product.discount || 0)) / 100;
-      return sum + dp * item.quantity;
-    }, 0);
-
+    // Apply discount to full cart total
     couponDiscount = parseFloat(
-      ((eligibleSubtotal * coupon.discountPct) / 100).toFixed(2),
+      ((baseTotal * coupon.discountPct) / 100).toFixed(2),
     );
     couponId = coupon.id;
     appliedCouponCode = coupon.code;

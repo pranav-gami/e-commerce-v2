@@ -20,7 +20,7 @@
 
   <div id="kt_app_content" class="app-content flex-column-fluid">
     <div id="kt_app_content_container" class="app-container container-xxl">
-      <div class="card mw-600px mx-auto">
+      <div class="card">
         <div class="card-header border-0 pt-6">
           <h3 class="card-title fw-bold text-dark"><%= editMode ? 'Edit Coupon' : 'Create New Coupon' %></h3>
         </div>
@@ -65,30 +65,18 @@
               <div class="form-text text-muted">Discount applied on eligible products' subtotal.</div>
             </div>
 
-            <!-- Category -->
-            <div class="mb-5">
-              <label class="form-label required fw-semibold">Category</label>
-              <select name="categoryId" class="form-select form-select-solid" required>
-                <option value="">Select Category</option>
-                <% categories.forEach(cat => { %>
-                  <option value="<%= cat.id %>" <%= editMode && coupon && coupon.categoryId === cat.id ? 'selected' : '' %>>
-                    <%= cat.name %>
-                  </option>
-                <% }) %>
-              </select>
-              <div class="form-text text-muted">Coupon will only apply to products in this category.</div>
-            </div>
 
             <!-- Usage Limit -->
             <div class="mb-5">
-              <label class="form-label fw-semibold">Usage Limit <span class="text-muted fs-8">(optional)</span></label>
+              <label class="form-label fw-semibold required">Usage Limit</label>
               <input
                 type="number"
                 name="usageLimit"
                 class="form-control form-control-solid"
-                placeholder="Leave empty for unlimited"
+                placeholder="e.g.100"
                 min="1"
-                value="<%= editMode && coupon && coupon.usageLimit ? coupon.usageLimit : '' %>"
+                value="<%= editMode && coupon && coupon.usageLimit %>"
+                required
               />
               <div class="form-text text-muted">Total number of times this coupon can be used across all users.</div>
             </div>
@@ -145,7 +133,6 @@ document.getElementById('couponForm').addEventListener('submit', async (e) => {
 
   const alertBox = document.getElementById('alertBox');
   const submitBtn = document.getElementById('submitBtn');
-  const btnText = document.getElementById('btnText');
   const btnSpinner = document.getElementById('btnSpinner');
 
   alertBox.className = 'alert d-none mb-5';
@@ -153,14 +140,26 @@ document.getElementById('couponForm').addEventListener('submit', async (e) => {
   const form = e.target;
   const code = form.code.value.trim().toUpperCase();
   const discountPct = Number(form.discountPct.value);
-  const categoryId = Number(form.categoryId.value);
-  const usageLimit = form.usageLimit.value ? Number(form.usageLimit.value) : null;
+  const usageLimit = Number(form.usageLimit.value || 100); // default fallback
   const expiresAt = form.expiresAt.value || null;
   const isActive = form.isActive.checked;
 
-  if (!code || !discountPct || !categoryId) {
+  // validation
+  if (!code || !discountPct) {
     alertBox.className = 'alert alert-danger mb-5';
     alertBox.textContent = 'Please fill in all required fields.';
+    return;
+  }
+
+  if (discountPct <= 0 || discountPct > 100) {
+    alertBox.className = 'alert alert-danger mb-5';
+    alertBox.textContent = 'Discount must be between 1 and 100.';
+    return;
+  }
+
+  if (usageLimit < 1) {
+    alertBox.className = 'alert alert-danger mb-5';
+    alertBox.textContent = 'Usage limit must be at least 1.';
     return;
   }
 
@@ -177,7 +176,13 @@ document.getElementById('couponForm').addEventListener('submit', async (e) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ code, discountPct, categoryId, usageLimit, expiresAt, isActive })
+      body: JSON.stringify({
+        code,
+        discountPct,
+        usageLimit,
+        expiresAt,
+        isActive
+      })
     });
 
     const json = await res.json();
@@ -185,13 +190,16 @@ document.getElementById('couponForm').addEventListener('submit', async (e) => {
     if (json.success) {
       alertBox.className = 'alert alert-success mb-5';
       alertBox.textContent = json.message || (editMode ? 'Coupon updated!' : 'Coupon created!');
-      if (!editMode) {
-        setTimeout(() => window.location.href = '/admin/coupons', 1200);
-      }
+      
+      setTimeout(() => {
+        window.location.href = '/admin/coupons';
+      }, 1000);
+
     } else {
       alertBox.className = 'alert alert-danger mb-5';
       alertBox.textContent = json.message || 'Something went wrong.';
     }
+
   } catch (err) {
     alertBox.className = 'alert alert-danger mb-5';
     alertBox.textContent = 'Network error. Please try again.';
@@ -201,7 +209,7 @@ document.getElementById('couponForm').addEventListener('submit', async (e) => {
   }
 });
 
-// Force uppercase on code input
+// Force uppercase
 document.querySelector('[name="code"]').addEventListener('input', function() {
   this.value = this.value.toUpperCase();
 });

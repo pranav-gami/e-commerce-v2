@@ -61,7 +61,7 @@ const PaymentGateway = ({ total, addressId, onClose, isPage = false }) => {
         key: keyId,
         amount,
         currency,
-        name: "Shop.in",
+        name: "Myntra",
         description: appliedCoupon
           ? `Order #${orderId} · Coupon ${appliedCoupon.code} applied`
           : `Order #${orderId}`,

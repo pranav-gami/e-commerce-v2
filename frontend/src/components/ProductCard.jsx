@@ -11,7 +11,6 @@ import {
   toggleWishlist,
   selectIsInWishlist,
 } from "../redux/slices/wishlistSlice";
-import { BACKEND_URL } from "../utils/api";
 
 const formatPrice = (price) =>
   new Intl.NumberFormat("en-IN", {

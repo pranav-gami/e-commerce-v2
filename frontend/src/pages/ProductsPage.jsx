@@ -51,11 +51,10 @@ const Pagination = ({ pagination, page, onPage }) => {
           <button
             key={p}
             onClick={() => onPage(p)}
-            className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center border text-sm font-bold transition-colors ${
-              p === page
+            className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center border text-sm font-bold transition-colors ${p === page
                 ? "bg-[#ff3f6c] text-white border-[#ff3f6c]"
                 : "bg-white border-[#d4d5d9] text-[#282c3f] hover:border-[#ff3f6c] hover:text-[#ff3f6c]"
-            }`}
+              }`}
           >
             {p}
           </button>
@@ -141,11 +140,10 @@ const SortDropdown = ({ sortBy, setSortBy }) => {
                 setSortBy(opt.value);
                 setOpen(false);
               }}
-              className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
-                sortBy === opt.value
+              className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${sortBy === opt.value
                   ? "bg-[#fff0f3] text-[#ff3f6c] font-semibold"
                   : "text-[#282c3f] hover:bg-[#f5f5f6]"
-              }`}
+                }`}
             >
               {opt.label}
               {sortBy === opt.value && (
@@ -257,10 +255,24 @@ const MoreModal = ({ title, items, selectedItems, onToggle, onClose }) => {
 // ─── Price Slider ─────────────────────────────────────────────────────────────
 // Key prop on this component forces a full remount when min/max change,
 // so the slider always initialises at the right bounds.
-const PriceSlider = ({ onCommit, catMinPrice, catMaxPrice }) => {
+const PriceSlider = ({ onCommit, catMinPrice, catMaxPrice, priceRange }) => {
   const min = catMinPrice ?? 0;
   const max = catMaxPrice ?? 8000;
+
+  // Display state — updates live while dragging
   const [local, setLocal] = useState([min, max]);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Sync from external changes (category switch, clear filters)
+  useEffect(() => {
+    if (!isDragging) {
+      const committed = [
+        priceRange.min ? Number(priceRange.min) : min,
+        priceRange.max ? Number(priceRange.max) : max,
+      ];
+      setLocal(committed);
+    }
+  }, [min, max, priceRange.min, priceRange.max]);
 
   return (
     <div className="px-2">
@@ -268,11 +280,7 @@ const PriceSlider = ({ onCommit, catMinPrice, catMaxPrice }) => {
         sx={{
           color: "#ff3f6c",
           height: 4,
-          "& .MuiSlider-thumb": {
-            height: 16,
-            width: 16,
-            backgroundColor: "#ff3f6c",
-          },
+          "& .MuiSlider-thumb": { height: 16, width: 16, backgroundColor: "#ff3f6c" },
           "& .MuiSlider-track": { border: "none" },
           "& .MuiSlider-rail": { opacity: 0.3, backgroundColor: "#ccc" },
           "& .MuiSlider-valueLabel": { fontSize: 11, background: "#ff3f6c" },
@@ -281,10 +289,15 @@ const PriceSlider = ({ onCommit, catMinPrice, catMaxPrice }) => {
         min={min}
         max={max}
         step={1}
-        onChange={(_, v) => setLocal(v)}
-        onChangeCommitted={(_, v) =>
-          onCommit({ min: String(v[0]), max: String(v[1]) })
-        }
+        onChange={(_, v) => {
+          setIsDragging(true);
+          setLocal(v);
+        }}
+        onChangeCommitted={(_, v) => {
+          setIsDragging(false);
+          setLocal(v); // lock thumb to final drag position
+          onCommit({ min: String(v[0]), max: String(v[1]) });
+        }}
         valueLabelDisplay="auto"
         valueLabelFormat={(v) => `₹${v.toLocaleString("en-IN")}`}
       />
@@ -743,6 +756,7 @@ const ProductsPage = () => {
           key={sliderKey}
           catMinPrice={catMinPrice}
           catMaxPrice={catMaxPrice}
+          priceRange={priceRange}
           onCommit={setPriceRange}
         />
         {(priceRange.min || priceRange.max) && (
@@ -767,11 +781,10 @@ const ProductsPage = () => {
                 >
                   {/* Custom radio — single click, no double-click needed */}
                   <span
-                    className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-                      isSelected
+                    className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${isSelected
                         ? "border-[#ff3f6c] bg-[#ff3f6c]"
                         : "border-[#94969f] bg-white group-hover:border-[#ff3f6c]"
-                    }`}
+                      }`}
                   >
                     {isSelected && (
                       <span className="w-1.5 h-1.5 rounded-full bg-white block" />

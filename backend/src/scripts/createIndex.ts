@@ -11,7 +11,6 @@ async function createProductIndex() {
   await esClient.indices.create({
     index: "products",
     mappings: {
-      // ← directly here, NO body: wrapper
       properties: {
         id: { type: "integer" },
         name: { type: "text", fields: { keyword: { type: "keyword" } } },

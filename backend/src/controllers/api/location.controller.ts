@@ -1,60 +1,40 @@
-// ============================================================
-//  location.controller.ts
-//  Note: getPostalCodes removed — postal codes now fetched
-//        from postalpincode.in API on frontend (India)
-//        or entered manually (other countries)
-// ============================================================
-
 import { Request, Response } from "express";
-import {
-  getAllCountries,
-  getStatesByCountry,
-  getCitiesByState,
-} from "../../services/api/location.service";
+import { getAllCountries, getStatesByCountry, getCitiesByState } from "../../services/api/location.service";
+import ApiError from "../../utils/ApiError";
+import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 
-// ── GET /users/location/countries ─────────────────────────
-export const getCountries = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
-  try {
+export const getCountries = catchAsyncHandler(
+  async (req: Request, res: Response) => {
     const countries = await getAllCountries();
-    res
-      .status(200)
-      .json({ success: true, count: countries.length, data: countries });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch countries" });
-  }
-};
+    return sendResponse(res, 200, "Countries fetched successfully", {
+      count: countries.length,
+      countries,
+    });
+  },
+);
 
-// ── GET /users/location/states/:countryId ──────────────────
-export const getStates = async (req: Request, res: Response): Promise<void> => {
-  try {
+export const getStates = catchAsyncHandler(
+  async (req: Request, res: Response) => {
     const countryId = parseInt(req.params.countryId);
-    if (isNaN(countryId)) {
-      res.status(400).json({ success: false, message: "Invalid country ID" });
-      return;
-    }
-    const states = await getStatesByCountry(countryId);
-    res.status(200).json({ success: true, count: states.length, data: states });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch states" });
-  }
-};
+    if (isNaN(countryId)) throw new ApiError(400, "Invalid country ID");
 
-// ── GET /users/location/cities/:stateId ───────────────────
-export const getCities = async (req: Request, res: Response): Promise<void> => {
-  try {
+    const states = await getStatesByCountry(countryId);
+    return sendResponse(res, 200, "States fetched successfully", {
+      count: states.length,
+      states,
+    });
+  },
+);
+
+export const getCities = catchAsyncHandler(
+  async (req: Request, res: Response) => {
     const stateId = parseInt(req.params.stateId);
-    if (isNaN(stateId)) {
-      res.status(400).json({ success: false, message: "Invalid state ID" });
-      return;
-    }
+    if (isNaN(stateId)) throw new ApiError(400, "Invalid state ID");
+
     const cities = await getCitiesByState(stateId);
-    res.status(200).json({ success: true, count: cities.length, data: cities });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch cities" });
-  }
-};
+    return sendResponse(res, 200, "Cities fetched successfully", {
+      count: cities.length,
+      cities,
+    });
+  },
+);

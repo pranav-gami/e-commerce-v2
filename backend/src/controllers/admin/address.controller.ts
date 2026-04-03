@@ -1,53 +1,32 @@
 import { Request, Response } from "express";
-import { adminAddressService } from "../../services/admin/address.service";
+import adminAddressService from "../../services/admin/address.service";
+import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 
-export const getAllAddresses = async (req: Request, res: Response) => {
-  try {
+export const getAllAddresses = catchAsyncHandler(
+  async (req: Request, res: Response) => {
     const userId = req.query.userId ? Number(req.query.userId) : undefined;
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const search = req.query.search as string | undefined;
 
-    const data = await adminAddressService.getAll({
-      userId,
-      page,
-      limit,
-      search,
-    });
-    res.status(200).json({ success: true, ...data });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+    const data = await adminAddressService.getAll({ userId, page, limit, search });
+    return sendResponse(res, 200, "Addresses fetched successfully", data);
+  },
+);
 
-export const getAddressesByUser = async (req: Request, res: Response) => {
-  try {
+export const getAddressesByUser = catchAsyncHandler(
+  async (req: Request, res: Response) => {
     const userId = Number(req.params.userId);
     const data = await adminAddressService.getByUser(userId);
-    res.status(200).json({ success: true, ...data });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+    return sendResponse(res, 200, "User addresses fetched successfully", data);
+  },
+);
 
-export const adminUpdateAddress = async (req: Request, res: Response) => {
-  try {
+export const adminUpdateAddress = catchAsyncHandler(
+  async (req: Request, res: Response) => {
     const addressId = Number(req.params.id);
-    const {
-      label,
-      fullName,
-      phone,
-      address,
-      postalCode,
-      countryId,
-      stateId,
-      cityId,
-      isDefault,
-    } = req.body;
+    const { label, fullName, phone, address, postalCode, countryId, stateId, cityId, isDefault } =
+      req.body;
 
     const updated = await adminAddressService.update(addressId, {
       label,
@@ -61,28 +40,14 @@ export const adminUpdateAddress = async (req: Request, res: Response) => {
       isDefault,
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Address updated by admin",
-      address: updated,
-    });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+    return sendResponse(res, 200, "Address updated by admin", { address: updated });
+  },
+);
 
-export const adminDeleteAddress = async (req: Request, res: Response) => {
-  try {
+export const adminDeleteAddress = catchAsyncHandler(
+  async (req: Request, res: Response) => {
     const addressId = Number(req.params.id);
     await adminAddressService.delete(addressId);
-    res
-      .status(200)
-      .json({ success: true, message: "Address deleted by admin" });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+    return sendResponse(res, 200, "Address deleted by admin", null);
+  },
+);

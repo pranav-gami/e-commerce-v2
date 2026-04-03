@@ -11,7 +11,6 @@ import { protect } from "../../middleware/auth.middleware";
 
 const router = Router();
 
-// All routes require authentication
 router.use(protect);
 
 router.get("/", getMyAddresses);

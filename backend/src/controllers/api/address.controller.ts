@@ -1,90 +1,49 @@
 import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth.middleware";
-import { addressService } from "../../services/admin/address.service";
+import addressService from "../../services/api/address.service";
 import { addAddressSchema } from "../../validation/address.validation";
+import ApiError from "../../utils/ApiError";
+import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 
-// ─────────────────────────────────────────────
-// GET /user/addresses
-// ─────────────────────────────────────────────
-export const getMyAddresses = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.user!.id;
-    const addresses = await addressService.getAll(userId);
-    res.status(200).json({ success: true, addresses });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+export const getMyAddresses = catchAsyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) throw new ApiError(401, "Not authenticated");
+    const addresses = await addressService.getAll(req.user.id);
+    return sendResponse(res, 200, "Addresses fetched successfully", {
+      addresses,
+    });
+  },
+);
 
-// ─────────────────────────────────────────────
-// GET /user/addresses/checkout
-// ─────────────────────────────────────────────
-export const getCheckoutAddresses = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.user!.id;
-    const data = await addressService.getCheckoutOptions(userId);
-    res.status(200).json({ success: true, ...data });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+export const getCheckoutAddresses = catchAsyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) throw new ApiError(401, "Not authenticated");
+    const data = await addressService.getCheckoutOptions(req.user.id);
+    return sendResponse(res, 200, "Checkout addresses fetched successfully", data);
+  },
+);
 
-// ─────────────────────────────────────────────
-// POST /user/addresses
-// ─────────────────────────────────────────────
-
-export const addAddress = async (req: AuthRequest, res: Response) => {
-  try {
-    console.log(req.body);
-
-    const userId = req.user!.id;
+export const addAddress = catchAsyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) throw new ApiError(401, "Not authenticated");
 
     const { error, value } = addAddressSchema.validate(req.body);
+    if (error) throw new ApiError(400, error.details[0].message);
 
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.details[0].message,
-      });
-    }
+    const address = await addressService.create(req.user.id, value);
+    return sendResponse(res, 201, "Address added successfully", { address });
+  },
+);
 
-    const created = await addressService.create(userId, value);
+export const updateAddress = catchAsyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) throw new ApiError(401, "Not authenticated");
 
-    res.status(201).json({
-      success: true,
-      message: "Address added successfully",
-      address: created,
-    });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
-// ─────────────────────────────────────────────
-// PUT /user/addresses/:id
-// ─────────────────────────────────────────────
-export const updateAddress = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.user!.id;
     const addressId = Number(req.params.id);
-    const {
-      label,
-      fullName,
-      phone,
-      address,
-      postalCode,
-      countryId,
-      stateId,
-      cityId,
-      isDefault,
-    } = req.body;
+    const { label, fullName, phone, address, postalCode, countryId, stateId, cityId, isDefault } =
+      req.body;
 
-    const updated = await addressService.update(addressId, userId, {
+    const updated = await addressService.update(addressId, req.user.id, {
       label,
       fullName,
       phone,
@@ -96,54 +55,28 @@ export const updateAddress = async (req: AuthRequest, res: Response) => {
       isDefault,
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Address updated successfully",
+    return sendResponse(res, 200, "Address updated successfully", {
       address: updated,
     });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+  },
+);
 
-// ─────────────────────────────────────────────
-// DELETE /user/addresses/:id
-// ─────────────────────────────────────────────
-export const deleteAddress = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.user!.id;
+export const deleteAddress = catchAsyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) throw new ApiError(401, "Not authenticated");
+
     const addressId = Number(req.params.id);
+    await addressService.delete(addressId, req.user.id);
+    return sendResponse(res, 200, "Address deleted successfully", null);
+  },
+);
 
-    await addressService.delete(addressId, userId);
-    res
-      .status(200)
-      .json({ success: true, message: "Address deleted successfully" });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+export const setDefaultAddress = catchAsyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) throw new ApiError(401, "Not authenticated");
 
-// ─────────────────────────────────────────────
-// PATCH /user/addresses/:id/set-default
-// ─────────────────────────────────────────────
-export const setDefaultAddress = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.user!.id;
     const addressId = Number(req.params.id);
-
-    const updated = await addressService.setDefault(addressId, userId);
-    res.status(200).json({
-      success: true,
-      message: "Default address updated",
-      address: updated,
-    });
-  } catch (err: any) {
-    res
-      .status(err.status ?? 500)
-      .json({ success: false, message: err.message });
-  }
-};
+    const address = await addressService.setDefault(addressId, req.user.id);
+    return sendResponse(res, 200, "Default address updated", { address });
+  },
+);

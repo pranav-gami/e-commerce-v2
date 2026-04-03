@@ -6,7 +6,6 @@ import { categoryUpload } from "../../config/multer.config";
 const router = Router();
 router.use(protectCookie);
 
-// ── multer with error handling ────────────────────────────
 const handleUpload = (req: Request, res: Response, next: NextFunction) => {
   categoryUpload.single("image")(req, res, (err: any) => {
     if (err)
@@ -14,14 +13,9 @@ const handleUpload = (req: Request, res: Response, next: NextFunction) => {
     next();
   });
 };
-
-// ── bulk-delete must be before /:id ───────────────────────
 router.post("/bulk-delete", isAdmin, categoryController.bulkDeleteCategories);
-
 router.get("/", isAdmin, categoryController.getAllCategories);
 router.post("/", isAdmin, handleUpload, categoryController.createCategory);
-
-// ── guard non-numeric IDs → 404 page ─────────────────────
 router.get(
   "/:id",
   (req: Request, res: Response, next: NextFunction) => {
@@ -33,7 +27,6 @@ router.get(
   isAdmin,
   categoryController.getCategoryById,
 );
-
 router.put("/:id", isAdmin, handleUpload, categoryController.updateCategory);
 router.delete("/:id", isAdmin, categoryController.deleteCategory);
 

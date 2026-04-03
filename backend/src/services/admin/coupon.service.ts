@@ -1,9 +1,7 @@
 import prisma from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 
-// ─────────────────────────────────────────────
 // CREATE COUPON
-// ─────────────────────────────────────────────
 export const createCoupon = async (data: {
   code: string;
   discountPct: number;
@@ -31,9 +29,7 @@ export const createCoupon = async (data: {
   });
 };
 
-// ─────────────────────────────────────────────
-// GET ALL COUPONS (paginated)
-// ─────────────────────────────────────────────
+// GET ALL COUPONS
 export const getAllCoupons = async (params?: {
   page?: number;
   limit?: number;
@@ -67,9 +63,7 @@ export const getAllCoupons = async (params?: {
   };
 };
 
-// ─────────────────────────────────────────────
 // GET COUPON BY ID
-// ─────────────────────────────────────────────
 export const getCouponById = async (id: number) => {
   const coupon = await prisma.coupon.findUnique({
     where: { id },
@@ -85,9 +79,7 @@ export const getCouponById = async (id: number) => {
   return coupon;
 };
 
-// ─────────────────────────────────────────────
 // UPDATE COUPON
-// ─────────────────────────────────────────────
 export const updateCoupon = async (
   id: number,
   data: {
@@ -130,9 +122,7 @@ export const updateCoupon = async (
   });
 };
 
-// ─────────────────────────────────────────────
 // DELETE COUPON
-// ─────────────────────────────────────────────
 export const deleteCoupon = async (id: number) => {
   const coupon = await prisma.coupon.findUnique({ where: { id } });
   if (!coupon) throw new ApiError(404, "Coupon not found");
@@ -140,9 +130,7 @@ export const deleteCoupon = async (id: number) => {
   return { deleted: true };
 };
 
-// ─────────────────────────────────────────────
 // TOGGLE ACTIVE STATUS
-// ─────────────────────────────────────────────
 export const toggleCouponStatus = async (id: number) => {
   const coupon = await prisma.coupon.findUnique({ where: { id } });
   if (!coupon) throw new ApiError(404, "Coupon not found");

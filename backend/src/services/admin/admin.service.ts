@@ -47,7 +47,6 @@ export const getDashboardStats = async () => {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // Last 7 days for revenue chart
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -59,7 +58,6 @@ export const getDashboardStats = async () => {
     totalSubCategories,
     recentCategories,
     recentUsers,
-    // ✅ NEW analytics data
     totalOrders,
     cancelledOrders,
     orderStatusCounts,
@@ -91,7 +89,6 @@ export const getDashboardStats = async () => {
         createdAt: true,
       },
     }),
-    // ✅ NEW
     prisma.order.count(),
     prisma.order.count({ where: { status: "CANCELLED" } }),
     prisma.order.groupBy({
@@ -124,19 +121,16 @@ export const getDashboardStats = async () => {
     prisma.product.count(),
   ]);
 
-  // ── Total revenue from successful payments ────────────────
   const totalRevenue = successfulPayments.reduce(
     (sum, p) => sum + Number(p.amount),
     0,
   );
 
-  // ── Avg order value ───────────────────────────────────────
   const avgOrderValue =
     successfulPayments.length > 0
       ? Math.round(totalRevenue / successfulPayments.length)
       : 0;
 
-  // ── Order status map for doughnut ─────────────────────────
   const statusMap: Record<string, number> = {
     PENDING: 0,
     CONFIRMED: 0,
@@ -144,11 +138,11 @@ export const getDashboardStats = async () => {
     DELIVERED: 0,
     CANCELLED: 0,
   };
+
   orderStatusCounts.forEach((s) => {
     statusMap[s.status] = s._count.status;
   });
 
-  // ── Revenue chart — last 7 days ───────────────────────────
   const revenueLabels: string[] = [];
   const revenueData: number[] = [];
   for (let i = 6; i >= 0; i--) {
@@ -168,7 +162,6 @@ export const getDashboardStats = async () => {
     revenueData.push(Math.round(dayTotal));
   }
 
-  // ── Top categories by items sold ──────────────────────────
   const topCategories = allCategories
     .map((cat) => {
       let sold = 0;
@@ -182,7 +175,6 @@ export const getDashboardStats = async () => {
     .sort((a, b) => b.sold - a.sold)
     .slice(0, 5);
 
-  // ── Recent orders formatted ───────────────────────────────
   const recentOrdersFormatted = recentOrders.map((o) => ({
     id: o.id,
     userName: o.user?.name || "Unknown",
@@ -192,7 +184,6 @@ export const getDashboardStats = async () => {
   }));
 
   return {
-    // existing
     totalUsers,
     newUsersThisMonth,
     totalAccounts,
@@ -200,7 +191,6 @@ export const getDashboardStats = async () => {
     totalSubCategories,
     recentCategories,
     recentUsers,
-    // ✅ new analytics
     totalOrders,
     cancelledOrders,
     totalRevenue: Math.round(totalRevenue),
@@ -294,12 +284,12 @@ export const getUserList = async ({
 }) => {
   const where = search
     ? {
-        role: "USER" as const,
-        OR: [
-          { name: { contains: search, mode: "insensitive" as const } },
-          { email: { contains: search, mode: "insensitive" as const } },
-        ],
-      }
+      role: "USER" as const,
+      OR: [
+        { name: { contains: search, mode: "insensitive" as const } },
+        { email: { contains: search, mode: "insensitive" as const } },
+      ],
+    }
     : { role: "USER" as const };
 
   const [users, total, filtered] = await Promise.all([

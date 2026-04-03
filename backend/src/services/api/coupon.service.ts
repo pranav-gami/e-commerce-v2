@@ -1,10 +1,6 @@
 import prisma from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 
-// ─────────────────────────────────────────────
-// VALIDATE & PREVIEW COUPON
-// Returns coupon details + eligibility for the current cart
-// ─────────────────────────────────────────────
 export const validateCoupon = async (userId: number, code: string) => {
   const coupon = await prisma.coupon.findUnique({
     where: { code: code.trim().toUpperCase() },
@@ -13,22 +9,18 @@ export const validateCoupon = async (userId: number, code: string) => {
   if (!coupon) throw new ApiError(404, "Coupon not found");
   if (!coupon.isActive) throw new ApiError(400, "Coupon is not active");
 
-  // expiry
   if (coupon.expiresAt && coupon.expiresAt < new Date())
     throw new ApiError(400, "Coupon has expired");
 
-  // usage limit (fixed)
   if (coupon.usageCount >= coupon.usageLimit)
     throw new ApiError(400, "Coupon usage limit reached");
 
-  // already used by user
   const alreadyUsed = await prisma.couponUsage.findUnique({
     where: { couponId_userId: { couponId: coupon.id, userId } },
   });
 
   if (alreadyUsed) throw new ApiError(400, "You have already used this coupon");
 
-  // cart
   const cart = await prisma.cart.findUnique({
     where: { userId },
     include: {
@@ -48,7 +40,6 @@ export const validateCoupon = async (userId: number, code: string) => {
   if (!cart || cart.items.length === 0)
     throw new ApiError(400, "Your cart is empty");
 
-  // calculate cart total (single source)
   const cartTotal = cart.items.reduce((sum, item) => {
     const discountedPrice =
       item.product.price -
@@ -57,7 +48,6 @@ export const validateCoupon = async (userId: number, code: string) => {
     return sum + discountedPrice * item.quantity;
   }, 0);
 
-  // apply coupon on full cart
   const discountAmount = parseFloat(
     ((cartTotal * coupon.discountPct) / 100).toFixed(2),
   );
@@ -80,10 +70,6 @@ export const validateCoupon = async (userId: number, code: string) => {
   };
 };
 
-// ─────────────────────────────────────────────
-// GET AVAILABLE COUPONS FOR USER'S CART
-// Returns coupons user hasn't used that match items in cart
-// ─────────────────────────────────────────────
 export const getAvailableCoupons = async (userId: number) => {
   const usedCouponIds = await prisma.couponUsage
     .findMany({
@@ -119,9 +105,6 @@ export const getAvailableCoupons = async (userId: number) => {
   }));
 };
 
-// ─────────────────────────────────────────────
-// RECORD COUPON USAGE  (called inside order creation)
-// ─────────────────────────────────────────────
 export const recordCouponUsage = async (
   tx: any,
   couponId: number,

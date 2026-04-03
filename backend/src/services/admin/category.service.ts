@@ -20,7 +20,7 @@ export const deleteFile = (url: string) => {
       url.replace("/uploads/", ""),
     );
     if (fs.existsSync(abs)) fs.unlinkSync(abs);
-  } catch (_) {}
+  } catch (_) { }
 };
 
 export const createCategory = async (data: {
@@ -45,7 +45,7 @@ export const createCategory = async (data: {
   });
 };
 
-// ── get all categories
+//get all categories
 export const getAllCategories = async () => {
   return prisma.category.findMany({
     include: {
@@ -67,23 +67,6 @@ export const getCategoryById = async (id: number) => {
   });
 
   if (!category) throw new ApiError(404, `Category with id ${id} not found`);
-  return category;
-};
-//get one categories by slug
-export const getCategoryBySlug = async (slug: string) => {
-  if (!slug) throw new ApiError(400, "Slug is required");
-
-  const category = await prisma.category.findUnique({
-    where: { slug },
-    include: {
-      subCategories: {
-        select: { id: true, name: true, description: true },
-      },
-    },
-  });
-
-  if (!category) throw new ApiError(404, `Category "${slug}" not found`);
-
   return category;
 };
 

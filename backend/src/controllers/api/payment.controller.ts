@@ -4,8 +4,6 @@ import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 import { AuthRequest } from "../../middleware/auth.middleware";
 import ApiError from "../../utils/ApiError";
 
-// POST /users/payment/create-order
-// Body: { addressId, couponCode? }
 export const createOrder = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
@@ -24,7 +22,6 @@ export const createOrder = catchAsyncHandler(
   },
 );
 
-// POST /users/payment/verify
 export const verifyPayment = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
@@ -51,7 +48,6 @@ export const verifyPayment = catchAsyncHandler(
   },
 );
 
-// POST /users/payment/webhook/razorpay
 export const handleWebhook = catchAsyncHandler(
   async (req: any, res: Response) => {
     const signature = req.headers["x-razorpay-signature"] as string;

@@ -26,7 +26,6 @@ export const searchProducts = async ({
   const must: any[] = [];
   const filter: any[] = [];
 
-  // Full-text search — name weighted 3x, handles typos
   if (query && query.trim()) {
     must.push({
       multi_match: {
@@ -39,7 +38,6 @@ export const searchProducts = async ({
     must.push({ match_all: {} });
   }
 
-  // Always exclude INACTIVE products from search
   filter.push({ term: { status: "ACTIVE" } });
 
   if (category) filter.push({ term: { category } });
@@ -52,7 +50,6 @@ export const searchProducts = async ({
     filter.push({ range: { price: range } });
   }
 
-  // Sorting
   let sort: any[] = ["_score"];
   if (sortBy === "price_asc") sort = [{ price: "asc" }];
   if (sortBy === "price_desc") sort = [{ price: "desc" }];
@@ -113,7 +110,7 @@ export const autocompleteProducts = async (query: string) => {
           size: 6,
           skip_duplicates: true,
           fuzzy: {
-            fuzziness: 1, // handles 1 typo
+            fuzziness: 1,
           },
         },
       },

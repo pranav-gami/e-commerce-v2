@@ -8,7 +8,7 @@ import heroRoute from "./hero.routes";
 import addressRoute from "./address.routes";
 import paymentRoute from "./payment.routes";
 import reviewRoute from "./review.routes";
-import couponRoute from "./coupon.routes"; // ← NEW
+import couponRoute from "./coupon.routes";
 
 const modules = [
   { route: "/", router: authRoute },
@@ -20,7 +20,7 @@ const modules = [
   { route: "/payments", router: paymentRoute },
   { route: "/addresses", router: addressRoute },
   { route: "/reviews", router: reviewRoute },
-  { route: "/coupons", router: couponRoute }, // ← NEW
+  { route: "/coupons", router: couponRoute },
 ];
 
 const router = Router();

@@ -5,7 +5,6 @@ import generateToken from "../../utils/generateToken";
 import { generateOtp } from "../../utils/generateOtp";
 import { sendOtpEmail } from "../../config/mailer";
 
-// ── Updated interface — postalCode is now a plain string ──
 interface RegisterUserInput {
   name: string;
   email: string;
@@ -15,7 +14,7 @@ interface RegisterUserInput {
   countryId: number;
   stateId: number;
   cityId: number;
-  postalCode: string; // ✅ string
+  postalCode: string;
 }
 
 const registerUser = async (data: RegisterUserInput) => {
@@ -46,17 +45,26 @@ const registerUser = async (data: RegisterUserInput) => {
       countryId: Number(countryId),
       stateId: Number(stateId),
       cityId: Number(cityId),
-      postalCode, // ✅ plain string
+      postalCode,
+    },
+  });
+
+  await prisma.address.create({
+    data: {
+      userId: user.id,
+      fullName: name,
+      phone,
+      address,
+      postalCode,
+      countryId: Number(countryId),
+      stateId: Number(stateId),
+      cityId: Number(cityId),
+      isDefault: true,
     },
   });
 
   return { user };
 };
-
-interface LoginInput {
-  email: string;
-  password: string;
-}
 
 const sendSignupOtp = async (email: string) => {
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -89,6 +97,11 @@ const verifySignupOtp = async (email: string, otp: string) => {
   return { message: "Email verified successfully", verified: true };
 };
 
+interface LoginInput {
+  email: string;
+  password: string;
+}
+
 const loginUser = async (data: LoginInput) => {
   const { email, password } = data;
 
@@ -113,7 +126,7 @@ const getProfile = async (userId: number) => {
       role: true,
       address: true,
       phone: true,
-      postalCode: true, // ✅ plain string
+      postalCode: true,
       country: {
         select: {
           id: true,
@@ -132,7 +145,6 @@ const getProfile = async (userId: number) => {
   return user;
 };
 
-// ── Updated interface — postalCode is string ──
 interface UpdateProfileInput {
   name?: string;
   phone?: string;
@@ -140,7 +152,7 @@ interface UpdateProfileInput {
   countryId?: number;
   stateId?: number;
   cityId?: number;
-  postalCode?: string; // ✅ string
+  postalCode?: string;
 }
 
 const updateProfile = async (userId: number, data: UpdateProfileInput) => {
@@ -153,7 +165,7 @@ const updateProfile = async (userId: number, data: UpdateProfileInput) => {
       name: data.name ?? user.name,
       phone: data.phone ?? user.phone,
       address: data.address ?? user.address,
-      postalCode: data.postalCode ?? user.postalCode, // ✅ string
+      postalCode: data.postalCode ?? user.postalCode,
       countryId: data.countryId ? Number(data.countryId) : user.countryId,
       stateId: data.stateId ? Number(data.stateId) : user.stateId,
       cityId: data.cityId ? Number(data.cityId) : user.cityId,
@@ -164,7 +176,7 @@ const updateProfile = async (userId: number, data: UpdateProfileInput) => {
       name: true,
       phone: true,
       address: true,
-      postalCode: true, // ✅ plain string
+      postalCode: true,
       country: {
         select: {
           id: true,

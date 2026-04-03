@@ -12,13 +12,10 @@ import {
 
 const router = express.Router();
 
-// ── Auth ──────────────────────────────────────────────────
 router.post("/register", validate(registerSchema), userController.register);
 router.post("/send-signup-otp", userController.sendSignupOtp);
 router.post("/verify-signup-otp", userController.verifySignupOtp);
 router.post("/login", validate(loginSchema), userController.login);
-
-// ── Profile ───────────────────────────────────────────────
 router.get("/profile", protect, userController.getProfile);
 router.put(
   "/profile",
@@ -26,8 +23,6 @@ router.put(
   validate(updateProfileSchema),
   userController.updateProfile,
 );
-
-// ── Password ──────────────────────────────────────────────
 router.post(
   "/forgot-password",
   validate(forgotPasswordSchema),
@@ -42,8 +37,6 @@ router.post(
   validate(changePasswordSchema),
   userController.changePassword,
 );
-
-// ── Account ───────────────────────────────────────────────
 router.delete("/delete-account", protect, userController.deleteAccount);
 router.post("/logout", protect, userController.logout);
 

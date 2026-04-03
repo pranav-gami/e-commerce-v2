@@ -6,7 +6,6 @@ export const getAllSubCategories = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const rawCategoryId = req.query.categoryId;
 
-    // Support single or multiple categoryId: ?categoryId=1 or ?categoryId=1&categoryId=2
     let categoryIds: number[] | undefined;
     if (rawCategoryId) {
       categoryIds = (

@@ -7,7 +7,6 @@ const router = Router();
 
 router.use(protectCookie);
 
-// ── multer with error handling ────────────────────────────
 const uploadFields = productUpload.fields([
   { name: "image", maxCount: 1 },
   { name: "images", maxCount: 5 },
@@ -21,15 +20,11 @@ const handleUpload = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-// ── view routes ───────────────────────────────────────────
-router.get("/add", productController.getAddProductPage); // must be before /:id
-router.get("/:id/edit", productController.getEditProductPage); // must be before /:id
-router.get("/", productController.getProductsPage); // handles both HTML and JSON
+router.get("/add", productController.getAddProductPage);
+router.get("/:id/edit", productController.getEditProductPage);
+router.get("/", productController.getProductsPage);
 router.post("/", isAdmin, handleUpload, productController.createProducts);
-// ── API + page routes ─────────────────────────────────────
 router.post("/bulk-delete", isAdmin, productController.bulkDeleteProducts);
-
-// ── guard non-numeric IDs → 404 page ─────────────────────
 router.get(
   "/:id",
   (req: Request, res: Response, next: NextFunction) => {
@@ -41,7 +36,6 @@ router.get(
   isAdmin,
   productController.getProductById,
 );
-
 router.put("/:id", isAdmin, handleUpload, productController.updateProduct);
 router.delete("/:id", isAdmin, productController.deleteProduct);
 router.patch("/:id/featured", isAdmin, productController.toggleFeatured);

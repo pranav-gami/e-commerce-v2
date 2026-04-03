@@ -1,15 +1,21 @@
+var api = new $.fn.dataTable.Api(settings);
+api.processing(true);
+api.processing(false);
 const NO_OF_PAGES_TO_CACHE = 5;
 
 $.fn.dataTable = $.fn.dataTable || {};
 $.fn.dataTable.pipeline = function (opts) {
     // Configuration options
-    var conf = $.extend({
-        pages: NO_OF_PAGES_TO_CACHE,     // number of pages to cache
-        url: '',      // script url
-        data: null,   // function or object with parameters to send to the server
-        // matching how `ajax.data` works in DataTables
-        method: 'GET' // Ajax HTTP method
-    }, opts);
+    var conf = $.extend(
+        {
+            pages: NO_OF_PAGES_TO_CACHE, // number of pages to cache
+            url: '', // script url
+            data: null, // function or object with parameters to send to the server
+            // matching how `ajax.data` works in DataTables
+            method: 'GET', // Ajax HTTP method
+        },
+        opts,
+    );
 
     // Private variables for storing the cache
     var cacheLower = -1;
@@ -28,12 +34,11 @@ $.fn.dataTable.pipeline = function (opts) {
             // API requested that the cache be cleared
             ajax = true;
             settings.clearCache = false;
-        }
-        else if (cacheLower < 0 || requestStart < cacheLower || requestEnd > cacheUpper) {
+        } else if (cacheLower < 0 || requestStart < cacheLower || requestEnd > cacheUpper) {
             // outside cached data - need to make a request
             ajax = true;
-        }
-        else if (JSON.stringify(request.order) !== JSON.stringify(cacheLastRequest.order) ||
+        } else if (
+            JSON.stringify(request.order) !== JSON.stringify(cacheLastRequest.order) ||
             JSON.stringify(request.columns) !== JSON.stringify(cacheLastRequest.columns) ||
             JSON.stringify(request.search) !== JSON.stringify(cacheLastRequest.search)
         ) {
@@ -47,7 +52,7 @@ $.fn.dataTable.pipeline = function (opts) {
         if (ajax) {
             // Need data from the server
             if (requestStart < cacheLower) {
-                requestStart = requestStart - (requestLength * (conf.pages - 1));
+                requestStart = requestStart - requestLength * (conf.pages - 1);
 
                 if (requestStart < 0) {
                     requestStart = 0;
@@ -55,7 +60,7 @@ $.fn.dataTable.pipeline = function (opts) {
             }
 
             cacheLower = requestStart;
-            cacheUpper = requestStart + (requestLength * conf.pages);
+            cacheUpper = requestStart + requestLength * conf.pages;
 
             request.start = requestStart;
             request.length = requestLength * conf.pages;
@@ -69,19 +74,18 @@ $.fn.dataTable.pipeline = function (opts) {
                 if (d) {
                     $.extend(request, d);
                 }
-            }
-            else if ($.isPlainObject(conf.data)) {
+            } else if ($.isPlainObject(conf.data)) {
                 // As an object, the data given extends the default
                 $.extend(request, conf.data);
             }
 
             return $.ajax({
-                "type": conf.method,
-                "url": conf.url,
-                "data": request,
-                "dataType": "json",
-                "cache": false,
-                "success": function (json) {
+                'type': conf.method,
+                'url': conf.url,
+                'data': request,
+                'dataType': 'json',
+                'cache': false,
+                'success': function (json) {
                     cacheLastJson = $.extend(true, {}, json);
 
                     if (cacheLower != drawStart) {
@@ -92,10 +96,9 @@ $.fn.dataTable.pipeline = function (opts) {
                     }
 
                     drawCallback(json);
-                }
+                },
             });
-        }
-        else {
+        } else {
             json = $.extend(true, {}, cacheLastJson);
             json.draw = request.draw; // Update the echo for each response
             json.data.splice(0, requestStart - cacheLower);
@@ -103,7 +106,7 @@ $.fn.dataTable.pipeline = function (opts) {
 
             drawCallback(json);
         }
-    }
+    };
 };
 
 // Register an API method that will empty the pipelined data, forcing an Ajax

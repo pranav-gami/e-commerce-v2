@@ -4,14 +4,14 @@ import ApiError from "../../utils/ApiError";
 import * as fs from "fs";
 import * as path from "path";
 
-// ── Get all slides (admin — all including inactive) ────────
+//Get all slides
 export const getAllSlides = async () => {
   return await prisma.heroSlide.findMany({
     orderBy: { order: "asc" },
   });
 };
 
-// ── Get active slides only (frontend) ─────────────────────
+//Get active slides only (frontend)
 export const getActiveSlides = async () => {
   return await prisma.heroSlide.findMany({
     where: { isActive: true },
@@ -19,14 +19,14 @@ export const getActiveSlides = async () => {
   });
 };
 
-// ── Get single slide ───────────────────────────────────────
+//Get single slide
 export const getSlideById = async (id: number) => {
   const slide = await prisma.heroSlide.findUnique({ where: { id } });
   if (!slide) throw new ApiError(404, "Slide not found");
   return slide;
 };
 
-// ── Create slide ───────────────────────────────────────────
+//Create slide
 export const createSlide = async (data: {
   image: string;
   eyebrow: string;
@@ -47,7 +47,7 @@ export const createSlide = async (data: {
   return await prisma.heroSlide.create({ data });
 };
 
-// ── Update slide ───────────────────────────────────────────
+//Update slide
 export const updateSlide = async (
   id: number,
   data: {
@@ -69,7 +69,7 @@ export const updateSlide = async (
   });
 };
 
-// ── Delete slide ───────────────────────────────────────────
+//Delete slide 
 export const deleteSlide = async (id: number) => {
   const slide = await prisma.heroSlide.findUnique({ where: { id } });
   if (!slide) throw new ApiError(404, "Slide not found");
@@ -85,7 +85,7 @@ export const deleteSlide = async (id: number) => {
   return await prisma.heroSlide.delete({ where: { id } });
 };
 
-// ── Toggle active/inactive ─────────────────────────────────
+//Toggle active/inactive
 export const toggleSlideActive = async (id: number) => {
   const slide = await prisma.heroSlide.findUnique({ where: { id } });
   if (!slide) throw new ApiError(404, "Slide not found");
@@ -96,8 +96,7 @@ export const toggleSlideActive = async (id: number) => {
   });
 };
 
-// ── Reorder slides ─────────────────────────────────────────
-// Accepts array of { id, order } and updates all in one transaction
+//Reorder slides
 export const reorderSlides = async (items: { id: number; order: number }[]) => {
   const updates = items.map((item) =>
     prisma.heroSlide.update({

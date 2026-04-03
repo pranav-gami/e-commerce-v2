@@ -45,31 +45,14 @@ const STATUS_CONFIG = {
 const getDisplayStatus = (order) => {
   if (order.status === "CANCELLED") {
     if (order.payment?.status === "REFUNDED")
-      return {
-        label: "Refunded",
-        classes: "bg-teal-100 text-teal-700 border border-teal-200",
-      };
+      return { label: "Refunded", classes: "bg-teal-100 text-teal-700 border border-teal-200" };
     if (order.payment?.status === "PARTIALLY_REFUNDED")
-      return {
-        label: "Refund in Process...",
-        classes: "bg-teal-100 text-teal-700 border border-teal-200",
-      };
+      return { label: "Refund in Process...", classes: "bg-teal-100 text-teal-700 border border-teal-200" };
     if (order.payment?.status === "SUCCESS")
-      return {
-        label: "Refund in Process",
-        classes: "bg-yellow-100 text-yellow-700 border border-yellow-200",
-      };
-    return {
-      label: "Cancellation requested",
-      classes: "bg-orange-100 text-orange-700 border border-orange-200",
-    };
+      return { label: "Refund in Process", classes: "bg-yellow-100 text-yellow-700 border border-yellow-200" };
+    return { label: "Cancellation requested", classes: "bg-orange-100 text-orange-700 border border-orange-200" };
   }
-  return (
-    STATUS_CONFIG[order.status] || {
-      label: order.status,
-      classes: "bg-brand-light text-brand-gray",
-    }
-  );
+  return STATUS_CONFIG[order.status] || { label: order.status, classes: "bg-brand-light text-brand-gray" };
 };
 
 const STEPS = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED"];
@@ -88,32 +71,20 @@ const Pagination = ({ pagination, page, onPage }) => {
   }
 
   return (
-    <div className="flex items-center justify-center gap-1.5 mt-8">
+    <div className="flex items-center justify-center gap-1.5 mt-8 flex-wrap">
       <button
         onClick={() => onPage(page - 1)}
         disabled={!hasPrevPage}
         className="w-9 h-9 flex items-center justify-center border border-brand-border rounded text-brand-gray hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
 
       {pages.map((p, i) =>
         p === "..." ? (
-          <span
-            key={`dots-${i}`}
-            className="w-9 h-9 flex items-center justify-center text-brand-gray text-sm"
-          >
-            …
-          </span>
+          <span key={`dots-${i}`} className="w-9 h-9 flex items-center justify-center text-brand-gray text-sm">…</span>
         ) : (
           <button
             key={p}
@@ -134,14 +105,7 @@ const Pagination = ({ pagination, page, onPage }) => {
         disabled={!hasNextPage}
         className="w-9 h-9 flex items-center justify-center border border-brand-border rounded text-brand-gray hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
@@ -149,25 +113,23 @@ const Pagination = ({ pagination, page, onPage }) => {
   );
 };
 
-const StarRating = ({ value = 0, onChange }) => {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <svg
-          key={star}
-          onClick={() => onChange(star)}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill={star <= value ? "#facc15" : "none"}
-          stroke="#facc15"
-          className="w-5 h-5 cursor-pointer"
-        >
-          <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z" />
-        </svg>
-      ))}
-    </div>
-  );
-};
+const StarRating = ({ value = 0, onChange }) => (
+  <div className="flex gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <svg
+        key={star}
+        onClick={() => onChange(star)}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill={star <= value ? "#facc15" : "none"}
+        stroke="#facc15"
+        className="w-5 h-5 cursor-pointer"
+      >
+        <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z" />
+      </svg>
+    ))}
+  </div>
+);
 
 const OrdersPage = () => {
   const [editingReview, setEditingReview] = useState(null);
@@ -184,15 +146,10 @@ const OrdersPage = () => {
   const [submittingReview, setSubmittingReview] = useState(null);
   const [userReviews, setUserReviews] = useState([]);
 
-  useEffect(() => {
-    document.title = "My Orders";
-  }, []);
+  useEffect(() => { document.title = "My Orders"; }, []);
 
   const handleReviewChange = (productId, field, value) => {
-    setReviewData((prev) => ({
-      ...prev,
-      [productId]: { ...prev[productId], [field]: value },
-    }));
+    setReviewData((prev) => ({ ...prev, [productId]: { ...prev[productId], [field]: value } }));
   };
 
   useEffect(() => {
@@ -203,13 +160,10 @@ const OrdersPage = () => {
     loadReviews();
   }, []);
 
-  const findReview = (productId, orderId) => {
-    return userReviews.find(
-      (r) =>
-        Number(r.productId) === Number(productId) &&
-        Number(r.orderId) === Number(orderId),
+  const findReview = (productId, orderId) =>
+    userReviews.find(
+      (r) => Number(r.productId) === Number(productId) && Number(r.orderId) === Number(orderId),
     );
-  };
 
   const submitReview = async (productId, orderId) => {
     try {
@@ -241,14 +195,10 @@ const OrdersPage = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getOrders({
-        page: p,
-        limit: LIMIT,
-        status: status || undefined,
-      });
+      const data = await getOrders({ page: p, limit: LIMIT, status: status || undefined });
       setOrders(data.orders || []);
       setPagination(data.pagination || null);
-    } catch (err) {
+    } catch {
       setError("Failed to load orders.");
       setOrders([]);
     } finally {
@@ -256,9 +206,7 @@ const OrdersPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchOrders(1, activeStatus);
-  }, []);
+  useEffect(() => { fetchOrders(1, activeStatus); }, []);
 
   const handleTabChange = (status) => {
     setActiveStatus(status);
@@ -278,9 +226,7 @@ const OrdersPage = () => {
       setConfirmCancelId(null);
       setError("");
       await cancelOrder(orderId);
-      setSuccessMessage(
-        "Cancellation requested. Refund will be processed shortly.",
-      );
+      setSuccessMessage("Cancellation requested. Refund will be processed shortly.");
       setTimeout(() => setSuccessMessage(""), 5000);
       await fetchOrders(page, activeStatus);
     } catch (err) {
@@ -291,52 +237,42 @@ const OrdersPage = () => {
   };
 
   const formatPrice = (p) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(p);
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(p);
 
   const formatDate = (d) =>
-    new Date(d).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+    new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
   const canCancel = (status) => status === "PENDING" || status === "CONFIRMED";
 
   return (
-    <div className="min-h-screen bg-brand-light py-10 px-4">
+    <div className="min-h-screen bg-brand-light py-6 sm:py-10 px-3 sm:px-4">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-5 flex items-center justify-between">
+
+        {/* ── Header ── */}
+        <div className="mb-5 flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold text-brand-dark">
-              My Orders
-            </h1>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-brand-dark">My Orders</h1>
             {pagination && (
-              <p className="text-sm text-brand-gray mt-0.5">
-                {pagination.total} order{pagination.total !== 1 ? "s" : ""}{" "}
-                found
+              <p className="text-xs sm:text-sm text-brand-gray mt-0.5">
+                {pagination.total} order{pagination.total !== 1 ? "s" : ""} found
               </p>
             )}
           </div>
           <Link
             to="/products"
-            className="text-sm font-bold text-primary border border-primary px-4 py-2 rounded hover:bg-primary-light transition-colors"
+            className="text-xs sm:text-sm font-bold text-primary border border-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-primary-light transition-colors whitespace-nowrap"
           >
             + Shop More
           </Link>
         </div>
 
-        {/* Status tabs */}
-        <div className="flex gap-1 overflow-x-auto pb-1 mb-5 scrollbar-hide">
+        {/* ── Status tabs ── */}
+        <div className="flex gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
-              className={`flex-shrink-0 px-4 py-2 text-xs font-extrabold rounded-full border transition-colors ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-extrabold rounded-full border transition-colors ${
                 activeStatus === tab.key
                   ? "bg-primary text-white border-primary"
                   : "bg-white text-brand-gray border-brand-border hover:border-primary hover:text-primary"
@@ -347,175 +283,126 @@ const OrdersPage = () => {
           ))}
         </div>
 
-        {/* Alerts */}
+        {/* ── Alerts ── */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded mb-5 font-medium">
+          <div className="bg-red-50 border border-red-200 text-red-600 text-xs sm:text-sm px-4 py-3 rounded mb-5 font-medium">
             {error}
           </div>
         )}
         {successMessage && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded mb-5 font-medium flex items-center gap-2">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
+          <div className="bg-green-50 border border-green-200 text-green-700 text-xs sm:text-sm px-4 py-3 rounded mb-5 font-medium flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12" />
             </svg>
             {successMessage}
           </div>
         )}
 
-        {/* Loading skeletons */}
+        {/* ── Loading skeletons ── */}
         {loading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="bg-white rounded border border-brand-border h-48 animate-pulse"
-              />
+              <div key={i} className="bg-white rounded border border-brand-border h-40 sm:h-48 animate-pulse" />
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white rounded border border-brand-border shadow-sm flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-20 h-20 bg-brand-light rounded-full flex items-center justify-center mb-5">
-              <svg
-                width="36"
-                height="36"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#94969f"
-                strokeWidth="1.2"
-              >
+          <div className="bg-white rounded border border-brand-border shadow-sm flex flex-col items-center justify-center py-16 sm:py-20 text-center px-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-brand-light rounded-full flex items-center justify-center mb-4 sm:mb-5">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="1.2">
                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
             </div>
-            <h3 className="text-lg font-extrabold text-brand-dark">
-              {activeStatus
-                ? `No ${activeStatus.toLowerCase()} orders`
-                : "No orders yet"}
+            <h3 className="text-base sm:text-lg font-extrabold text-brand-dark">
+              {activeStatus ? `No ${activeStatus.toLowerCase()} orders` : "No orders yet"}
             </h3>
-            <p className="text-brand-gray text-sm mt-1">
-              {activeStatus
-                ? "Try a different status filter."
-                : "Looks like you haven't placed any orders."}
+            <p className="text-brand-gray text-xs sm:text-sm mt-1">
+              {activeStatus ? "Try a different status filter." : "Looks like you haven't placed any orders."}
             </p>
             <Link
               to="/products"
-              className="mt-6 bg-primary text-white px-8 py-3 text-sm font-bold hover:bg-primary-hover transition-colors rounded-sm tracking-wider"
+              className="mt-5 sm:mt-6 bg-primary text-white px-6 sm:px-8 py-2.5 sm:py-3 text-xs sm:text-sm font-bold hover:bg-primary-hover transition-colors rounded-sm tracking-wider"
             >
               START SHOPPING
             </Link>
           </div>
         ) : (
           <>
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
               {orders.map((order) => {
                 const statusCfg = getDisplayStatus(order);
                 const stepIdx = STEPS.indexOf(order.status);
 
                 return (
-                  <div
-                    key={order.id}
-                    className="bg-white border border-brand-border rounded shadow-sm overflow-hidden"
-                  >
-                    {/* Order header */}
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-brand-border bg-brand-light flex-wrap gap-3">
-                      <div className="flex items-center gap-4 flex-wrap">
-                        <div>
-                          <p className="text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">
-                            Order ID
-                          </p>
-                          <p className="text-sm font-bold text-brand-dark">
-                            #{order.id}
-                          </p>
+                  <div key={order.id} className="bg-white border border-brand-border rounded shadow-sm overflow-hidden">
+
+                    {/* ── Order header ── */}
+                    <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-brand-border bg-brand-light">
+                      {/* Top row: meta + actions */}
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        {/* Order meta — scrolls horizontally on tiny screens */}
+                        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+                          <div>
+                            <p className="text-[10px] sm:text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">Order ID</p>
+                            <p className="text-xs sm:text-sm font-bold text-brand-dark">#{order.id}</p>
+                          </div>
+                          <div className="w-px h-7 bg-brand-border hidden xs:block" />
+                          <div>
+                            <p className="text-[10px] sm:text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">Placed On</p>
+                            <p className="text-xs sm:text-sm font-bold text-brand-dark">{formatDate(order.createdAt)}</p>
+                          </div>
+                          <div className="w-px h-7 bg-brand-border hidden sm:block" />
+                          <div>
+                            <p className="text-[10px] sm:text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">Total</p>
+                            <p className="text-xs sm:text-sm font-bold text-brand-dark">{formatPrice(order.total)}</p>
+                          </div>
                         </div>
-                        <div className="w-px h-8 bg-brand-border hidden sm:block" />
-                        <div>
-                          <p className="text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">
-                            Placed On
-                          </p>
-                          <p className="text-sm font-bold text-brand-dark">
-                            {formatDate(order.createdAt)}
-                          </p>
+
+                        {/* Status badge + cancel button */}
+                        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+                          <span className={`text-[10px] sm:text-xs font-extrabold px-2.5 sm:px-3 py-1 rounded-full tracking-wide ${statusCfg.classes}`}>
+                            {statusCfg.label}
+                          </span>
+                          {canCancel(order.status) && (
+                            <button
+                              onClick={() => setConfirmCancelId(order.id)}
+                              disabled={cancellingId === order.id}
+                              className="text-[10px] sm:text-xs font-bold text-red-500 border border-red-200 px-2.5 sm:px-3 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                            >
+                              {cancellingId === order.id ? "Cancelling..." : "Cancel"}
+                            </button>
+                          )}
                         </div>
-                        <div className="w-px h-8 bg-brand-border hidden sm:block" />
-                        <div>
-                          <p className="text-[11px] font-extrabold text-brand-gray uppercase tracking-wider">
-                            Total
-                          </p>
-                          <p className="text-sm font-bold text-brand-dark">
-                            {formatPrice(order.total)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <span
-                          className={`text-xs font-extrabold px-3 py-1 rounded-full tracking-wide ${statusCfg.classes}`}
-                        >
-                          {statusCfg.label}
-                        </span>
-                        {canCancel(order.status) && (
-                          <button
-                            onClick={() => setConfirmCancelId(order.id)}
-                            disabled={cancellingId === order.id}
-                            className="text-xs font-bold text-red-500 border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
-                          >
-                            {cancellingId === order.id
-                              ? "Cancelling..."
-                              : "Cancel"}
-                          </button>
-                        )}
                       </div>
                     </div>
 
-                    {/* Progress tracker */}
+                    {/* ── Progress tracker ── */}
                     {order.status !== "CANCELLED" && (
-                      <div className="px-5 py-4 border-b border-brand-border">
-                        <div className="flex items-center">
+                      <div className="px-3 sm:px-5 py-4 border-b border-brand-border overflow-x-auto">
+                        <div className="flex items-center min-w-[260px]">
                           {STEPS.map((step, i) => (
-                            <div
-                              key={step}
-                              className="flex items-center flex-1 last:flex-none"
-                            >
+                            <div key={step} className="flex items-center flex-1 last:flex-none">
                               <div className="flex flex-col items-center">
                                 <div
-                                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold transition-all ${
-                                    i <= stepIdx
-                                      ? "bg-primary text-white"
-                                      : "bg-brand-border text-brand-gray"
+                                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-extrabold transition-all ${
+                                    i <= stepIdx ? "bg-primary text-white" : "bg-brand-border text-brand-gray"
                                   }`}
                                 >
                                   {i < stepIdx ? (
-                                    <svg
-                                      width="12"
-                                      height="12"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="white"
-                                      strokeWidth="3"
-                                    >
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
                                       <polyline points="20 6 9 17 4 12" />
                                     </svg>
                                   ) : (
                                     i + 1
                                   )}
                                 </div>
-                                <p
-                                  className={`text-[10px] font-bold mt-1 whitespace-nowrap ${i <= stepIdx ? "text-primary" : "text-brand-gray"}`}
-                                >
+                                <p className={`text-[9px] sm:text-[10px] font-bold mt-1 whitespace-nowrap ${i <= stepIdx ? "text-primary" : "text-brand-gray"}`}>
                                   {step.charAt(0) + step.slice(1).toLowerCase()}
                                 </p>
                               </div>
                               {i < STEPS.length - 1 && (
-                                <div
-                                  className={`flex-1 h-0.5 mx-1 mb-4 ${i < stepIdx ? "bg-primary" : "bg-brand-border"}`}
-                                />
+                                <div className={`flex-1 h-0.5 mx-1 mb-4 ${i < stepIdx ? "bg-primary" : "bg-brand-border"}`} />
                               )}
                             </div>
                           ))}
@@ -523,166 +410,92 @@ const OrdersPage = () => {
                       </div>
                     )}
 
-                    {/* Order items */}
+                    {/* ── Order items ── */}
                     <div className="divide-y divide-brand-border">
                       {order.items.map((item) => {
-                        const existingReview = findReview(
-                          item.product.id,
-                          order.id,
-                        );
+                        const existingReview = findReview(item.product.id, order.id);
                         return (
-                          <div key={item.id} className="px-5 py-4">
-                            <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 flex-shrink-0 bg-brand-light rounded overflow-hidden">
+                          <div key={item.id} className="px-4 sm:px-5 py-4">
+                            {/* Product row */}
+                            <div className="flex items-center gap-3 sm:gap-4">
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 bg-brand-light rounded overflow-hidden">
                                 <img
-                                  src={
-                                    item.product.image
-                                      ? `${BACKEND_URL}${item.product.image}`
-                                      : "/placeholder.png"
-                                  }
+                                  src={item.product.image ? `${BACKEND_URL}${item.product.image}` : "/placeholder.png"}
                                   alt={item.product.name}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-bold text-brand-dark truncate">
-                                  {item.product.name}
-                                </h4>
-                                <p className="text-xs text-brand-gray mt-0.5">
-                                  Qty: {item.quantity}
-                                </p>
-                                <p className="text-xs font-semibold text-brand-muted mt-0.5">
+                                <h4 className="text-xs sm:text-sm font-bold text-brand-dark truncate">{item.product.name}</h4>
+                                <p className="text-[11px] sm:text-xs text-brand-gray mt-0.5">Qty: {item.quantity}</p>
+                                <p className="text-[11px] sm:text-xs font-semibold text-brand-muted mt-0.5">
                                   {formatPrice(item.price)} each
                                 </p>
                               </div>
-                              <p className="text-sm font-extrabold text-brand-dark flex-shrink-0">
+                              <p className="text-xs sm:text-sm font-extrabold text-brand-dark flex-shrink-0">
                                 {formatPrice(item.price * item.quantity)}
                               </p>
                             </div>
 
-                            {/* Review Row */}
+                            {/* Review section */}
                             {order.status === "DELIVERED" && (
-                              <div className="mt-4 border border-brand-border rounded-md p-4 bg-gray-50">
-                                {!existingReview ||
-                                editingReview === item.product.id ? (
+                              <div className="mt-3 sm:mt-4 border border-brand-border rounded-md p-3 sm:p-4 bg-gray-50">
+                                {!existingReview || editingReview === item.product.id ? (
                                   <>
                                     <p className="text-xs font-bold text-brand-dark mb-2">
-                                      {existingReview
-                                        ? "Edit Review"
-                                        : "Rate & Review"}
+                                      {existingReview ? "Edit Review" : "Rate & Review"}
                                     </p>
                                     <StarRating
-                                      value={
-                                        reviewData[item.product.id]?.rating ??
-                                        existingReview?.rating ??
-                                        0
-                                      }
-                                      onChange={(val) =>
-                                        handleReviewChange(
-                                          item.product.id,
-                                          "rating",
-                                          val,
-                                        )
-                                      }
+                                      value={reviewData[item.product.id]?.rating ?? existingReview?.rating ?? 0}
+                                      onChange={(val) => handleReviewChange(item.product.id, "rating", val)}
                                     />
                                     <input
                                       type="text"
                                       placeholder="Title"
                                       className="mt-3 w-full border border-brand-border px-3 py-2 text-xs rounded"
-                                      value={
-                                        reviewData[item.product.id]?.title ??
-                                        existingReview?.title ??
-                                        ""
-                                      }
-                                      onChange={(e) =>
-                                        handleReviewChange(
-                                          item.product.id,
-                                          "title",
-                                          e.target.value,
-                                        )
-                                      }
+                                      value={reviewData[item.product.id]?.title ?? existingReview?.title ?? ""}
+                                      onChange={(e) => handleReviewChange(item.product.id, "title", e.target.value)}
                                     />
                                     <textarea
                                       placeholder="Write your review..."
-                                      className="mt-2 w-full border border-brand-border px-3 py-2 text-xs rounded"
+                                      className="mt-2 w-full border border-brand-border px-3 py-2 text-xs rounded resize-none"
                                       rows={3}
-                                      value={
-                                        reviewData[item.product.id]?.body ??
-                                        existingReview?.body ??
-                                        ""
-                                      }
-                                      onChange={(e) =>
-                                        handleReviewChange(
-                                          item.product.id,
-                                          "body",
-                                          e.target.value,
-                                        )
-                                      }
+                                      value={reviewData[item.product.id]?.body ?? existingReview?.body ?? ""}
+                                      onChange={(e) => handleReviewChange(item.product.id, "body", e.target.value)}
                                     />
                                     <div className="flex justify-end gap-2 mt-3">
                                       {existingReview && (
                                         <button
                                           onClick={() => setEditingReview(null)}
-                                          className="text-xs px-3 py-1 border rounded"
+                                          className="text-xs px-3 py-1.5 border border-brand-border rounded hover:bg-white transition-colors"
                                         >
                                           Cancel
                                         </button>
                                       )}
                                       <button
-                                        onClick={() =>
-                                          submitReview(
-                                            item.product.id,
-                                            order.id,
-                                          )
-                                        }
-                                        disabled={
-                                          submittingReview === item.product.id
-                                        }
-                                        className="bg-primary text-white px-4 py-1.5 text-xs font-semibold rounded"
+                                        onClick={() => submitReview(item.product.id, order.id)}
+                                        disabled={submittingReview === item.product.id}
+                                        className="bg-primary text-white px-4 py-1.5 text-xs font-semibold rounded disabled:opacity-60"
                                       >
                                         {submittingReview === item.product.id
-                                          ? existingReview
-                                            ? "Updating..."
-                                            : "Submitting..."
-                                          : existingReview
-                                            ? "Update Review"
-                                            : "Submit Review"}
+                                          ? existingReview ? "Updating..." : "Submitting..."
+                                          : existingReview ? "Update Review" : "Submit Review"}
                                       </button>
                                     </div>
                                   </>
                                 ) : (
-                                  <div className="flex justify-between items-start">
-                                    <div>
-                                      <StarRating
-                                        value={existingReview.rating}
-                                        onChange={() => {}}
-                                      />
-                                      <p className="text-sm font-bold mt-2">
-                                        {existingReview.title}
-                                      </p>
-                                      <p className="text-xs text-brand-gray mt-1">
-                                        {existingReview.body}
-                                      </p>
+                                  <div className="flex justify-between items-start gap-3">
+                                    <div className="min-w-0">
+                                      <StarRating value={existingReview.rating} onChange={() => {}} />
+                                      <p className="text-xs sm:text-sm font-bold mt-2 truncate">{existingReview.title}</p>
+                                      <p className="text-[11px] sm:text-xs text-brand-gray mt-1 line-clamp-3">{existingReview.body}</p>
                                     </div>
                                     <button
-                                      onClick={() =>
-                                        setEditingReview(item.product.id)
-                                      }
-                                      className="text-gray-500 hover:text-primary transition"
+                                      onClick={() => setEditingReview(item.product.id)}
+                                      className="flex-shrink-0 text-gray-500 hover:text-primary transition p-1"
                                     >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          d="M11 5h2m-1-1v2m-7.5 9.5L4 20l4.5-1.5L19 8.5 15.5 5 4.5 16z"
-                                        />
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5h2m-1-1v2m-7.5 9.5L4 20l4.5-1.5L19 8.5 15.5 5 4.5 16z" />
                                       </svg>
                                     </button>
                                   </div>
@@ -694,38 +507,23 @@ const OrdersPage = () => {
                       })}
                     </div>
 
-                    {/* Refund bar */}
+                    {/* ── Refund bar ── */}
                     {order.status === "CANCELLED" && (
-                      <div className="flex items-center gap-2 px-5 py-3 bg-teal-50 border-t border-teal-100 text-sm text-teal-700 font-medium">
+                      <div className="flex items-center gap-2 px-4 sm:px-5 py-3 bg-teal-50 border-t border-teal-100 text-xs sm:text-sm text-teal-700 font-medium">
                         {order.payment?.status === "REFUNDED" ? (
-                          <span>
-                            Refund of{" "}
-                            <strong>{formatPrice(order.total)}</strong>{" "}
-                            completed.
-                          </span>
+                          <span>Refund of <strong>{formatPrice(order.total)}</strong> completed.</span>
                         ) : order.payment?.status === "SUCCESS" ? (
-                          <span>
-                            Refund of{" "}
-                            <strong>{formatPrice(order.total)}</strong> is being
-                            processed. Expected in 5–7 business days.
-                          </span>
+                          <span>Refund of <strong>{formatPrice(order.total)}</strong> is being processed. Expected in 5–7 business days.</span>
                         ) : (
                           <span>Order cancelled successfully.</span>
                         )}
                       </div>
                     )}
 
-                    {/* Order footer */}
-                    <div className="flex items-center justify-between px-5 py-3 bg-brand-light border-t border-brand-border">
-                      <div className="flex items-center gap-2 text-xs text-brand-gray">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
+                    {/* ── Order footer ── */}
+                    <div className="flex items-center justify-between px-4 sm:px-5 py-3 bg-brand-light border-t border-brand-border flex-wrap gap-2">
+                      <div className="flex items-center gap-2 text-[11px] sm:text-xs text-brand-gray">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect x="1" y="3" width="15" height="13" />
                           <path d="M16 8h4l3 3v5h-7V8z" />
                           <circle cx="5.5" cy="18.5" r="2.5" />
@@ -733,13 +531,9 @@ const OrdersPage = () => {
                         </svg>
                         <span className="font-semibold">Free Delivery</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-brand-gray font-medium">
-                          Order Total:
-                        </span>
-                        <span className="font-extrabold text-brand-dark">
-                          {formatPrice(order.total)}
-                        </span>
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                        <span className="text-brand-gray font-medium">Order Total:</span>
+                        <span className="font-extrabold text-brand-dark">{formatPrice(order.total)}</span>
                       </div>
                     </div>
                   </div>
@@ -747,69 +541,50 @@ const OrdersPage = () => {
               })}
             </div>
 
-            <Pagination
-              pagination={pagination}
-              page={page}
-              onPage={handlePage}
-            />
+            <Pagination pagination={pagination} page={page} onPage={handlePage} />
 
             {pagination && (
-              <p className="text-center text-xs text-brand-gray mt-3">
-                Showing {(page - 1) * LIMIT + 1}–
-                {Math.min(page * LIMIT, pagination.total)} of {pagination.total}{" "}
-                orders
+              <p className="text-center text-[11px] sm:text-xs text-brand-gray mt-3">
+                Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, pagination.total)} of {pagination.total} orders
               </p>
             )}
           </>
         )}
       </div>
 
-      {/* Cancel confirm modal */}
+      {/* ── Cancel confirm modal ── */}
       {confirmCancelId && (
         <>
-          <div
-            className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm"
-            onClick={() => setConfirmCancelId(null)}
-          />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-sm bg-white rounded shadow-2xl overflow-hidden">
+          <div className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm" onClick={() => setConfirmCancelId(null)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[92vw] max-w-sm bg-white rounded shadow-2xl overflow-hidden">
             <div className="h-1 bg-red-500" />
-            <div className="p-6 text-center">
-              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#ef4444"
-                  strokeWidth="2"
-                >
+            <div className="p-5 sm:p-6 text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="15" y1="9" x2="9" y2="15" />
                   <line x1="9" y1="9" x2="15" y2="15" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-brand-dark">
-                Cancel Order?
-              </h3>
-              <p className="text-sm text-brand-gray mt-2 leading-relaxed">
-                Are you sure you want to cancel this order? If paid, refund will
-                be credited in 5–7 business days.
+              <h3 className="text-base sm:text-lg font-extrabold text-brand-dark">Cancel Order?</h3>
+              <p className="text-xs sm:text-sm text-brand-gray mt-2 leading-relaxed">
+                Are you sure you want to cancel this order? If paid, refund will be credited in 5–7 business days.
               </p>
-              <div className="flex gap-3 mt-6">
+              <div className="flex gap-3 mt-5 sm:mt-6">
                 <button
                   onClick={() => setConfirmCancelId(null)}
-                  className="flex-1 border border-brand-border text-brand-dark font-bold text-sm py-2.5 rounded hover:bg-brand-light transition-colors"
+                  className="flex-1 border border-brand-border text-brand-dark font-bold text-xs sm:text-sm py-2.5 rounded hover:bg-brand-light transition-colors"
                 >
                   Keep Order
                 </button>
                 <button
                   onClick={() => handleCancelOrder(confirmCancelId)}
                   disabled={cancellingId === confirmCancelId}
-                  className="flex-1 bg-red-500 text-white font-bold text-sm py-2.5 rounded hover:bg-red-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="flex-1 bg-red-500 text-white font-bold text-xs sm:text-sm py-2.5 rounded hover:bg-red-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {cancellingId === confirmCancelId ? (
                     <>
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />{" "}
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Cancelling...
                     </>
                   ) : (

@@ -34,7 +34,6 @@ const ShoppingCart = () => {
     }
   }, [isCartOpen, cartItems, cartTotal]);
 
-  // Lock body scroll while drawer is open
   useEffect(() => {
     document.body.style.overflow = isCartOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -61,14 +60,13 @@ const ShoppingCart = () => {
 
   return (
     <>
-      {/* ── BACKDROP ── */}
+      {/* BACKDROP */}
       <div
         className="fixed inset-0 bg-black/40 z-[1000]"
         onClick={() => dispatch(setCartOpen(false))}
       />
 
-      {/* ── DRAWER ──
-          Full-screen on mobile, fixed-width sidebar on sm+ */}
+      {/* DRAWER-Full-screen on mobile, fixed-width sidebar on sm+ */}
       <div
         className="
           fixed z-[1001] bg-white flex flex-col

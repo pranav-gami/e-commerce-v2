@@ -17,30 +17,19 @@ import {
   updateUserSchema,
   updateAdminProfileSchema,
 } from "../../validation/admin/admin.validation";
-
-// ✅ NEW: import analytics controller
 import * as analyticsController from "../../controllers/admin/analytics.controller";
 
 const router = Router();
 
-// ── Public Routes ─────────────────────────────────────────
 router.get("/auth/login", adminController.getLogin);
 router.post("/auth/login", adminController.postLogin);
 
-// ── All routes below require login ────────────────────────
 router.use(protectCookie);
 
-// ── Dashboard ─────────────────────────────────────────────
 router.get("/", adminController.getDashboard);
-
-// ✅ NEW: Analytics routes
 router.get("/analytics", isAdmin, analyticsController.getAnalyticsPage);
 router.get("/analytics/data", isAdmin, analyticsController.getAnalyticsDataApi);
-
-// ── Logout ────────────────────────────────────────────────
 router.get("/logout", adminController.logout);
-
-// ── Users ─────────────────────────────────────────────────
 router.post("/users/bulk-delete", isAdmin, adminController.bulkDeleteUsers);
 router.get("/users/list", adminController.getUserList);
 router.get("/users", adminController.getUsersPage);
@@ -51,8 +40,6 @@ router.patch(
   validate(updateUserSchema),
   adminController.updateUser,
 );
-
-// ── Admin Profile ─────────────────────────────────────────
 router.get("/profile", adminController.getProfile);
 router.get("/profile/edit", adminController.getEditAdmin);
 router.post(
@@ -62,8 +49,6 @@ router.post(
 );
 router.get("/profile/change-password", adminController.getChangePassword);
 router.post("/profile/change-password", adminController.postChangePassword);
-
-// ── Categories ────────────────────────────────────────────
 const handleCategoryUpload = (
   req: Request,
   res: Response,
@@ -75,7 +60,6 @@ const handleCategoryUpload = (
     next();
   });
 };
-
 router.post(
   "/categories/bulk-delete",
   isAdmin,
@@ -100,8 +84,6 @@ router.put(
   categoryController.updateCategory,
 );
 router.delete("/categories/:id", isAdmin, categoryController.deleteCategory);
-
-// ── SubCategories ─────────────────────────────────────────
 router.post(
   "/subcategories/bulk-delete",
   isAdmin,

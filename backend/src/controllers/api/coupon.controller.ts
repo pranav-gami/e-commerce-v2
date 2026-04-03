@@ -4,11 +4,6 @@ import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 import { AuthRequest } from "../../middleware/auth.middleware";
 import ApiError from "../../utils/ApiError";
 
-// ─────────────────────────────────────────────
-// VALIDATE COUPON (preview discount before placing order)
-// POST /users/coupons/validate
-// Body: { code: string }
-// ─────────────────────────────────────────────
 export const validateCoupon = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
@@ -21,10 +16,6 @@ export const validateCoupon = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// GET AVAILABLE COUPONS FOR CURRENT CART
-// GET /users/coupons/available
-// ─────────────────────────────────────────────
 export const getAvailableCoupons = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;

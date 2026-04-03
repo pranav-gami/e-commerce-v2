@@ -6,7 +6,6 @@ import { addItemSchema, updateItemSchema } from "../../validation/api/cart.valid
 
 const router = express.Router();
 
-// All cart routes require authentication
 router.use(protect);
 
 router.get("/", cartController.getCart);

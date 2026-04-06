@@ -19,7 +19,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: "https://e-commerce-v2-1-d67s.onrender.com",
     credentials: true,
   }),
 );

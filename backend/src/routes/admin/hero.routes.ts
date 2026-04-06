@@ -8,7 +8,6 @@ import * as fs from "fs";
 
 const router = Router();
 
-// ── Multer config for hero images ─────────────────────────
 const heroStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(process.cwd(), "uploads/hero");
@@ -23,7 +22,7 @@ const heroStorage = multer.diskStorage({
 
 const heroUpload = multer({
   storage: heroStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|webp/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());
@@ -41,7 +40,6 @@ const handleHeroUpload = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-// ── Admin routes (protected) ──────────────────────────────
 router.get("/", heroController.getHeroPage);
 router.get("/list", heroController.getSlideList);
 router.post("/", isAdmin, handleHeroUpload, heroController.createSlide);

@@ -1,8 +1,6 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 
-// ─────────────────────────────────────────────────────────────
 //  Helper: get the "start date" based on the range query param
-// ─────────────────────────────────────────────────────────────
 function getStartDate(range: string): Date {
   const now = new Date();
   if (range === "30d") return new Date(now.setDate(now.getDate() - 30));
@@ -13,15 +11,12 @@ function getStartDate(range: string): Date {
   return d;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  Main analytics function — called by the controller
-// ─────────────────────────────────────────────────────────────
+//  Main analytics function 
 export const getAnalyticsData = async (range: string = "7d") => {
   const startDate = getStartDate(range);
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // ── Run all DB queries in parallel for speed ──────────────
   const [
     totalUsers,
     newUsersThisMonth,
@@ -33,7 +28,7 @@ export const getAnalyticsData = async (range: string = "7d") => {
     allCategories,
     allProducts,
   ] = await Promise.all([
-    // 1. Total users (non-admin)
+    // 1. Total users
     prisma.user.count({ where: { role: "USER" } }),
 
     // 2. New users this month
@@ -91,17 +86,16 @@ export const getAnalyticsData = async (range: string = "7d") => {
     prisma.product.count(),
   ]);
 
-  // ── Calculate total revenue ───────────────────────────────
+  //Calculate total revenue
   const totalRevenue = allPayments.reduce(
     (sum, p) => sum + Number(p.amount),
     0,
   );
 
-  // ── Build revenue chart data ──────────────────────────────
   // Group payments by day (for 7d) or by week (for 30d/90d)
   const revenueChartData = buildRevenueChart(allPayments, range, startDate);
 
-  // ── Build order status data for doughnut chart ────────────
+  //Build order status data for doughnut chart 
   const statusMap: Record<string, number> = {
     PENDING: 0,
     CONFIRMED: 0,
@@ -113,7 +107,7 @@ export const getAnalyticsData = async (range: string = "7d") => {
     statusMap[s.status] = s._count.status;
   });
 
-  // ── Build top categories by total items sold ──────────────
+  //Build top categories by total items sold
   const categoryData = allCategories
     .map((cat) => {
       let totalSold = 0;
@@ -129,12 +123,11 @@ export const getAnalyticsData = async (range: string = "7d") => {
     .sort((a, b) => b.sold - a.sold)
     .slice(0, 5);
 
-  // ── Average order value ───────────────────────────────────
+  //Average order value
   const avgOrderValue =
     allPayments.length > 0 ? Math.round(totalRevenue / allPayments.length) : 0;
 
   return {
-    // KPI cards
     totalRevenue: Math.round(totalRevenue),
     totalOrders,
     totalUsers,
@@ -142,13 +135,9 @@ export const getAnalyticsData = async (range: string = "7d") => {
     newUsersThisMonth,
     avgOrderValue,
     totalProducts: allProducts,
-
-    // Chart data
     revenueChart: revenueChartData,
     orderStatus: statusMap,
     topCategories: categoryData,
-
-    // Recent orders table
     recentOrders: recentOrders.map((o) => ({
       id: o.id,
       userName: o.user?.name || "Unknown",
@@ -160,9 +149,7 @@ export const getAnalyticsData = async (range: string = "7d") => {
   };
 };
 
-// ─────────────────────────────────────────────────────────────
 //  Builds { labels, data } for the revenue line chart
-// ─────────────────────────────────────────────────────────────
 function buildRevenueChart(
   payments: { amount: any; createdAt: Date }[],
   range: string,

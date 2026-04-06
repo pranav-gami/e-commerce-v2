@@ -1,9 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import {prisma} from '../../config/prisma'; 
 import ApiError from "../../utils/ApiError";
 
-const prisma = new PrismaClient();
 
-// CREATE (Admin)
+// CREATE
 export const createSubCategory = async (data: {
   name: string;
   description?: string;
@@ -44,7 +43,7 @@ export const createSubCategory = async (data: {
   });
 };
 
-// get all subcategories, optionally filtered by one or multiple categoryIds
+// get all subcategories, optionally filtered by one or multiple catgoreyIds
 export const getAllSubCategories = async (
   categoryId?: number,
   categoryIds?: number[],
@@ -162,6 +161,7 @@ export const deleteSubCategory = async (id: number) => {
   return { message: `Sub-category "${sub.name}" deleted successfully` };
 };
 
+//bulk-delete
 export const bulkDeleteSubCategories = async (ids: number[]) => {
   // check if any subcategory has products
   const subsWithProducts = await prisma.subCategory.findMany({

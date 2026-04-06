@@ -4,7 +4,6 @@ import { catchAsyncHandler } from "../../utils/asyncHandler";
 import * as adminService from "../../services/admin/admin.service";
 import * as analyticsService from "../../services/admin/analytics.service";
 
-// ── GET /admin/analytics — renders the analytics page ────────
 export const getAnalyticsPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const admin = await adminService.getCurrentAdmin(req.user?.id!);
@@ -16,7 +15,6 @@ export const getAnalyticsPage = catchAsyncHandler(
   },
 );
 
-// ── GET /admin/analytics/data?range=7d — returns JSON for charts ──
 export const getAnalyticsDataApi = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const range = (req.query.range as string) || "7d";

@@ -111,9 +111,12 @@ $(document).ready(function () {
       },
     ],
     order: [[0, "desc"]],
+    language: {
+      loadingRecords: '',
+      processing: '<div class="d-flex align-items-center justify-content-center gap-3 py-2"><div class="spinner-border text-primary" style="width:1.75rem;height:1.75rem;border-width:3px;" role="status"><span class="visually-hidden">Loading...</span></div><span class="text-muted fs-7 fw-semibold">Loading...</span></div>',
+    },
   });
 
-  // ── Reinit dropdowns after draw ─────────────────────────
   categoryTable.on("draw", function () {
     $("#cat-select-all").prop("checked", false);
     updateCatBulkToolbar();
@@ -122,7 +125,6 @@ $(document).ready(function () {
     });
   });
 
-  // ── Search ───────────────────────────────────────────────
   let searchTimer;
   $("#cat-table-search").keyup(function () {
     clearTimeout(searchTimer);
@@ -131,13 +133,11 @@ $(document).ready(function () {
     }, 500);
   });
 
-  // ── Select all ───────────────────────────────────────────
   $(document).on("change", "#cat-select-all", function () {
     $(".cat-row-checkbox").prop("checked", $(this).prop("checked"));
     updateCatBulkToolbar();
   });
 
-  // ── Individual checkbox ──────────────────────────────────
   $(document).on("change", ".cat-row-checkbox", function () {
     const allChecked =
       $(".cat-row-checkbox:checked").length === $(".cat-row-checkbox").length;
@@ -145,7 +145,6 @@ $(document).ready(function () {
     updateCatBulkToolbar();
   });
 
-  // ── Bulk delete ──────────────────────────────────────────
   $(document).on(
     "click",
     '[data-cat-table-select="deactivate_selected"]',
@@ -184,7 +183,6 @@ $(document).ready(function () {
     },
   );
 
-  // ── Delete single ────────────────────────────────────────
   $(document).on("click", ".delete-category", function (e) {
     e.preventDefault();
     const id = $(this).data("id");
@@ -213,7 +211,6 @@ $(document).ready(function () {
   });
 });
 
-// ── Bulk toolbar visibility ──────────────────────────────
 function updateCatBulkToolbar() {
   const checkedCount = $(".cat-row-checkbox:checked").length;
   const baseToolbar = $('[data-cat-table-toolbar="base"]');

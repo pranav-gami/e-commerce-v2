@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 import razorpay from "../../utils/razorpay";
 import {
@@ -9,15 +9,11 @@ import {
 } from "../../config/mailer";
 import { recordCouponUsage } from "./coupon.service";
 
-// ─────────────────────────────────────────────
-// CREATE RAZORPAY ORDER  (now accepts optional couponCode)
-// ─────────────────────────────────────────────
 export const createRazorpayOrder = async (
   userId: number,
   addressId: number,
   couponCode?: string,
 ) => {
-  // 1. Validate address
   const address = await prisma.address.findFirst({
     where: { id: addressId, userId },
     include: {
@@ -30,7 +26,6 @@ export const createRazorpayOrder = async (
   if (!address)
     throw new ApiError(404, "Address not found or does not belong to you");
 
-  // 2. Validate cart
   const cart = await prisma.cart.findUnique({
     where: { userId },
     include: {
@@ -55,7 +50,6 @@ export const createRazorpayOrder = async (
   if (!cart || cart.items.length === 0)
     throw new ApiError(400, "Cart is empty");
 
-  // 3. Check stock for all items
   for (const item of cart.items) {
     if (item.product.stock < item.quantity) {
       throw new ApiError(
@@ -65,7 +59,6 @@ export const createRazorpayOrder = async (
     }
   }
 
-  // 4. Calculate base total (after product discounts)
   const baseTotal = cart.items.reduce((sum, item) => {
     const discountedPrice =
       item.product.price -
@@ -73,8 +66,6 @@ export const createRazorpayOrder = async (
     return sum + discountedPrice * item.quantity;
   }, 0);
 
-  // 5. Resolve coupon (optional)
-  // 5. Resolve coupon (optional)
   let couponId: number | null = null;
   let couponDiscount = 0;
   let appliedCouponCode: string | null = null;
@@ -96,7 +87,6 @@ export const createRazorpayOrder = async (
     if (alreadyUsed)
       throw new ApiError(400, "You have already used this coupon");
 
-    // Apply discount to full cart total
     couponDiscount = parseFloat(
       ((baseTotal * coupon.discountPct) / 100).toFixed(2),
     );
@@ -108,7 +98,6 @@ export const createRazorpayOrder = async (
     Math.max(0, baseTotal - couponDiscount).toFixed(2),
   );
 
-  // 6. Create order in DB
   const order = await prisma.order.create({
     data: {
       userId,
@@ -137,7 +126,6 @@ export const createRazorpayOrder = async (
     },
   });
 
-  // 7. Create Razorpay order
   const razorpayOrder = await razorpay.orders.create({
     amount: Math.round(finalTotal * 100),
     currency: "INR",
@@ -145,7 +133,6 @@ export const createRazorpayOrder = async (
     notes: { orderId: String(order.id), userId: String(userId) },
   });
 
-  // 8. Create payment record
   await prisma.payment.create({
     data: {
       orderId: order.id,
@@ -167,9 +154,6 @@ export const createRazorpayOrder = async (
   };
 };
 
-// ─────────────────────────────────────────────
-// VERIFY PAYMENT (unchanged signature, coupon recorded in webhook)
-// ─────────────────────────────────────────────
 export const verifyPayment = async (
   userId: number,
   data: {
@@ -221,9 +205,7 @@ export const verifyPayment = async (
   );
 };
 
-// ─────────────────────────────────────────────
-// WEBHOOK HELPERS
-// ─────────────────────────────────────────────
+
 const verifyWebhookSignature = (body: string, signature: string) => {
   const expected = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
@@ -374,9 +356,6 @@ const handleRefundProcessed = async (paymentEntity: any, refundEntity: any) => {
   }
 };
 
-// ─────────────────────────────────────────────
-// WEBHOOK HANDLER
-// ─────────────────────────────────────────────
 export const handleWebhook = async (body: string, signature: string) => {
   verifyWebhookSignature(body, signature);
 

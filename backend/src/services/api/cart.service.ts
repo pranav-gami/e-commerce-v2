@@ -1,7 +1,6 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 
-// Get or create cart for user
 const getOrCreateCart = async (userId: number) => {
   let cart = await prisma.cart.findUnique({
     where: { userId },
@@ -52,7 +51,6 @@ const getOrCreateCart = async (userId: number) => {
   return formatCart(cart);
 };
 
-// Add item to cart
 const addItemToCart = async (
   userId: number,
   productId: number,
@@ -65,13 +63,11 @@ const addItemToCart = async (
   if (product.stock < quantity)
     throw new ApiError(400, `Only ${product.stock} items in stock`);
 
-  // Get or create cart
   let cart = await prisma.cart.findUnique({ where: { userId } });
   if (!cart) {
     cart = await prisma.cart.create({ data: { userId } });
   }
 
-  // Check if item already exists in cart
   const existingItem = await prisma.cartItem.findUnique({
     where: { cartId_productId: { cartId: cart.id, productId } },
   });
@@ -97,7 +93,6 @@ const addItemToCart = async (
   return getOrCreateCart(userId);
 };
 
-// Update cart item quantity
 const updateCartItem = async (
   userId: number,
   cartItemId: number,
@@ -123,7 +118,6 @@ const updateCartItem = async (
   return getOrCreateCart(userId);
 };
 
-// Remove single item from cart
 const removeCartItem = async (userId: number, cartItemId: number) => {
   const cart = await prisma.cart.findUnique({ where: { userId } });
   if (!cart) throw new ApiError(404, "Cart not found");
@@ -138,7 +132,6 @@ const removeCartItem = async (userId: number, cartItemId: number) => {
   return getOrCreateCart(userId);
 };
 
-// Clear all items from cart
 const clearCart = async (userId: number) => {
   const cart = await prisma.cart.findUnique({ where: { userId } });
   if (!cart) throw new ApiError(404, "Cart not found");
@@ -148,7 +141,6 @@ const clearCart = async (userId: number) => {
   return getOrCreateCart(userId);
 };
 
-// Helper: format cart with calculated totals
 const formatCart = (cart: any) => {
   const items = cart.items.map((item: any) => {
     const discountedPrice =

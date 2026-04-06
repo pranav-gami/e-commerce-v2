@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import { redisConnection } from "../config/queue";
 import esClient from "../config/elasticsearch";
-import prisma from "../config/prisma";
+import {prisma} from "../config/prisma";
 
 interface JobData {
   action: "upsert" | "delete";
@@ -37,33 +37,32 @@ const worker = new Worker<JobData>(
       return;
     }
 
-    await esClient.index({
-      index: "products",
-      id: String(product.id),
-      document: {
-        id: product.id,
-        name: product.name,
-        description: product.description ?? "",
-        price: product.price,
-        discount: product.discount ?? 0,
-        stock: product.stock,
-        isFeatured: product.isFeatured,
-        status: product.status,
-        subCategory: product.subCategory.name,
-        category: product.subCategory.category.name,
-        createdAt: product.createdAt,
-        image: product.image ?? "",
-        images: product.images ?? [],
-        suggest: {
-          input: [
-            product.name,
-            product.subCategory.name,
-            product.subCategory.category.name,
-          ],
-        },
-      },
-    });
-
+   await esClient.index({
+  index: "products",
+  id: String(product.id),
+  body: {   // ✅ correct
+    id: product.id,
+    name: product.name,
+    description: product.description ?? "",
+    price: product.price,
+    discount: product.discount ?? 0,
+    stock: product.stock,
+    isFeatured: product.isFeatured,
+    status: product.status,
+    subCategory: product.subCategory?.name ?? "",
+    category: product.subCategory?.category?.name ?? "",
+    createdAt: product.createdAt,
+    image: product.image ?? "",
+    images: product.images ?? [],
+    suggest: {
+      input: [
+        product.name,
+        product.subCategory?.name ?? "",
+        product.subCategory?.category?.name ?? "",
+      ],
+    },
+  },
+});
     console.log(`✓ Indexed product ${productId} (${product.name})`);
   },
   { connection: redisConnection },

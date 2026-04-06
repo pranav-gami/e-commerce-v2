@@ -1,11 +1,11 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
-import { OrderStatus, PaymentStatus } from "@prisma/client"; // ← add PaymentStatus
-import razorpay from "../../utils/razorpay"; // ← add razorpay
+  import { OrderStatus, PaymentStatus } from "@prisma/client";
+import razorpay from "../../utils/razorpay";
 import {
   sendOrderCancelledEmail,
   sendOrderCancelledRefundEmail,
-} from "../../config/mailer"; // ← adjust path to your email service
+} from "../../config/mailer";
 
 const VALID_STATUSES = Object.values(OrderStatus);
 

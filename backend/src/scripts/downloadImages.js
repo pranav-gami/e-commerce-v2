@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import {prisma} from "../../config/prisma";
 import fs from "fs";
 import path from "path";
 import https from "https";
 import http from "http";
 
-const prisma = new PrismaClient();
 const UPLOAD_DIR = path.join(process.cwd(), "uploads", "products", "images");
 
 // Make sure folder exists

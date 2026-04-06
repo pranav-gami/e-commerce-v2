@@ -1,15 +1,9 @@
 import {
   sendOrderCancelledEmail,
-  sendOrderCancelledRefundEmail,
 } from "../../config/mailer";
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
-import { OrderStatus, PaymentStatus } from "@prisma/client";
 import razorpay from "../../utils/razorpay";
-
-// ─────────────────────────────────────────────
-// PLACE ORDER
-// ─────────────────────────────────────────────
 
 export const placeOrder = async (userId: number, addressId: number) => {
   const address = await prisma.address.findFirst({
@@ -85,10 +79,6 @@ export const placeOrder = async (userId: number, addressId: number) => {
   return order;
 };
 
-// ─────────────────────────────────────────────
-// GET ORDERS (paginated)
-// ─────────────────────────────────────────────
-
 export const getOrders = async (
   userId: number,
   params?: { page?: number; limit?: number; status?: string },
@@ -133,10 +123,6 @@ export const getOrders = async (
   };
 };
 
-// ─────────────────────────────────────────────
-// GET ORDER BY ID
-// ─────────────────────────────────────────────
-
 export const getOrderById = async (id: number, userId: number) => {
   const order = await prisma.order.findFirst({
     where: { id, userId },
@@ -154,10 +140,6 @@ export const getOrderById = async (id: number, userId: number) => {
   if (!order) throw new ApiError(404, "Order not found");
   return order;
 };
-
-// ─────────────────────────────────────────────
-// CANCEL ORDER
-// ─────────────────────────────────────────────
 
 export const cancelOrder = async (id: number, userId: number) => {
   const order = await prisma.order.findFirst({

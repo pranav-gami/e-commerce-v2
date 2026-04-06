@@ -6,9 +6,7 @@ import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
 import { AuthRequest } from "../../middleware/auth.middleware";
 import ApiError from "../../utils/ApiError";
 
-// ─────────────────────────────────────────────
-// PAGE: LIST ALL COUPONS
-// ─────────────────────────────────────────────
+
 export const getCouponsPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     if (req.headers.accept?.includes("application/json")) {
@@ -32,9 +30,7 @@ export const getCouponsPage = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// PAGE: ADD COUPON FORM
-// ─────────────────────────────────────────────
+
 export const getAddCouponPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const admin = await adminService.getCurrentAdmin(req.user?.id!);
@@ -48,9 +44,7 @@ export const getAddCouponPage = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// PAGE: EDIT COUPON FORM
-// ─────────────────────────────────────────────
+
 export const getEditCouponPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const admin = await adminService.getCurrentAdmin(req.user?.id!);
@@ -65,9 +59,7 @@ export const getEditCouponPage = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// API: CREATE COUPON
-// ─────────────────────────────────────────────
+
 export const createCoupon = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const { code, discountPct, usageLimit, expiresAt, isActive } = req.body;
@@ -91,9 +83,7 @@ export const createCoupon = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// API: GET ALL COUPONS
-// ─────────────────────────────────────────────
+
 export const getAllCoupons = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const result = await couponService.getAllCoupons({
@@ -108,9 +98,7 @@ export const getAllCoupons = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// API: GET COUPON BY ID
-// ─────────────────────────────────────────────
+
 export const getCouponById = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const data = await couponService.getCouponById(Number(req.params.id));
@@ -118,9 +106,7 @@ export const getCouponById = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// API: UPDATE COUPON
-// ─────────────────────────────────────────────
+
 export const updateCoupon = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const { code, discountPct, usageLimit, expiresAt, isActive } = req.body;
@@ -139,9 +125,7 @@ export const updateCoupon = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// API: DELETE COUPON
-// ─────────────────────────────────────────────
+
 export const deleteCoupon = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const data = await couponService.deleteCoupon(Number(req.params.id));
@@ -149,9 +133,7 @@ export const deleteCoupon = catchAsyncHandler(
   },
 );
 
-// ─────────────────────────────────────────────
-// API: TOGGLE COUPON STATUS
-// ─────────────────────────────────────────────
+
 export const toggleCouponStatus = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const data = await couponService.toggleCouponStatus(Number(req.params.id));

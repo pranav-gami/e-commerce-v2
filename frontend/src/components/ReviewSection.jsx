@@ -4,8 +4,6 @@ import api from "../utils/api";
 import { useAppSelector } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
 
-// ─── Star primitives ─────────────────────────────────────────────────────────
-
 const StarIcon = ({
   filled,
   half,
@@ -91,7 +89,7 @@ const InteractiveStars = ({ value, onChange, size = 24 }) => {
   );
 };
 
-// ─── Avatar helper ────────────────────────────────────────────────────────────
+//Avatar helper 
 
 const Avatar = ({ name }) => {
   const initials = (name || "U")
@@ -120,7 +118,7 @@ const Avatar = ({ name }) => {
   );
 };
 
-// ─── Rating Bar ───────────────────────────────────────────────────────────────
+//Rating Bar
 
 const RatingBar = ({ star, count, total }) => {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
@@ -138,7 +136,7 @@ const RatingBar = ({ star, count, total }) => {
   );
 };
 
-// ─── Review Form ──────────────────────────────────────────────────────────────
+//Review Form
 
 const ReviewForm = ({ productId, userOrders, onSuccess, onClose }) => {
   const [orderId, setOrderId] = useState(userOrders[0]?.id || "");
@@ -281,7 +279,7 @@ const ReviewForm = ({ productId, userOrders, onSuccess, onClose }) => {
   );
 };
 
-// ─── Single Review Card ───────────────────────────────────────────────────────
+//Single Review Card
 
 const ReviewCard = ({ review, currentUserId, onDelete }) => {
   const [deleting, setDeleting] = useState(false);
@@ -353,28 +351,24 @@ const ReviewCard = ({ review, currentUserId, onDelete }) => {
   );
 };
 
-// ─── Main ReviewSection Component ────────────────────────────────────────────
+//Main ReviewSection Component
 
-/**
- * Props:
- *  - productId: number
- */
+
 const ReviewSection = ({ productId }) => {
   const navigate = useNavigate();
-  // const { user } = useAuth();
   const user = useAppSelector(selectUser);
 
-  const [data, setData] = useState(null); // { reviews, pagination, summary }
+  const [data, setData] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
-  const [userOrders, setUserOrders] = useState([]); // delivered orders with this product
+  const [userOrders, setUserOrders] = useState([]); 
   const [ordersLoading, setOrdersLoading] = useState(false);
-  const [canReview, setCanReview] = useState(false); // has ≥1 eligible order
+  const [canReview, setCanReview] = useState(false);
 
   const LIMIT = 5;
 
-  // ── fetch reviews ──────────────────────────────────────────────────────────
+  //fetch reviews
   const fetchReviews = useCallback(
     async (p = 1) => {
       setLoading(true);
@@ -396,7 +390,7 @@ const ReviewSection = ({ productId }) => {
     fetchReviews(page);
   }, [fetchReviews, page]);
 
-  // ── check if user can review (delivered order exists) ────────────────────
+  //check if user can review (delivered order exists)
   useEffect(() => {
     if (!user) return;
     const checkEligibility = async () => {
@@ -414,7 +408,6 @@ const ReviewSection = ({ productId }) => {
         setUserOrders(eligible);
         setCanReview(eligible.length > 0);
       } catch {
-        // fallback: allow form — API will reject if ineligible
         setCanReview(false);
       } finally {
         setOrdersLoading(false);
@@ -423,7 +416,7 @@ const ReviewSection = ({ productId }) => {
     checkEligibility();
   }, [user, productId]);
 
-  // ── handlers ───────────────────────────────────────────────────────────────
+  // handlers
   const handleReviewSuccess = () => {
     setShowForm(false);
     setPage(1);
@@ -450,7 +443,7 @@ const ReviewSection = ({ productId }) => {
     setShowForm(true);
   };
 
-  // ── derived ────────────────────────────────────────────────────────────────
+  //derived
   const summary = data?.summary;
   const reviews = data?.reviews || [];
   const pagination = data?.pagination;
@@ -458,7 +451,7 @@ const ReviewSection = ({ productId }) => {
 
   return (
     <div>
-      {/* ── Summary Bar ─────────────────────────────────────────────────── */}
+      {/* Summary Bar */}
       <div className="flex flex-col sm:flex-row gap-8 mb-8 p-6 bg-brand-light rounded-lg">
         {/* Big number */}
         <div className="flex flex-col items-center justify-center text-center min-w-[120px]">
@@ -520,7 +513,7 @@ const ReviewSection = ({ productId }) => {
         </div>
       </div>
 
-      {/* ── Review Form ────────────────────────────────────────────────────── */}
+      {/* Review Form */}
       {showForm && (
         <ReviewForm
           productId={productId}
@@ -530,7 +523,7 @@ const ReviewSection = ({ productId }) => {
         />
       )}
 
-      {/* ── Review List ────────────────────────────────────────────────────── */}
+      {/* Review List */}
       {loading && reviews.length === 0 ? (
         <div className="flex items-center justify-center py-12">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -554,7 +547,7 @@ const ReviewSection = ({ productId }) => {
         </div>
       )}
 
-      {/* ── Pagination ─────────────────────────────────────────────────────── */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-8">
           <button

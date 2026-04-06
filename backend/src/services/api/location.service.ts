@@ -1,15 +1,5 @@
-// ============================================================
-//  location.service.ts
-//  All DB queries for location data
-//  Note: PostalCode model removed — postal codes now stored
-//        as plain strings on User model
-// ============================================================
+import {prisma} from '../../config/prisma'; 
 
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-// ── Get all countries ──────────────────────────────────────
 export const getAllCountries = async () => {
   return await prisma.country.findMany({
     select: {
@@ -24,7 +14,6 @@ export const getAllCountries = async () => {
   });
 };
 
-// ── Get states by country ID ───────────────────────────────
 export const getStatesByCountry = async (countryId: number) => {
   return await prisma.state.findMany({
     where: { countryId },
@@ -37,7 +26,6 @@ export const getStatesByCountry = async (countryId: number) => {
   });
 };
 
-// ── Get cities by state ID ─────────────────────────────────
 export const getCitiesByState = async (stateId: number) => {
   return await prisma.city.findMany({
     where: { stateId },
@@ -48,8 +36,3 @@ export const getCitiesByState = async (stateId: number) => {
     orderBy: { name: "asc" },
   });
 };
-
-// ── Postal codes are no longer in DB ──────────────────────
-// For India: fetched live from postalpincode.in API on frontend
-// For other countries: user types manually
-// ──────────────────────────────────────────────────────────

@@ -84,13 +84,6 @@ export const getCategoryById = catchAsyncHandler(
   },
 );
 
-export const getCategoryBySlug = catchAsyncHandler(
-  async (req: Request, res: Response) => {
-    const data = await categoryService.getCategoryBySlug(req.params.slug);
-    return sendResponse(res, 200, "Category fetched successfully", data);
-  },
-);
-
 export const updateCategory = catchAsyncHandler(
   async (req: Request, res: Response) => {
     const { name, description } = req.body;

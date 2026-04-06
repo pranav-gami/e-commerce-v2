@@ -4,12 +4,13 @@ import { protectCookie } from "../../middleware/auth.middleware";
 
 const router = Router();
 router.use(protectCookie);
-// Pages (EJS)
+
+//ejs page api
 router.get("/", couponController.getCouponsPage);
 router.get("/add", couponController.getAddCouponPage);
 router.get("/:id/edit", couponController.getEditCouponPage);
 
-// JSON API
+//json api
 router.post("/", couponController.createCoupon);
 router.get("/list", couponController.getAllCoupons);
 router.get("/:id", couponController.getCouponById);

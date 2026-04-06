@@ -1,7 +1,7 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import { ReviewStatus } from "@prisma/client";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+//Types 
 
 interface GetAllReviewsInput {
   page: number;
@@ -11,12 +11,7 @@ interface GetAllReviewsInput {
   status?: string;
 }
 
-// ─── Services ─────────────────────────────────────────────────────────────────
-
-/**
- * Get all reviews with optional filters.
- * Filters: productId, rating (1-5), status (PUBLISHED | DELETED), page, limit.
- */
+//get reviews
 export const getAllReviews = async (input: GetAllReviewsInput) => {
   const { page, limit, productId, rating, status } = input;
   const skip = (page - 1) * limit;
@@ -59,9 +54,7 @@ export const getAllReviews = async (input: GetAllReviewsInput) => {
   };
 };
 
-/**
- * Admin force soft-deletes any review regardless of owner.
- */
+//delete review
 export const deleteReview = async (reviewId: number) => {
   const review = await prisma.review.findUnique({
     where: { id: reviewId },

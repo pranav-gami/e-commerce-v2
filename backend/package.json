@@ -7,6 +7,7 @@
     "dev": "npx nodemon",
     "seed": "ts-node src/scripts/runSeed.ts",
     "build": "tsc && tsc-alias && cp -r src/views dist/views",
+    "bulk-sync": "ts-node src/scripts/bulkSync.ts",
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev --name",
     "db:seed": "ts-node src/seeders",
@@ -24,8 +25,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.772.0",
     "@aws-sdk/s3-request-presigner": "^3.777.0",
-    "@elastic/elasticsearch": "^8.19.1",
+    "@elastic/elasticsearch": "=7.17.14",
     "@joi/date": "^2.1.1",
+    "@opensearch-project/opensearch": "=3.5.1",
     "@prisma/client": "^6.5.0",
     "axios": "^1.8.4",
     "bcrypt": "^6.0.0",

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import {prisma} from "../../config/prisma";
+=======
+import prisma from "../../config/prisma";
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 import ApiError from "../../utils/ApiError";
 
 export interface CreateAddressInput {

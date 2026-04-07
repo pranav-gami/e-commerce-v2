@@ -16,6 +16,7 @@ const WishlistPage = () => {
     const navigate = useNavigate();
     const [addingId, setAddingId] = useState(null);
     const [movedId, setMovedId] = useState(null);
+<<<<<<< HEAD
     const [pageLoading, setPageLoading] = useState(true);
 
     useEffect(() => {
@@ -23,6 +24,11 @@ const WishlistPage = () => {
         // Allow Redux rehydration/persistence to settle before rendering
         const t = setTimeout(() => setPageLoading(false), 300);
         return () => clearTimeout(t);
+=======
+
+    useEffect(() => {
+        document.title = 'Wishlist';
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     }, []);
 
     const formatPrice = price =>
@@ -73,6 +79,7 @@ const WishlistPage = () => {
             </div>
 
             <div className="max-w-screen-xl mx-auto px-4 py-8">
+<<<<<<< HEAD
                 {pageLoading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {[...Array(10)].map((_, i) => (
@@ -88,6 +95,9 @@ const WishlistPage = () => {
                         ))}
                     </div>
                 ) : wishlistItems.length === 0 ? (
+=======
+                {wishlistItems.length === 0 ? (
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
                     <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded shadow-sm">
                         <div className="w-20 h-20 bg-primary-light rounded-full flex items-center justify-center mb-5">
                             <svg

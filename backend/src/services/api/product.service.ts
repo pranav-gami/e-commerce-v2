@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 import {prisma} from '../../config/prisma'; 
 import { ProductStatus } from "@prisma/client";
 
 import ApiError from "../../utils/ApiError";
 
+=======
+import { PrismaClient, ProductStatus } from "@prisma/client";
+import ApiError from "../../utils/ApiError";
+
+const prisma = new PrismaClient();
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 
 const productInclude = {
     subCategory: {

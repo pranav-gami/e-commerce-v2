@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import {prisma} from "../../config/prisma";
+=======
+import { PrismaClient } from '@prisma/client';
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 import fs from 'fs';
 import path from 'path';
 import https from 'https';

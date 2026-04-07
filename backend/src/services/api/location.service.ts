@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 import {prisma} from '../../config/prisma'; 
+=======
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 
 export const getAllCountries = async () => {
   return await prisma.country.findMany({

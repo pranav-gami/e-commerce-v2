@@ -144,9 +144,12 @@ $(document).ready(function () {
             },
         },
         columns: userColumns,
+<<<<<<< HEAD
         language: {
             processing: '<div class="d-flex align-items-center justify-content-center gap-3 py-2"><div class="spinner-border text-primary" style="width:1.75rem;height:1.75rem;border-width:3px;" role="status"><span class="visually-hidden">Loading...</span></div><span class="text-muted fs-7 fw-semibold">Loading...</span></div>',
         },
+=======
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     });
 
     let searchTimer;
@@ -161,18 +164,30 @@ $(document).ready(function () {
 
     deleteUser();
 
+<<<<<<< HEAD
+=======
+    // Select all checkbox
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     $(document).on('change', '#select-all-checkbox', function () {
         const isChecked = $(this).prop('checked');
         $('.row-checkbox').prop('checked', isChecked);
         updateBulkActionToolbar();
     });
 
+<<<<<<< HEAD
+=======
+    // Individual checkbox
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     $(document).on('change', '.row-checkbox', function () {
         const allChecked = $('.row-checkbox:checked').length === $('.row-checkbox').length;
         $('#select-all-checkbox').prop('checked', allChecked);
         updateBulkActionToolbar();
     });
 
+<<<<<<< HEAD
+=======
+    // Bulk delete
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     $(document).on('click', '[data-users-table-select="deactivate_selected"]', function () {
         const selectedIds = $('.row-checkbox:checked')
             .map(function () {
@@ -201,6 +216,10 @@ $(document).ready(function () {
         });
     });
 
+<<<<<<< HEAD
+=======
+    // Reinitialize dropdowns after table draw
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     table.on('draw', function () {
         $('#select-all-checkbox').prop('checked', false);
         updateBulkActionToolbar();
@@ -210,6 +229,10 @@ $(document).ready(function () {
         });
     });
 
+<<<<<<< HEAD
+=======
+    // Open edit modal — read all new fields
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     $(document).on('click', '.edit-user', function (e) {
         e.preventDefault();
 
@@ -225,6 +248,10 @@ $(document).ready(function () {
         new bootstrap.Modal(document.getElementById('editUserModal')).show();
     });
 
+<<<<<<< HEAD
+=======
+    // Save edit — send all new fields, no role
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     $(document).on('click', '#save-edit-user', async function () {
         const id = $('#edit-user-id').val();
         const name = $('#edit-user-name').val();
@@ -320,4 +347,8 @@ function deleteUser() {
             }
         });
     });
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4

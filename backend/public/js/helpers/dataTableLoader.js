@@ -1,3 +1,6 @@
+var api = new $.fn.dataTable.Api(settings);
+api.processing(true);
+api.processing(false);
 const NO_OF_PAGES_TO_CACHE = 5;
 
 $.fn.dataTable = $.fn.dataTable || {};

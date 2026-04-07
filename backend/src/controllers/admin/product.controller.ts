@@ -11,11 +11,22 @@ import {
   updateProductStatusSchema,
 } from "../../validation/admin/products.validation";
 import { coerceProductBody } from "../../utils/coerace";
+<<<<<<< HEAD
 import {prisma} from "../../config/prisma";
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGES (EJS renders)
 // ─────────────────────────────────────────────────────────────────────────────
 
+=======
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGES (EJS renders)
+// ─────────────────────────────────────────────────────────────────────────────
+
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 export const getProductsPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     if (req.headers.accept?.includes("application/json")) {

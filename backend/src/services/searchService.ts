@@ -27,6 +27,7 @@ export const searchProducts = async ({
     const must: any[] = [];
     const filter: any[] = [];
 
+<<<<<<< HEAD
     if (query && query.trim()) {
       must.push({
         multi_match: {
@@ -71,10 +72,22 @@ export const searchProducts = async ({
           subCategories: { terms: { field: "subCategory" } },
           price_stats: { stats: { field: "price" } },
         },
+=======
+  if (query && query.trim()) {
+    must.push({
+      multi_match: {
+        query: query.trim(),
+        fields: ["name^3", "description"],
+        fuzziness: "AUTO",
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
       },
     });
 
+<<<<<<< HEAD
     const data = result.body;
+=======
+  filter.push({ term: { status: "ACTIVE" } });
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 
     const hits = data.hits.hits;
     const total =
@@ -85,8 +98,45 @@ export const searchProducts = async ({
     const aggs = (data as any).aggregations || (data as any).aggs || {};
     const totalPages = Math.ceil(total / limit);
 
+<<<<<<< HEAD
     return {
       products: hits.map((h: any) => h._source),
+=======
+  let sort: any[] = ["_score"];
+  if (sortBy === "price_asc") sort = [{ price: "asc" }];
+  if (sortBy === "price_desc") sort = [{ price: "desc" }];
+  if (sortBy === "newest") sort = [{ createdAt: "desc" }];
+  if (sortBy === "name_asc") sort = [{ "name.keyword": "asc" }];
+  if (sortBy === "name_desc") sort = [{ "name.keyword": "desc" }];
+
+  const result = await esClient.search({
+    index: "products",
+    from,
+    size: limit,
+    body: {
+      query: { bool: { must, filter } },
+      sort,
+      aggs: {
+        categories: { terms: { field: "category" } },
+        subCategories: { terms: { field: "subCategory" } },
+        price_stats: { stats: { field: "price" } },
+      },
+    },
+  });
+
+  const hits = result.hits.hits;
+  const total =
+    typeof result.hits.total === "number"
+      ? result.hits.total
+      : (result.hits.total?.value ?? 0);
+  const aggs = result.aggregations as any;
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    products: hits.map((h: any) => h._source),
+    total,
+    pagination: {
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
       total,
       pagination: {
         total,
@@ -128,6 +178,7 @@ export const searchProducts = async ({
 export const autocompleteProducts = async (query: string) => {
   const result = await esClient.search({
     index: "products",
+<<<<<<< HEAD
     body: {
       suggest: {
         product_suggest: {
@@ -138,6 +189,17 @@ export const autocompleteProducts = async (query: string) => {
             skip_duplicates: true,
             // Remove aggressive fuzzy for more accurate prefix suggestions
             // fuzzy: { fuzziness: 1 },
+=======
+    suggest: {
+      product_suggest: {
+        prefix: query,
+        completion: {
+          field: "suggest",
+          size: 6,
+          skip_duplicates: true,
+          fuzzy: {
+            fuzziness: 1,
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
           },
         },
       },

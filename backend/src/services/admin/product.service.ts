@@ -1,10 +1,18 @@
 import { productQueue } from "../../config/queue";
+<<<<<<< HEAD
 import { ProductStatus } from "@prisma/client";
 import {prisma} from '../../config/prisma'; 
 
 import ApiError from "../../utils/ApiError";
 import { deleteFile, toPublicUrl } from "./category.service";
 
+=======
+import { PrismaClient, ProductStatus } from "@prisma/client";
+import ApiError from "../../utils/ApiError";
+import { deleteFile, toPublicUrl } from "./category.service";
+
+const prisma = new PrismaClient();
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 
 const productInclude = {
   subCategory: {

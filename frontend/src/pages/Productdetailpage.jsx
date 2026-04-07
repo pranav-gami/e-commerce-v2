@@ -69,7 +69,10 @@ const ProductDetailPage = () => {
     const [tab, setTab] = useState('Description');
     const [qty, setQty] = useState(1);
     const [addingCart, setAddingCart] = useState(false);
+<<<<<<< HEAD
     const [buyingNow, setBuyingNow] = useState(false);
+=======
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     const [cartMsg, setCartMsg] = useState('');
     const [imgError, setImgError] = useState(false);
     const [review, setReview] = useState({});
@@ -159,6 +162,7 @@ const ProductDetailPage = () => {
         if (!user) return navigate('/login');
         if (!inStock) return;
         try {
+<<<<<<< HEAD
             setBuyingNow(true);
             await dispatch(addToCart({ ...product, quantity: qty })).unwrap();
             navigate('/cart');
@@ -166,6 +170,11 @@ const ProductDetailPage = () => {
         } finally {
             setBuyingNow(false);
         }
+=======
+            await dispatch(addToCart({ ...product, quantity: qty })).unwrap();
+            navigate('/cart');
+        } catch {}
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
     };
 
     const handleCartInc = async () => {
@@ -508,6 +517,7 @@ const ProductDetailPage = () => {
                             )}
                             <button
                                 onClick={handleBuyNow}
+<<<<<<< HEAD
                                 disabled={!inStock || status !== 'ACTIVE' || buyingNow || addingCart}
                                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary text-white font-extrabold text-sm py-3 px-8 hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-sm tracking-wider"
                             >
@@ -521,6 +531,12 @@ const ProductDetailPage = () => {
                                     </svg>
                                 )}
                                 {buyingNow ? 'PLACING…' : 'BUY NOW'}
+=======
+                                disabled={!inStock || status !== 'ACTIVE'}
+                                className="flex-1 sm:flex-none bg-primary text-white font-extrabold text-sm py-3 px-8 hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-sm tracking-wider"
+                            >
+                                BUY NOW
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
                             </button>
                         </div>
 
@@ -1003,18 +1019,25 @@ const ProductDetailPage = () => {
                 ) : (
                     <button
                         onClick={handleAddCart}
+<<<<<<< HEAD
                         disabled={!inStock || addingCart || buyingNow || status !== 'ACTIVE'}
                         className="flex-1 flex items-center justify-center gap-2 border-2 border-primary text-primary font-bold py-2 rounded-sm disabled:opacity-50"
                     >
                         {addingCart ? (
                             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         ) : null}
+=======
+                        disabled={!inStock || addingCart || status !== 'ACTIVE'}
+                        className="flex-1 border-2 border-primary text-primary font-bold py-2 rounded-sm disabled:opacity-50"
+                    >
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
                         {addingCart ? 'ADDING…' : 'ADD TO BAG'}
                     </button>
                 )}
 
                 <button
                     onClick={handleBuyNow}
+<<<<<<< HEAD
                     disabled={!inStock || status !== 'ACTIVE' || buyingNow || addingCart}
                     className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-bold py-2 rounded-sm disabled:opacity-50"
                 >
@@ -1022,6 +1045,12 @@ const ProductDetailPage = () => {
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : null}
                     {buyingNow ? 'PLACING…' : 'BUY NOW'}
+=======
+                    disabled={!inStock || status !== 'ACTIVE'}
+                    className="flex-1 bg-primary text-white font-bold py-2 rounded-sm disabled:opacity-50"
+                >
+                    BUY NOW
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
                 </button>
             </div>
         </div>

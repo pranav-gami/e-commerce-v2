@@ -29,10 +29,14 @@ export const addToCart = createAsyncThunk(
     async (product, { dispatch, rejectWithValue }) => {
         try {
             await api.post('/cart/items', { productId: product.id, quantity: 1 });
+<<<<<<< HEAD
             // Await fetchCart so the store is fully updated before unwrap() resolves.
             // This prevents CartPage from briefly showing "empty" on Buy Now.
             const result = await dispatch(fetchCart()).unwrap();
             return result;
+=======
+            dispatch(fetchCart());
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || 'Failed to add to cart');
         }

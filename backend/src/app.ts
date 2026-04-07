@@ -22,6 +22,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5000",
   process.env.FRONTEND_URL, // add your deployed frontend URL in Render env vars
+  process.env.BACKEND_URL,
 ].filter(Boolean);
 
 app.use(

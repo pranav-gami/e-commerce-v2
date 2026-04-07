@@ -50,6 +50,10 @@ $.fn.dataTable.pipeline = function (opts) {
         cacheLastRequest = $.extend(true, {}, request);
 
         if (ajax) {
+            // ✅ `settings` is now in scope here
+            var api = new $.fn.dataTable.Api(settings);
+            api.processing(true);
+
             // Need data from the server
             if (requestStart < cacheLower) {
                 requestStart = requestStart - requestLength * (conf.pages - 1);
@@ -95,6 +99,7 @@ $.fn.dataTable.pipeline = function (opts) {
                         json.data.splice(requestLength, json.data.length);
                     }
 
+                    api.processing(false); // ✅ Turn off spinner after data loads
                     drawCallback(json);
                 },
             });

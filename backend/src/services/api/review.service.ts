@@ -1,4 +1,4 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import { OrderStatus, ReviewStatus } from "@prisma/client";
 import ApiError from "../../utils/ApiError";
 

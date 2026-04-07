@@ -13,6 +13,7 @@ import {
   updateQuantity,
   addToCart,
   clearCart,
+  selectCartLoading,
 } from "../redux/slices/cartSlice";
 import {
   selectAppliedCoupon,
@@ -26,6 +27,7 @@ const CartPage = () => {
   const cartItems = useAppSelector(selectCartItems);
   const subtotal = useAppSelector(selectCartTotal);
   const user = useAppSelector(selectUser);
+  const cartLoading = useAppSelector(selectCartLoading);
 
   const appliedCoupon = useAppSelector(selectAppliedCoupon);
   const couponDiscount = useAppSelector(selectCouponDiscount);
@@ -149,8 +151,36 @@ const CartPage = () => {
 
       <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
 
-        {/* ── Empty state ── */}
-        {cartItems.length === 0 ? (
+        {/* ── Cart skeleton while loading (e.g. arriving via Buy Now) ── */}
+        {cartLoading ? (
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+            {/* Left – item skeletons */}
+            <div className="flex-1 min-w-0">
+              <div className="bg-white border border-brand-border rounded divide-y divide-brand-border">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="p-4 flex gap-4 items-start">
+                    <div className="w-20 h-24 flex-shrink-0 bg-[#f5f5f6] animate-pulse rounded" />
+                    <div className="flex-1 space-y-2.5 py-1">
+                      <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-3/4" />
+                      <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-1/2" />
+                      <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-1/4 mt-4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Right – summary skeleton */}
+            <div className="lg:w-80 flex-shrink-0">
+              <div className="bg-white border border-brand-border rounded shadow-sm p-4 space-y-3">
+                <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-1/2" />
+                <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-full" />
+                <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-3/4" />
+                <div className="h-10 bg-[#f5f5f6] animate-pulse rounded mt-4" />
+              </div>
+            </div>
+          </div>
+
+        ) : cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 sm:py-24 text-center bg-white rounded shadow-sm mx-0 sm:mx-0">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-brand-light rounded-full flex items-center justify-center mb-4 sm:mb-5">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94969f" strokeWidth="1.2" className="sm:w-10 sm:h-10">

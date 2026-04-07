@@ -1,4 +1,4 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 
 //  Helper: get the "start date" based on the range query param
 function getStartDate(range: string): Date {

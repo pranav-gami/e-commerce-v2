@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { catchAsyncHandler, sendResponse } from "../../utils/asyncHandler";
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import { getCurrentAdmin } from "../../services/admin/admin.service";
 
 export const getPaymentsPage = catchAsyncHandler(

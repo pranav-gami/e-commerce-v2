@@ -1,5 +1,5 @@
 // src/services/admin/hero.service.ts
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 import * as fs from "fs";
 import * as path from "path";

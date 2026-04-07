@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import {prisma} from "../config/prisma"
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -8,7 +8,6 @@ import readline from "readline";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const prisma = new PrismaClient();
 
 // ─── ✅ Update these with real IDs once you have them ─────────────────────────
 // For now using placeholder IDs — script will create fake users/orders if needed

@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import {prisma} from '../../config/prisma'; 
 import ApiError from "../../utils/ApiError";
 
-const prisma = new PrismaClient();
 
 // CREATE
 export const createSubCategory = async (data: {

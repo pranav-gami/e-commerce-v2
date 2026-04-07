@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 import generateToken from "../../utils/generateToken";
 import { generateOtp } from "../../utils/generateOtp";

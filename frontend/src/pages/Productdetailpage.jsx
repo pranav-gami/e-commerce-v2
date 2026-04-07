@@ -69,6 +69,7 @@ const ProductDetailPage = () => {
     const [tab, setTab] = useState('Description');
     const [qty, setQty] = useState(1);
     const [addingCart, setAddingCart] = useState(false);
+    const [buyingNow, setBuyingNow] = useState(false);
     const [cartMsg, setCartMsg] = useState('');
     const [imgError, setImgError] = useState(false);
     const [review, setReview] = useState({});
@@ -158,9 +159,13 @@ const ProductDetailPage = () => {
         if (!user) return navigate('/login');
         if (!inStock) return;
         try {
+            setBuyingNow(true);
             await dispatch(addToCart({ ...product, quantity: qty })).unwrap();
             navigate('/cart');
-        } catch {}
+        } catch {
+        } finally {
+            setBuyingNow(false);
+        }
     };
 
     const handleCartInc = async () => {
@@ -283,9 +288,9 @@ const ProductDetailPage = () => {
                                 style={
                                     zoom
                                         ? {
-                                              transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                                              transform: 'scale(2.2)',
-                                          }
+                                            transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                                            transform: 'scale(2.2)',
+                                        }
                                         : {}
                                 }
                             />
@@ -503,10 +508,19 @@ const ProductDetailPage = () => {
                             )}
                             <button
                                 onClick={handleBuyNow}
-                                disabled={!inStock || status !== 'ACTIVE'}
-                                className="flex-1 sm:flex-none bg-primary text-white font-extrabold text-sm py-3 px-8 hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-sm tracking-wider"
+                                disabled={!inStock || status !== 'ACTIVE' || buyingNow || addingCart}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary text-white font-extrabold text-sm py-3 px-8 hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-sm tracking-wider"
                             >
-                                BUY NOW
+                                {buyingNow ? (
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                        <line x1="3" y1="6" x2="21" y2="6" />
+                                        <path d="M16 10a4 4 0 0 1-8 0" />
+                                    </svg>
+                                )}
+                                {buyingNow ? 'PLACING…' : 'BUY NOW'}
                             </button>
                         </div>
 
@@ -703,9 +717,9 @@ const ProductDetailPage = () => {
                                                 <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0">
                                                     {r.user?.name
                                                         ? r.user.name
-                                                              .split(' ')
-                                                              .map(n => n[0].toUpperCase())
-                                                              .join('')
+                                                            .split(' ')
+                                                            .map(n => n[0].toUpperCase())
+                                                            .join('')
                                                         : '?'}
                                                 </div>
                                                 <div className="flex-1">
@@ -719,14 +733,14 @@ const ProductDetailPage = () => {
                                                         <span className="text-xs text-brand-gray">
                                                             {r.createdAt
                                                                 ? new Date(
-                                                                      r.createdAt,
-                                                                  ).toLocaleString('en-IN', {
-                                                                      day: '2-digit',
-                                                                      month: 'short',
-                                                                      year: 'numeric',
-                                                                      hour: '2-digit',
-                                                                      minute: '2-digit',
-                                                                  })
+                                                                    r.createdAt,
+                                                                ).toLocaleString('en-IN', {
+                                                                    day: '2-digit',
+                                                                    month: 'short',
+                                                                    year: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit',
+                                                                })
                                                                 : ''}
                                                         </span>
                                                     </div>
@@ -989,19 +1003,25 @@ const ProductDetailPage = () => {
                 ) : (
                     <button
                         onClick={handleAddCart}
-                        disabled={!inStock || addingCart || status !== 'ACTIVE'}
-                        className="flex-1 border-2 border-primary text-primary font-bold py-2 rounded-sm disabled:opacity-50"
+                        disabled={!inStock || addingCart || buyingNow || status !== 'ACTIVE'}
+                        className="flex-1 flex items-center justify-center gap-2 border-2 border-primary text-primary font-bold py-2 rounded-sm disabled:opacity-50"
                     >
+                        {addingCart ? (
+                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        ) : null}
                         {addingCart ? 'ADDING…' : 'ADD TO BAG'}
                     </button>
                 )}
 
                 <button
                     onClick={handleBuyNow}
-                    disabled={!inStock || status !== 'ACTIVE'}
-                    className="flex-1 bg-primary text-white font-bold py-2 rounded-sm disabled:opacity-50"
+                    disabled={!inStock || status !== 'ACTIVE' || buyingNow || addingCart}
+                    className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-bold py-2 rounded-sm disabled:opacity-50"
                 >
-                    BUY NOW
+                    {buyingNow ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : null}
+                    {buyingNow ? 'PLACING…' : 'BUY NOW'}
                 </button>
             </div>
         </div>

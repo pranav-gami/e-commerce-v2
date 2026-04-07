@@ -1,4 +1,4 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 
 const getOrCreateCart = async (userId: number) => {

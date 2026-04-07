@@ -1,7 +1,13 @@
 const filterOptions = {
     search: '',
     filters: {},
+    search: '',
+    filters: {},
 };
+$.extend(true, $.fn.dataTable.defaults, {
+    processing: true,
+    serverSide: true,
+});
 $.extend(true, $.fn.dataTable.defaults, {
     processing: true,
     serverSide: true,
@@ -44,9 +50,11 @@ const userColumns = [
                 <div class="symbol symbol-50px overflow-hidden me-3">
                     <div class="symbol-label fs-3 bg-light-primary text-primary">
                         ${data ? data.charAt(0).toUpperCase() : '?'}
+                        ${data ? data.charAt(0).toUpperCase() : '?'}
                     </div>
                 </div>
                 <a href="/admin/users/${row.id}" class="text-gray-800 text-hover-primary mb-1">
+                    ${data || ''}
                     ${data || ''}
                 </a>
             </div>`;
@@ -108,6 +116,13 @@ const userColumns = [
             data-state="${row.state || ''}"
             data-country="${row.country || ''}"
             data-postal-code="${row.postal_code || ''}">
+            data-name="${row.name || ''}"
+            data-phone="${row.phone || ''}"
+            data-address="${row.address || ''}"
+            data-city="${row.city || ''}"
+            data-state="${row.state || ''}"
+            data-country="${row.country || ''}"
+            data-postal-code="${row.postal_code || ''}">
             Edit
           </a>
         </div>
@@ -122,6 +137,8 @@ const userColumns = [
     },
 ];
 
+const tableSelector = '#users-table';
+const url = '/admin/users';
 const tableSelector = '#users-table';
 const url = '/admin/users';
 let table;
@@ -257,13 +274,24 @@ $(document).ready(function () {
     });
 });
 
-// Bulk action toolbar visibility
 function updateBulkActionToolbar() {
     const checkedCount = $('.row-checkbox:checked').length;
     const baseToolbar = $('[data-users-table-toolbar="base"]');
     const selectedToolbar = $('[data-users-table-toolbar="selected"]');
     const selectedCount = $('[data-users-table-select="selected_count"]');
+    const checkedCount = $('.row-checkbox:checked').length;
+    const baseToolbar = $('[data-users-table-toolbar="base"]');
+    const selectedToolbar = $('[data-users-table-toolbar="selected"]');
+    const selectedCount = $('[data-users-table-select="selected_count"]');
 
+    if (checkedCount > 0) {
+        baseToolbar.addClass('d-none');
+        selectedToolbar.removeClass('d-none');
+        selectedCount.text(checkedCount);
+    } else {
+        baseToolbar.removeClass('d-none');
+        selectedToolbar.addClass('d-none');
+    }
     if (checkedCount > 0) {
         baseToolbar.addClass('d-none');
         selectedToolbar.removeClass('d-none');
@@ -281,7 +309,34 @@ async function handleFormSubmission(
     successMessage,
     formSelector,
     modalSelector,
+    url,
+    method,
+    data,
+    successMessage,
+    formSelector,
+    modalSelector,
 ) {
+    const response = await request(url, {
+        method,
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+    $(modalSelector).modal('hide');
+    if (response.success) {
+        SwalPopup.success(response.message || successMessage);
+        table.ajax.reload();
+        if ($(formSelector)?.[0]) {
+            $(formSelector)[0].reset();
+        }
+        $(modalSelector).modal('hide');
+    } else {
+        await SwalPopup.error(response.message || 'Something went wrong').then(function () {
+            $(modalSelector).modal('show');
+        });
+    }
     const response = await request(url, {
         method,
         headers: {

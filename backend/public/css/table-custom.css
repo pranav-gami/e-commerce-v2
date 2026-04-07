@@ -1,15 +1,79 @@
-th.sorting_disabled.sorting_asc::after, table.dataTable>thead .sorting_asc::after, table.dataTable>thead .sorting_asc::after {
-    display: none!important;
+th.sorting_disabled.sorting_asc::after,
+table.dataTable > thead .sorting_asc::after {
+    display: none !important;
 }
 
-.categories div.dataTables_processing{
-    top: 75%;
+/* ─── Wrapper must be relative so the processing overlay positions correctly ── */
+div.dataTables_wrapper {
+    position: relative;
 }
 
 div.dataTables_wrapper .table-responsive {
     min-height: 15rem;
 }
 
-.categories div.dataTables_wrapper .table-responsive{
-    min-height: 10rem;
+/* ─── Hide the "No records" empty cell while loading is active ──────────────── */
+div.dataTables_wrapper.processing tbody td.dataTables_empty {
+    visibility: hidden;
+}
+
+/* ─── Processing overlay — no background, no card ───────────────────────────── */
+div.dataTables_processing {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 10;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+/* ─── Hide the default DataTables dots row ──────────────────────────────────── */
+div.dataTables_processing > div:last-child {
+    display: none !important;
+}
+
+/* ─── Hide the default plain-text paragraph DataTables sometimes adds ───────── */
+div.dataTables_processing > p {
+    display: none !important;
+}
+
+/* ─── Show our custom spinner HTML as a proper flex row ─────────────────────── */
+div.dataTables_processing > div:first-child {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    visibility: visible !important;
+    white-space: nowrap;
+}
+
+div.dataTables_processing > div:first-child * {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ─── Fallback pure-CSS spinner if no Bootstrap spinner found in HTML ────────── */
+div.dataTables_processing:not(:has(.spinner-border))::after {
+    content: '';
+    display: inline-block;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 3px solid #e4e6ef;
+    border-top-color: #c73652;
+    border-radius: 50%;
+    animation: dt-spin 0.65s linear infinite;
+}
+
+@keyframes dt-spin {
+    to { transform: rotate(360deg); }
 }

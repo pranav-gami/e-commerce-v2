@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import {prisma} from '../config/prisma'; 
+=======
 import { PrismaClient } from '@prisma/client';
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -7,7 +11,6 @@ import readline from 'readline';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const prisma = new PrismaClient();
 
 // Use your actual user and order IDs
 const USER_IDS = [16, 17];

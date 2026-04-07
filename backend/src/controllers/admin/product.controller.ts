@@ -77,6 +77,7 @@ export const getEditProductPage = catchAsyncHandler(
   async (req: AuthRequest, res: Response) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(404).render("pages/404", { layout: false });
+    if (isNaN(id)) return res.status(404).render("pages/404", { layout: false });
 
     const [admin, product, subCategories] = await Promise.all([
       adminService.getCurrentAdmin(req.user?.id!),

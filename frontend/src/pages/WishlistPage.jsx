@@ -16,9 +16,13 @@ const WishlistPage = () => {
     const navigate = useNavigate();
     const [addingId, setAddingId] = useState(null);
     const [movedId, setMovedId] = useState(null);
+    const [pageLoading, setPageLoading] = useState(true);
 
     useEffect(() => {
         document.title = 'Wishlist';
+        // Allow Redux rehydration/persistence to settle before rendering
+        const t = setTimeout(() => setPageLoading(false), 300);
+        return () => clearTimeout(t);
     }, []);
 
     const formatPrice = price =>
@@ -69,7 +73,21 @@ const WishlistPage = () => {
             </div>
 
             <div className="max-w-screen-xl mx-auto px-4 py-8">
-                {wishlistItems.length === 0 ? (
+                {pageLoading ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {[...Array(10)].map((_, i) => (
+                            <div key={i} className="bg-white border border-brand-border overflow-hidden">
+                                <div className="aspect-[3/4] bg-[#f5f5f6] animate-pulse" />
+                                <div className="p-3 space-y-2">
+                                    <div className="h-2.5 bg-[#f5f5f6] animate-pulse rounded w-2/3" />
+                                    <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-full" />
+                                    <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-3/4" />
+                                    <div className="h-8 bg-[#f5f5f6] animate-pulse rounded mt-2" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : wishlistItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded shadow-sm">
                         <div className="w-20 h-20 bg-primary-light rounded-full flex items-center justify-center mb-5">
                             <svg
@@ -218,10 +236,10 @@ const WishlistPage = () => {
                                             {isMoved
                                                 ? 'MOVED!'
                                                 : addingId === product.id
-                                                  ? 'MOVING...'
-                                                  : inStock
-                                                    ? 'MOVE TO BAG'
-                                                    : 'OUT OF STOCK'}
+                                                    ? 'MOVING...'
+                                                    : inStock
+                                                        ? 'MOVE TO BAG'
+                                                        : 'OUT OF STOCK'}
                                         </button>
                                     </div>
                                 </div>
@@ -233,5 +251,6 @@ const WishlistPage = () => {
         </div>
     );
 };
+
 
 export default WishlistPage;

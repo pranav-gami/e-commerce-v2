@@ -1,9 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import {prisma} from "../config/prisma";
 import bcrypt from "bcrypt";
 import * as fs from "fs";
 import * as path from "path";
 
-const prisma = new PrismaClient();
 
 // ── Load JSON files ──
 const dataDir = path.join(__dirname, "../../data");

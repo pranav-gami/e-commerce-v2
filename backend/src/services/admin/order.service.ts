@@ -1,6 +1,6 @@
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
-import { OrderStatus, PaymentStatus } from "@prisma/client";
+  import { OrderStatus, PaymentStatus } from "@prisma/client";
 import razorpay from "../../utils/razorpay";
 import {
   sendOrderCancelledEmail,

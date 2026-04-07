@@ -14,6 +14,7 @@ import {
   selectCartItems,
   selectIsCartOpen,
   selectCartTotal,
+  selectCartLoading,
 } from "../redux/slices/cartSlice";
 
 const ShoppingCart = () => {
@@ -21,6 +22,7 @@ const ShoppingCart = () => {
   const cartItems = useSelector(selectCartItems);
   const isCartOpen = useSelector(selectIsCartOpen);
   const cartTotal = useSelector(selectCartTotal);
+  const cartLoading = useSelector(selectCartLoading);
 
   const [showPayment, setShowPayment] = useState(false);
 
@@ -99,7 +101,20 @@ const ShoppingCart = () => {
 
         {/* Body – scrollable */}
         <div className="flex-1 overflow-y-auto">
-          {cartItems.length === 0 ? (
+          {cartLoading ? (
+            <ul className="divide-y divide-[#f0f0f0] m-0 p-0 list-none">
+              {[...Array(3)].map((_, i) => (
+                <li key={i} className="flex gap-3 px-4 sm:px-5 py-4">
+                  <div className="w-20 h-24 sm:w-24 sm:h-28 flex-shrink-0 rounded bg-[#f5f5f6] animate-pulse" />
+                  <div className="flex-1 space-y-2.5 py-1">
+                    <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-3/4" />
+                    <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-1/2" />
+                    <div className="h-3 bg-[#f5f5f6] animate-pulse rounded w-1/3 mt-4" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 px-6 text-center py-16">
               <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#d4d5d9" strokeWidth="1">
                 <circle cx="9" cy="21" r="1" />

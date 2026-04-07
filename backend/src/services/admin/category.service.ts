@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import {prisma} from '../../config/prisma'; 
 import { slugify } from "../../utils/slugify";
 import ApiError from "../../utils/ApiError";
 import path from "path";
 import fs from "fs";
 
-const prisma = new PrismaClient();
 
 export const toPublicUrl = (filePath: string) => {
   const rel = filePath.split("uploads")[1];

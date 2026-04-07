@@ -161,6 +161,10 @@ $(document).ready(function () {
       },
     ],
     order: [[0, "desc"]],
+    language: {
+      loadingRecords: '',
+      processing: '<div class="d-flex align-items-center justify-content-center gap-3 py-2"><div class="spinner-border text-primary" style="width:1.75rem;height:1.75rem;border-width:3px;" role="status"><span class="visually-hidden">Loading...</span></div><span class="text-muted fs-7 fw-semibold">Loading...</span></div>',
+    },
   });
 
   // ── Reinit dropdowns after draw ──────────────────────────

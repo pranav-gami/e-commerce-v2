@@ -113,9 +113,7 @@ $(document).ready(function () {
         orderable: false,
         width: "15%",
         render: function (data, type, row) {
-          // fix 1: always show both actions, just disable edit for final statuses
           const canEdit = !["DELIVERED", "CANCELLED"].includes(row.status);
-          // fix 2: encode customer name to avoid breaking html attribute
           const customerName = (row.user?.name || "N/A")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
@@ -152,9 +150,12 @@ $(document).ready(function () {
       },
     ],
     order: [[1, "desc"]],
+    language: {
+      loadingRecords: '',
+      processing: '<div class="d-flex align-items-center justify-content-center gap-3 py-2"><div class="spinner-border text-primary" style="width:1.75rem;height:1.75rem;border-width:3px;" role="status"><span class="visually-hidden">Loading...</span></div><span class="text-muted fs-7 fw-semibold">Loading...</span></div>',
+    },
   });
 
-  // fix 3: destroy existing dropdown instances before reiniting
   orderTable.on("draw", function () {
     document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach((el) => {
       const existing = bootstrap.Dropdown.getInstance(el);
@@ -163,7 +164,6 @@ $(document).ready(function () {
     });
   });
 
-  // Search
   let searchTimer;
   $("#order-table-search").keyup(function () {
     clearTimeout(searchTimer);
@@ -172,12 +172,10 @@ $(document).ready(function () {
     }, 500);
   });
 
-  // Status filter
   $("#order-status-filter").on("change", function () {
     orderTable.column(5).search(this.value).draw();
   });
 
-  // Open edit status modal
   $(document).on("click", ".edit-order-status", function (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -204,12 +202,10 @@ $(document).ready(function () {
         : `${transitions.length} option(s) available.`,
     );
 
-    // close any open dropdown first, then show modal
     $(".dropdown-menu").removeClass("show");
     new bootstrap.Modal(document.getElementById("editOrderStatusModal")).show();
   });
 
-  // Save status update
   $(document).on("click", "#save-edit-order-status", async function () {
     const id = $("#edit-order-id").val();
     const status = $("#edit-new-status").val();

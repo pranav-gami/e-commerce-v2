@@ -261,7 +261,10 @@ const Header = () => {
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => dispatch(clearSearch())}
+                  onClick={() => {
+                    dispatch(clearSearch());
+                    navigate("/products", { replace: true });
+                  }}
                   className="flex-shrink-0 flex items-center justify-center px-2 h-full bg-transparent border-none cursor-pointer text-[#94969f] hover:text-[#282c3f]"
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

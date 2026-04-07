@@ -1,7 +1,7 @@
 import {
   sendOrderCancelledEmail,
 } from "../../config/mailer";
-import prisma from "../../config/prisma";
+import {prisma} from "../../config/prisma";
 import ApiError from "../../utils/ApiError";
 import razorpay from "../../utils/razorpay";
 

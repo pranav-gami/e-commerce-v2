@@ -1,10 +1,13 @@
+<<<<<<< HEAD
+import {prisma} from "../../config/prisma";
+=======
 import { PrismaClient } from '@prisma/client';
+>>>>>>> 95c69cb0528cc8bbd2f1eceea3cab1b82d5206c4
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
 import http from 'http';
 
-const prisma = new PrismaClient();
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'products', 'images');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });

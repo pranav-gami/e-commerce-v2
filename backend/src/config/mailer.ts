@@ -1,92 +1,102 @@
-import nodemailer from "nodemailer";
-
+import { BrevoClient } from "@getbrevo/brevo";
 import puppeteer from "puppeteer";
 import { generateInvoiceHTML } from "./invoiceHTML";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+//  Brevo Client Setup
+
+const client = new BrevoClient({ apiKey: process.env.BREVO_API_KEY! });
+
+const FROM_EMAIL = process.env.EMAIL_FROM!;
+const FROM_NAME = "Myntra";
+
+//  Shared Helper
+
+const sendEmail = async (
+  to: string,
+  subject: string,
+  htmlContent: string,
+  attachments?: { name: string; content: string }[],
+) => {
+  await client.transactionalEmails.sendTransacEmail({
+    sender: { name: FROM_NAME, email: FROM_EMAIL },
+    to: [{ email: to }],
+    subject,
+    htmlContent,
+    ...(attachments && attachments.length > 0 ? { attachment: attachments } : {}),
+  });
+};
+
+//  OTP Email 
 
 export const sendOtpEmail = async (
   email: string,
   otp: string,
   name: string,
 ) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: "Your OTP for Password Reset — Myntra",
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="margin:0;padding:0;background:#f5f5f7;font-family:'Outfit',Arial,sans-serif;">
-          <div style="max-width:520px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            
-            <!-- Header -->
-            <div style="background:linear-gradient(135deg,#1a1a2e 0%,#0f1a3e 100%);padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;font-size:28px;font-weight:800;color:#000080;letter-spacing:-0.5px;">
-                <span style="color:#e94560;">Myntra</span>
-              </h1>
-            </div>
-
-            <!-- Body -->
-            <div style="padding:40px;">
-              <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1a2e;">
-                Password Reset OTP
-              </h2>
-              <p style="margin:0 0 24px;color:#6c757d;font-size:15px;line-height:1.6;">
-                Hi <strong>${name}</strong>, use the OTP below to reset your password. It expires in <strong>10 minutes</strong>.
-              </p>
-
-              <!-- OTP Box -->
-              <div style="background:#fef2f4;border:2px dashed #e94560;border-radius:12px;padding:28px;text-align:center;margin:0 0 24px;">
-                <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#e94560;text-transform:uppercase;letter-spacing:2px;">
-                  Your OTP
-                </p>
-                <p style="margin:0;font-size:42px;font-weight:800;color:#1a1a2e;letter-spacing:12px;">
-                  ${otp}
-                </p>
-              </div>
-
-              <!-- Warning -->
-              <div style="background:#fff3cd;border-radius:8px;padding:14px 16px;margin:0 0 24px;">
-                <p style="margin:0;font-size:13px;color:#856404;">
-                  ⚠️ Never share this OTP with anyone. Myntra will never ask for your OTP.
-                </p>
-              </div>
-
-              <p style="margin:0;color:#6c757d;font-size:13px;line-height:1.6;">
-                If you didn't request this, you can safely ignore this email. Your password won't change.
-              </p>
-            </div>
-
-            <!-- Footer -->
-            <div style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#adb5bd;">
-                © 2026 Myntra — All rights reserved
-              </p>
-            </div>
-
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;background:#f5f5f7;font-family:'Outfit',Arial,sans-serif;">
+        <div style="max-width:520px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+          
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#1a1a2e 0%,#0f1a3e 100%);padding:32px 40px;text-align:center;">
+            <h1 style="margin:0;font-size:28px;font-weight:800;color:#000080;letter-spacing:-0.5px;">
+              <span style="color:#e94560;">Myntra</span>
+            </h1>
           </div>
-        </body>
-      </html>
-    `,
-  };
 
-  await transporter.sendMail(mailOptions);
+          <!-- Body -->
+          <div style="padding:40px;">
+            <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1a2e;">
+              Password Reset OTP
+            </h2>
+            <p style="margin:0 0 24px;color:#6c757d;font-size:15px;line-height:1.6;">
+              Hi <strong>${name}</strong>, use the OTP below to reset your password. It expires in <strong>10 minutes</strong>.
+            </p>
+
+            <!-- OTP Box -->
+            <div style="background:#fef2f4;border:2px dashed #e94560;border-radius:12px;padding:28px;text-align:center;margin:0 0 24px;">
+              <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#e94560;text-transform:uppercase;letter-spacing:2px;">
+                Your OTP
+              </p>
+              <p style="margin:0;font-size:42px;font-weight:800;color:#1a1a2e;letter-spacing:12px;">
+                ${otp}
+              </p>
+            </div>
+
+            <!-- Warning -->
+            <div style="background:#fff3cd;border-radius:8px;padding:14px 16px;margin:0 0 24px;">
+              <p style="margin:0;font-size:13px;color:#856404;">
+                Never share this OTP with anyone. Myntra will never ask for your OTP.
+              </p>
+            </div>
+
+            <p style="margin:0;color:#6c757d;font-size:13px;line-height:1.6;">
+              If you didn't request this, you can safely ignore this email. Your password won't change.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#adb5bd;">
+              © 2026 Myntra — All rights reserved
+            </p>
+          </div>
+
+        </div>
+      </body>
+    </html>
+  `;
+
+  await sendEmail(email, "Your OTP for Password Reset — Myntra", html);
 };
 
-// ORDER CONFIRMED EMAIL WITH INVOICE
+//  Invoice PDF Generator 
 
 interface OrderItem {
   name: string;
@@ -106,8 +116,6 @@ interface SendOrderConfirmationProps {
   fullOrder: any;
 }
 
-//invoice(PDF)
-
 const generateInvoicePDF = async (order: any): Promise<Buffer> => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -125,6 +133,8 @@ const generateInvoicePDF = async (order: any): Promise<Buffer> => {
 
   return Buffer.from(pdfUint8);
 };
+
+//  Order Confirmation Email 
 
 export const sendOrderConfirmationEmail = async ({
   to,
@@ -458,24 +468,20 @@ export const sendOrderConfirmationEmail = async ({
 </html>
 `;
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to,
-    subject: `Order Confirmed #${orderId}`,
-    html,
-    attachments: [
-      {
-        filename: `invoice-${orderId}.pdf`,
-        content: pdfBuffer,
-        contentType: "application/pdf",
-      },
-    ],
-  });
+  // Brevo requires attachments as base64 strings
+  const base64PDF = pdfBuffer.toString("base64");
 
-  console.log("✅ Email sent with coupon + PDF");
+  await sendEmail(
+    to,
+    `Order Confirmed #${orderId}`,
+    html,
+    [{ name: `invoice-${orderId}.pdf`, content: base64PDF }],
+  );
+
+  console.log("Email sent with coupon + PDF");
 };
 
-// PAYMENT FAILED EMAIL
+//  Payment Failed Email 
 
 export const sendPaymentFailedEmail = async ({
   to,
@@ -486,11 +492,7 @@ export const sendPaymentFailedEmail = async ({
   customerName: string;
   orderId: number;
 }) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to,
-    subject: `❌ Payment Failed - Order #${orderId} — Myntra`,
-    html: `
+  const html = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -509,7 +511,7 @@ export const sendPaymentFailedEmail = async ({
 
           <!-- Failed Banner -->
           <div style="background:#fef2f2;border-bottom:2px solid #ef4444;padding:20px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:700;color:#dc2626;">❌ Payment Failed</p>
+            <p style="margin:0;font-size:20px;font-weight:700;color:#dc2626;">Payment Failed</p>
             <p style="margin:6px 0 0;color:#f87171;font-size:14px;">Don't worry, no amount was deducted.</p>
           </div>
 
@@ -527,11 +529,11 @@ export const sendPaymentFailedEmail = async ({
             <div style="background:#f8f9fa;border-radius:12px;padding:16px 24px;margin:0 0 24px;">
               <table width="100%">
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;">📦 Order ID</td>
+                  <td style="color:#6c757d;font-size:14px;">Order ID</td>
                   <td style="text-align:right;font-weight:700;color:#1a1a2e;">#${orderId}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;padding-top:6px;">📊 Status</td>
+                  <td style="color:#6c757d;font-size:14px;padding-top:6px;">Status</td>
                   <td style="text-align:right;padding-top:6px;">
                     <span style="background:#ef4444;color:#fff;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
                       FAILED
@@ -545,7 +547,7 @@ export const sendPaymentFailedEmail = async ({
             <div style="text-align:center;margin:0 0 24px;">
               <a href="${process.env.FRONTEND_URL}/cart"
                  style="display:inline-block;background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
-                🔄 Try Again
+                Try Again
               </a>
             </div>
 
@@ -564,14 +566,13 @@ export const sendPaymentFailedEmail = async ({
         </div>
       </body>
     </html>
-    `,
-  };
+  `;
 
-  await transporter.sendMail(mailOptions);
+  await sendEmail(to, `Payment Failed - Order #${orderId} — Myntra`, html);
   console.log(`📧 Payment failed email sent to ${to}`);
 };
 
-// ORDER CANCELLED EMAIL (No refund)
+//  Order Cancelled Email (No Refund) 
 
 export const sendOrderCancelledEmail = async ({
   to,
@@ -582,11 +583,7 @@ export const sendOrderCancelledEmail = async ({
   customerName: string;
   orderId: number;
 }) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to,
-    subject: `❌ Order Cancelled #${orderId} — Myntra`,
-    html: `
+  const html = `
     <!DOCTYPE html>
     <html>
       <body style="margin:0;padding:0;background:#f5f5f7;font-family:'Outfit',Arial,sans-serif;">
@@ -601,7 +598,7 @@ export const sendOrderCancelledEmail = async ({
 
           <!-- Banner -->
           <div style="background:#fef2f2;border-bottom:2px solid #ef4444;padding:20px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:700;color:#dc2626;">❌ Order Cancelled</p>
+            <p style="margin:0;font-size:20px;font-weight:700;color:#dc2626;">Order Cancelled</p>
           </div>
 
           <!-- Body -->
@@ -614,11 +611,11 @@ export const sendOrderCancelledEmail = async ({
             <div style="background:#f8f9fa;border-radius:12px;padding:20px 24px;margin:20px 0;">
               <table width="100%">
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;">📦 Order ID</td>
+                  <td style="color:#6c757d;font-size:14px;">Order ID</td>
                   <td style="text-align:right;font-weight:700;color:#1a1a2e;">#${orderId}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">📊 Status</td>
+                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">Status</td>
                   <td style="text-align:right;padding-top:8px;">
                     <span style="background:#ef4444;color:#fff;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
                       CANCELLED
@@ -641,13 +638,13 @@ export const sendOrderCancelledEmail = async ({
         </div>
       </body>
     </html>
-    `,
-  };
+  `;
 
-  await transporter.sendMail(mailOptions);
+  await sendEmail(to, `Order Cancelled #${orderId} — Myntra`, html);
   console.log(`📧 Order cancelled email sent to ${to}`);
 };
-// ORDER CANCELLED + REFUND EMAIL
+
+//  Order Cancelled + Refund Email 
 
 export const sendOrderCancelledRefundEmail = async ({
   to,
@@ -660,11 +657,7 @@ export const sendOrderCancelledRefundEmail = async ({
   orderId: number;
   amount: number;
 }) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to,
-    subject: ` Order Cancelled & Refund Initiated #${orderId} — Myntra`,
-    html: `
+  const html = `
     <!DOCTYPE html>
     <html>
       <body style="margin:0;padding:0;background:#f5f5f7;font-family:'Outfit',Arial,sans-serif;">
@@ -694,19 +687,19 @@ export const sendOrderCancelledRefundEmail = async ({
             <div style="background:#f8f9fa;border-radius:12px;padding:20px 24px;margin:20px 0;">
               <table width="100%">
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;">📦 Order ID</td>
+                  <td style="color:#6c757d;font-size:14px;">Order ID</td>
                   <td style="text-align:right;font-weight:700;color:#1a1a2e;">#${orderId}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">💰 Refund Amount</td>
+                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">Refund Amount</td>
                   <td style="text-align:right;font-weight:700;color:#3b82f6;padding-top:8px;">₹${amount.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">⏱️ Expected Time</td>
+                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">Expected Time</td>
                   <td style="text-align:right;color:#1a1a2e;padding-top:8px;">5-7 Business Days</td>
                 </tr>
                 <tr>
-                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">📊 Status</td>
+                  <td style="color:#6c757d;font-size:14px;padding-top:8px;">Status</td>
                   <td style="text-align:right;padding-top:8px;">
                     <span style="background:#3b82f6;color:#fff;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
                       REFUND INITIATED
@@ -730,11 +723,8 @@ export const sendOrderCancelledRefundEmail = async ({
         </div>
       </body>
     </html>
-    `,
-  };
+  `;
 
-  await transporter.sendMail(mailOptions);
+  await sendEmail(to, `Order Cancelled & Refund Initiated #${orderId} — Myntra`, html);
   console.log(`📧 Refund email sent to ${to}`);
 };
-
-export default transporter;
